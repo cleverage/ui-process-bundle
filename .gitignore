@@ -10,7 +10,7 @@
 /vendor/
 ###< symfony/framework-bundle ###
 ###> custom ###
-#/docker-compose.override.yml
+/docker-compose.override.yml
 /.idea
 /.pdepend
 /.composer/cache
