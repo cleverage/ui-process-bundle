@@ -1,0 +1,8 @@
+version: "3.8"
+
+#services:
+#  php:
+#    environment:
+#      XDEBUG_MODE: develop,debug # comment this env var to disable xdebug
+#      PHP_IDE_CONFIG: serverName=symfony.local
+#      XDEBUG_CONFIG: discover_client_host=1 start_with_request=yes # For php cli debug ---> php -dxdebug.client_host=xxx.xxx.xxx.xxx -dxdebug.start_with_request=1 bin/console

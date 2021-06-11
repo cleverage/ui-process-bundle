@@ -1,0 +1,47 @@
+version: "3.8"
+
+services:
+  php:
+    env_file:
+      - .env
+    build:
+      context: .docker/php
+      args:
+        UID: "${UID}"
+        GID: "${GID}"
+    volumes:
+      - .:/var/www/html
+    environment:
+      COMPOSER_HOME: /var/www/html/.composer
+      HOME: /var/www/html
+
+  database:
+    image: mysql:8
+    restart: always
+    volumes:
+      - mysql_data:/var/lib/postgresql/data
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: sandbox_symfony
+      MYSQL_USER: sandbox_symfony
+      MYSQL_PASSWORD: sandbox_symfony
+    ports:
+      - 3306:3306
+
+  nginx:
+    image: nginx:1.19.6
+    volumes:
+      - .:/var/www/html
+      - ./.docker/nginx/symfony-local.conf:/etc/nginx/conf.d/symfony.conf:ro
+    ports:
+      - 8080:8080
+
+  node:
+    image: node
+    volumes:
+      - .:/var/www/html
+    working_dir: /var/www/html
+
+volumes:
+  mysql_data:
+    driver: local
