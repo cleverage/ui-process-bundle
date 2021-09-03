@@ -1,0 +1,22 @@
+parameters:
+  uploads_directory: '%kernel.project_dir%/public/uploads'
+  cleverage_processes: '%kernel.project_dir%/config/packages'
+  process_logs_dir: '%kernel.logs_dir%/process'
+
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    bind:
+      $processLogDir: '%process_logs_dir%'
+
+  CleverAge\ProcessUiBundle\:
+    resource: '../src'
+    exclude:
+      - '../src/DependencyInjection/'
+      - '../src/Entity/'
+      - '../src/Tests/'
+      - '../src/Migrations'
+
+  CleverAge\ProcessUiBundle\Monolog\Handler\ProcessLogHandler:
+    arguments: ['%process_logs_dir%']
