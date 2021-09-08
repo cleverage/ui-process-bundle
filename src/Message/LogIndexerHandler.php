@@ -33,7 +33,7 @@ class LogIndexerHandler implements MessageHandlerInterface
             if (!empty($parsedLine)) {
                 $parameters[] = $logIndexerMessage->getProcessExecutionId();
                 $parameters[] = Logger::toMonologLevel($parsedLine['level']);
-                $parameters[] = $parsedLine['message'];
+                $parameters[] = substr($parsedLine['message'], 0, 255);
                 $file->next();
                 --$offset;
             }
