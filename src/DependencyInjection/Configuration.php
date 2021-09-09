@@ -13,6 +13,8 @@ class Configuration implements ConfigurationInterface
         $treeBuilder->getRootNode()
             ->children()
                 ->arrayNode('index_logs')
+                    ->ignoreExtraKeys()
+                    ->addDefaultsIfNotSet()
                     ->children()
                         ->booleanNode('enabled')->defaultFalse()->end()
                         ->scalarNode('level')
@@ -21,8 +23,7 @@ class Configuration implements ConfigurationInterface
                                 ->ifNotInArray(array_flip(Logger::getLevels()))
                                 ->thenInvalid('Invalid log level. Valid levels are '. implode(', ', array_flip(Logger::getLevels())))
                         ->end()
-                    ->end()
-            ->end();
+                    ->end();
 
         return $treeBuilder;
     }
