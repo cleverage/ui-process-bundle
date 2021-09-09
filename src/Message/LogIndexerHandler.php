@@ -11,13 +11,17 @@ class LogIndexerHandler implements MessageHandlerInterface
 {
     private ManagerRegistry $managerRegistry;
 
-    public function __construct(ManagerRegistry $managerRegistry)
+    private string $indexLogsLevel;
+
+    public function __construct(ManagerRegistry $managerRegistry, string $indexLogsLevel)
     {
         $this->managerRegistry = $managerRegistry;
+        $this->indexLogsLevel = $indexLogsLevel;
     }
 
     public function __invoke(LogIndexerMessage $logIndexerMessage)
     {
+        $indexLogsLevel = Logger::toMonologLevel($this->indexLogsLevel);
         $manager = $this->managerRegistry->getManagerForClass(ProcessExecutionLogRecord::class);
         if (null === $manager) {
             return;
@@ -30,13 +34,13 @@ class LogIndexerHandler implements MessageHandlerInterface
         $parameters = [];
         while ($offset > 0 && !$file->eof()) {
             $parsedLine = $parser->parse($file->current());
-            if (!empty($parsedLine)) {
+            if (!empty($parsedLine) && Logger::toMonologLevel($parsedLine['level']) >= $indexLogsLevel) {
                 $parameters[] = $logIndexerMessage->getProcessExecutionId();
                 $parameters[] = Logger::toMonologLevel($parsedLine['level']);
                 $parameters[] = $parsedLine['message'];
-                $file->next();
-                --$offset;
             }
+            $file->next();
+            --$offset;
         }
         $statement = $this->getStatement($table, count($parameters) / 3);
         $manager->getConnection()->executeStatement($statement, $parameters);

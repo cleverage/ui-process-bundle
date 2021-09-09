@@ -21,6 +21,16 @@ class ProcessExecutionCrudController extends AbstractCrudController
 {
     private ManagerRegistry $managerRegistry;
 
+    private bool $indexLogs;
+
+    /**
+     * @required
+     */
+    public function setIndexLogs(bool $indexLogs): void
+    {
+        $this->indexLogs = $indexLogs;
+    }
+
     /**
      * @required
      */
@@ -39,7 +49,7 @@ class ProcessExecutionCrudController extends AbstractCrudController
         $crud->showEntityActionsAsDropdown(false);
         $crud->setDefaultSort(['startDate' => SortOrder::DESC]);
         $crud->setEntityPermission('ROLE_ADMIN');
-        $crud->setSearchFields(['logRecords.message']);
+        $crud->setSearchFields($this->indexLogs === true ? ['logRecords.message'] : null);
 
         return $crud;
     }

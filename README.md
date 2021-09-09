@@ -13,11 +13,12 @@ process-ui:
 
 Now you can access Process UI via http://your-domain.com/process
 
-**About performance**
+**Indexing logs**
 
-In order to make search into ****Process > History**** UI, ProcessUiBundle "index" process logs line into mysql database.
-This indexation is made on process end and use symfony/messenger component.
-So you can simply say to ProcessUsBundle to index log async.
+You can index logs line into database to perform search on ****Process > History**** page.
+See configuration section.
+
+When indexation is enabled you can perform it async.
 
 ```yaml
 #config/messenger.yaml
@@ -46,4 +47,12 @@ Of course you can integrate ProcessUI CRUD into your own easy admin Dashboard
         /* ... your configuration */
         yield MenuItem::linkToCrud('History', null, ProcessExecution::class);
     }
+```
+
+**Configuration**
+```yaml
+clever_age_process_ui:
+  index_logs:
+  enabled: false
+  level: ERROR #Minimum log level to index. Allowed values are DEBUG, INFO, NOTICE, WARNING, ERROR, CRITICAL, ALERT, EMERGENCY
 ```

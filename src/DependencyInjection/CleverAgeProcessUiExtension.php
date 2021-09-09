@@ -13,6 +13,11 @@ class CleverAgeProcessUiExtension extends Extension implements PrependExtensionI
     {
         $loader = new YamlFileLoader($container, new FileLocator(__DIR__.'/../../config'));
         $loader->load('services.yaml');
+
+        $configuration = new Configuration();
+        $config = $this->processConfiguration($configuration, $configs);
+        $container->setParameter('clever_age_process_ui.index_logs.enabled', $config['index_logs']['enabled']);
+        $container->setParameter('clever_age_process_ui.index_logs.level', $config['index_logs']['level']);
     }
 
     /**

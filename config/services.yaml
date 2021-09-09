@@ -9,6 +9,8 @@ services:
     autoconfigure: true
     bind:
       $processLogDir: '%process_logs_dir%'
+      $indexLogs: '%clever_age_process_ui.index_logs.enabled%'
+      $indexLogsLevel: '%clever_age_process_ui.index_logs.level%'
 
   CleverAge\ProcessUiBundle\:
     resource: '../src'

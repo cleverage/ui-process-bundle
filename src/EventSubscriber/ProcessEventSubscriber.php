@@ -24,12 +24,15 @@ class ProcessEventSubscriber implements EventSubscriberInterface
 
     protected string $processLogDir;
 
+    protected bool $indexLogs;
+
     public function __construct(
         EntityManagerInterface $entityManager,
         ProcessConfigurationRegistry $processConfigurationRegistry,
         ProcessLogHandler $processLogHandler,
         MessageBusInterface $messageBus,
-        string $processLogDir
+        string $processLogDir,
+        bool $indexLogs
     )
     {
         $this->entityManager = $entityManager;
@@ -37,6 +40,7 @@ class ProcessEventSubscriber implements EventSubscriberInterface
         $this->processLogHandler = $processLogHandler;
         $this->messageBus = $messageBus;
         $this->processLogDir = $processLogDir;
+        $this->indexLogs = $indexLogs;
     }
 
     public static function getSubscribedEvents(): array
@@ -98,19 +102,21 @@ class ProcessEventSubscriber implements EventSubscriberInterface
 
     protected function dispatchLogIndexerMessage(ProcessExecution $processExecution): void
     {
-        $filePath = $this->processLogDir . DIRECTORY_SEPARATOR . $processExecution->getLog();
-        $file = new \SplFileObject($filePath);
-        $file->seek(PHP_INT_MAX);
-        $chunkSize = LogIndexerMessage::DEFAULT_OFFSET;
-        $chunk = (int)($file->key() / $chunkSize) + 1;
-        for($i=0; $i < $chunk; $i++) {
-            $this->messageBus->dispatch(
-                new LogIndexerMessage(
-                    $processExecution->getId(),
-                    $this->processLogDir. DIRECTORY_SEPARATOR . $processExecution->getLog(),
-                    $i * $chunkSize
-                )
-            );
+        if ($this->indexLogs) {
+            $filePath = $this->processLogDir . DIRECTORY_SEPARATOR . $processExecution->getLog();
+            $file     = new \SplFileObject($filePath);
+            $file->seek(PHP_INT_MAX);
+            $chunkSize = LogIndexerMessage::DEFAULT_OFFSET;
+            $chunk     = (int)($file->key() / $chunkSize) + 1;
+            for ($i = 0; $i < $chunk; $i++) {
+                $this->messageBus->dispatch(
+                    new LogIndexerMessage(
+                        $processExecution->getId(),
+                        $this->processLogDir . DIRECTORY_SEPARATOR . $processExecution->getLog(),
+                        $i * $chunkSize
+                    )
+                );
+            }
         }
     }
 }
