@@ -17,6 +17,7 @@ class DashboardController extends AbstractDashboardController
     #[Route('/', name: 'process_admin')]
     public function index(): Response
     {
+        /** @var AdminUrlGenerator $routeBuilder */
         $routeBuilder = $this->get(AdminUrlGenerator::class);
 
         return $this->redirect($routeBuilder->setController(ProcessExecutionCrudController::class)->generateUrl());

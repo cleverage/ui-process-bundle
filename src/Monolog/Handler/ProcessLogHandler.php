@@ -3,7 +3,6 @@
 namespace CleverAge\ProcessUiBundle\Monolog\Handler;
 
 use CleverAge\ProcessUiBundle\Entity\ProcessExecution;
-use CleverAge\ProcessUiBundle\Entity\ProcessExecutionLogRecord;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 
@@ -52,12 +51,12 @@ class ProcessLogHandler extends StreamHandler
     }
 
     /**
-     * {@inheritdoc}
+     * @param array <int, mixed> $record
      */
     public function write(array $record): void
     {
-        if (!$this->url) {
-            $this->url = $this->getRealPath($this->getLogFilename());
+        if (!$this->url && null !== $logFileName = $this->getLogFilename()) {
+            $this->url = $this->getRealPath($logFileName);
         }
 
         if (
@@ -78,7 +77,7 @@ class ProcessLogHandler extends StreamHandler
         return sprintf('process_%s.log', sha1(uniqid((string)mt_rand(), true)));
     }
 
-    public function getLogFilename(): string
+    public function getLogFilename(): ?string
     {
         return $this->logFilename;
     }

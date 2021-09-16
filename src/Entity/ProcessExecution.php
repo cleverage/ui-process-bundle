@@ -4,11 +4,9 @@ namespace CleverAge\ProcessUiBundle\Entity;
 
 use CleverAge\ProcessUiBundle\Repository\ProcessExecutionRepository;
 use DateTimeInterface;
-use DateTimeZone;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use Doctrine\ORM\PersistentCollection;
 
 /**
  * @ORM\Entity(repositoryClass=ProcessExecutionRepository::class)
@@ -73,6 +71,7 @@ class ProcessExecution
 
     /**
      * @ORM\OneToMany(targetEntity="ProcessExecutionLogRecord", mappedBy="processExecution", cascade={"persist"})
+     * @var Collection<int, ProcessExecutionLogRecord>
      */
     private Collection $logRecords;
 
@@ -202,11 +201,17 @@ class ProcessExecution
         $this->logRecords->add($processExecutionLogRecord);
     }
 
+    /**
+     * @return Collection<int, ProcessExecutionLogRecord>
+     */
     public function getLogRecords(): Collection
     {
         return $this->logRecords;
     }
 
+    /**
+     * @param Collection<int, ProcessExecutionLogRecord> $logRecords
+     */
     public function setLogRecords(Collection $logRecords): ProcessExecution
     {
         foreach ($logRecords as $logRecord) {

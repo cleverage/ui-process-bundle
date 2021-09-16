@@ -102,7 +102,7 @@ class ProcessEventSubscriber implements EventSubscriberInterface
 
     protected function dispatchLogIndexerMessage(ProcessExecution $processExecution): void
     {
-        if ($this->indexLogs) {
+        if ($this->indexLogs && null !== $processExecutionId = $processExecution->getId()) {
             $filePath = $this->processLogDir . DIRECTORY_SEPARATOR . $processExecution->getLog();
             $file     = new \SplFileObject($filePath);
             $file->seek(PHP_INT_MAX);
@@ -111,7 +111,7 @@ class ProcessEventSubscriber implements EventSubscriberInterface
             for ($i = 0; $i < $chunk; $i++) {
                 $this->messageBus->dispatch(
                     new LogIndexerMessage(
-                        $processExecution->getId(),
+                        $processExecutionId,
                         $this->processLogDir . DIRECTORY_SEPARATOR . $processExecution->getLog(),
                         $i * $chunkSize
                     )

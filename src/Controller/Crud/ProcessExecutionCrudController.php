@@ -16,6 +16,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\Field;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\ChoiceFilter;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class ProcessExecutionCrudController extends AbstractCrudController
 {
@@ -23,12 +24,22 @@ class ProcessExecutionCrudController extends AbstractCrudController
 
     private bool $indexLogs;
 
+    private string $processLogDir;
+
     /**
      * @required
      */
     public function setIndexLogs(bool $indexLogs): void
     {
         $this->indexLogs = $indexLogs;
+    }
+
+    /**
+     * @required
+     */
+    public function setProcessLogDir(string $processLogDir): void
+    {
+        $this->processLogDir = $processLogDir;
     }
 
     /**
@@ -54,6 +65,9 @@ class ProcessExecutionCrudController extends AbstractCrudController
         return $crud;
     }
 
+    /**
+     * @return array <int, string|Field|IntegerField>
+     */
     public function configureFields(string $pageName): array
     {
 
@@ -64,6 +78,7 @@ class ProcessExecutionCrudController extends AbstractCrudController
             'startDate',
             'endDate',
             IntegerField::new('status')->formatValue(static function (int $value) {
+                /** @phpstan-ignore-next-line */
                 return match ($value) {
                     ProcessExecution::STATUS_FAIL => '<button class="btn btn-danger btn-lm">failed</button>',
                     ProcessExecution::STATUS_START => '<button class="btn btn-warning btn-lm">started</button>',
@@ -121,9 +136,13 @@ class ProcessExecutionCrudController extends AbstractCrudController
     {
         /** @var ProcessExecution $processExecution */
         $processExecution = $context->getEntity()->getInstance();
-        $filepath = $this->getParameter('process_logs_dir') . DIRECTORY_SEPARATOR . $processExecution->getLog();
+        $filepath = $this->processLogDir . DIRECTORY_SEPARATOR . $processExecution->getLog();
         $basename = basename($filepath);
-        $response = new Response(file_get_contents($filepath));
+        $content = file_get_contents($filepath);
+        if (false === $content) {
+            throw new NotFoundHttpException("Log file not found.");
+        }
+        $response = new Response($content);
         $response->headers->set('Content-Type', 'text/plain; charset=utf-8');
         $response->headers->set('Content-Disposition', "attachment; filename=\"$basename\"");
 

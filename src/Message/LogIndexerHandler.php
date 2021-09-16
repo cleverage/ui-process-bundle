@@ -20,7 +20,7 @@ class LogIndexerHandler implements MessageHandlerInterface
         $this->managerRegistry = $managerRegistry;
     }
 
-    public function __invoke(LogIndexerMessage $logIndexerMessage)
+    public function __invoke(LogIndexerMessage $logIndexerMessage): void
     {
         /** @var EntityManagerInterface $manager */
         $manager = $this->managerRegistry->getManagerForClass(ProcessExecutionLogRecord::class);
@@ -31,7 +31,9 @@ class LogIndexerHandler implements MessageHandlerInterface
         $parser = new LineLogParser();
         $parameters = [];
         while ($offset > 0 && !$file->eof()) {
-            $parsedLine = $parser->parse($file->current());
+            /** @var string $currentLine */
+            $currentLine = $file->current();
+            $parsedLine = $parser->parse($currentLine);
             if (!empty($parsedLine) && true === ($parsedLine['context'][self::INDEX_LOG_RECORD] ?? false)) {
                 $parameters[] = $logIndexerMessage->getProcessExecutionId();
                 $parameters[] = Logger::toMonologLevel($parsedLine['level']);
@@ -40,7 +42,7 @@ class LogIndexerHandler implements MessageHandlerInterface
             $file->next();
             --$offset;
         }
-        $statement = $this->getStatement($table, count($parameters) / 3);
+        $statement = $this->getStatement($table, (int)(count($parameters) / 3));
         $manager->getConnection()->executeStatement($statement, $parameters);
     }
 

@@ -6,8 +6,9 @@ use CleverAge\ProcessUiBundle\Entity\ProcessExecution;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
-use function Doctrine\ORM\QueryBuilder;
-
+/**
+ * @extends ServiceEntityRepository<ProcessExecution>
+ */
 class ProcessExecutionRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -15,6 +16,9 @@ class ProcessExecutionRepository extends ServiceEntityRepository
         parent::__construct($registry, ProcessExecution::class);
     }
 
+    /**
+     * @return array <string, string>
+     */
     public function getProcessCodeChoices(): array
     {
         $choices = [];
@@ -22,12 +26,15 @@ class ProcessExecutionRepository extends ServiceEntityRepository
         $qb->distinct(true);
         $qb->select('pe.processCode');
         foreach ($qb->getQuery()->getArrayResult() as $result) {
-            $choices[$result['processCode']] = $result['processCode'];
+            $choices[(string)$result['processCode']] = (string)$result['processCode'];
         }
 
         return $choices;
     }
 
+    /**
+     * @return array <string, string>
+     */
     public function getSourceChoices(): array
     {
         $choices = [];
@@ -35,12 +42,15 @@ class ProcessExecutionRepository extends ServiceEntityRepository
         $qb->distinct(true);
         $qb->select('pe.source');
         foreach ($qb->getQuery()->getArrayResult() as $result) {
-            $choices[$result['source']] = $result['source'];
+            $choices[(string)$result['source']] = (string)$result['source'];
         }
 
         return $choices;
     }
 
+    /**
+     * @return array <string, string>
+     */
     public function getTargetChoices(): array
     {
         $choices = [];
@@ -48,7 +58,7 @@ class ProcessExecutionRepository extends ServiceEntityRepository
         $qb->distinct(true);
         $qb->select('pe.target');
         foreach ($qb->getQuery()->getArrayResult() as $result) {
-            $choices[$result['target']] = $result['target'];
+            $choices[(string)$result['target']] = (string)$result['target'];
         }
 
         return $choices;

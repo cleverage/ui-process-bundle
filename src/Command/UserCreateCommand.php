@@ -65,8 +65,7 @@ final class UserCreateCommand extends Command
     /**
      * @param string $question
      * @param SymfonyStyle $style
-     * @param array $constraints
-     *
+     * @param array <int, mixed> $constraints
      * @return mixed
      */
     private function ask(string $question, SymfonyStyle $style, array $constraints = []): mixed

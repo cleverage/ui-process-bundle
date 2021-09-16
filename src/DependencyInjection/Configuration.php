@@ -2,7 +2,6 @@
 
 namespace CleverAge\ProcessUiBundle\DependencyInjection;
 
-use Monolog\Logger;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 
