@@ -60,13 +60,15 @@ class ProcessLogHandler extends StreamHandler
             $this->url = $this->getRealPath($this->getLogFilename());
         }
 
-        if ( ! is_dir(dirname($this->url)) && ! mkdir(
+        if (
+            ! is_dir(dirname($this->url)) && ! mkdir(
                 $concurrentDirectory = dirname($this->url),
                 0755,
                 true
-            ) && ! is_dir($concurrentDirectory)) {
+            ) && ! is_dir($concurrentDirectory)
+        ) {
                 throw new \RuntimeException(sprintf('Directory "%s" was not created', $concurrentDirectory));
-            }
+        }
 
         parent::write($record);
     }

@@ -64,7 +64,7 @@ class ProcessExecutionCrudController extends AbstractCrudController
             'startDate',
             'endDate',
             IntegerField::new('status')->formatValue(static function (int $value) {
-                return match($value) {
+                return match ($value) {
                     ProcessExecution::STATUS_FAIL => '<button class="btn btn-danger btn-lm">failed</button>',
                     ProcessExecution::STATUS_START => '<button class="btn btn-warning btn-lm">started</button>',
                     ProcessExecution::STATUS_SUCCESS => '<button class="btn btn-success btn-lm">succcess</button>',
@@ -79,17 +79,17 @@ class ProcessExecutionCrudController extends AbstractCrudController
         $repository = $this->managerRegistry->getRepository(ProcessExecution::class);
 
         $processCodeChoices = $repository->getProcessCodeChoices();
-        if( count($processCodeChoices) > 0) {
+        if (count($processCodeChoices) > 0) {
             $filters->add(ChoiceFilter::new('processCode', 'Process')->setChoices($processCodeChoices));
         }
 
         $sourceChoices = $repository->getSourceChoices();
-        if( count($sourceChoices) > 0) {
+        if (count($sourceChoices) > 0) {
             $filters->add(ChoiceFilter::new('source')->setChoices($sourceChoices));
         }
 
         $targetChoices = $repository->getTargetChoices();
-        if( count($targetChoices) > 0) {
+        if (count($targetChoices) > 0) {
             $filters->add(ChoiceFilter::new('target')->setChoices($targetChoices));
         }
         $filters->add(ChoiceFilter::new('status')->setChoices([

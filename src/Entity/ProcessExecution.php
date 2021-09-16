@@ -95,7 +95,7 @@ class ProcessExecution
 
     public function setProcessCode(?string $processCode): self
     {
-        $this->processCode= $processCode;
+        $this->processCode = $processCode;
 
         return $this;
     }

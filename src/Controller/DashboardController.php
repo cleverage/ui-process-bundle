@@ -1,4 +1,5 @@
 <?php
+
 namespace CleverAge\ProcessUiBundle\Controller;
 
 use CleverAge\ProcessUiBundle\Controller\Crud\ProcessExecutionCrudController;
@@ -34,6 +35,5 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::section();
         yield MenuItem::section('Settings', 'fas fa-tools')->setPermission('ROLE_ADMIN');
         yield MenuItem::linkToCrud('Users', 'fa fa-users', User::class)->setPermission('ROLE_ADMIN');
-
     }
 }

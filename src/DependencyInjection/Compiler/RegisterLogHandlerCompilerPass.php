@@ -1,4 +1,5 @@
 <?php
+
 namespace CleverAge\ProcessUiBundle\DependencyInjection\Compiler;
 
 use CleverAge\ProcessUiBundle\Monolog\Handler\ProcessLogHandler;

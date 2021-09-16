@@ -1,4 +1,5 @@
 <?php
+
 namespace CleverAge\ProcessUiBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;

@@ -1,4 +1,5 @@
 <?php
+
 namespace CleverAge\ProcessUiBundle\Controller\Crud;
 
 use CleverAge\ProcessUiBundle\CleverAgeProcessUiBundle;
@@ -85,11 +86,13 @@ class UserCrudController extends AbstractCrudController
                 return $action->setLabel('Delete')
                     ->addCssClass(CleverAgeProcessUiBundle::CLASS_DELETE);
             });
-
     }
 
-    public function createEditFormBuilder(EntityDto $entityDto, KeyValueStore $formOptions, AdminContext $context): FormBuilderInterface
-    {
+    public function createEditFormBuilder(
+        EntityDto $entityDto,
+        KeyValueStore $formOptions,
+        AdminContext $context
+    ): FormBuilderInterface {
         $formBuilder = parent::createEditFormBuilder($entityDto, $formOptions, $context);
 
         $this->addEncodePasswordEventListener($formBuilder);
@@ -97,8 +100,11 @@ class UserCrudController extends AbstractCrudController
         return $formBuilder;
     }
 
-    public function createNewFormBuilder(EntityDto $entityDto, KeyValueStore $formOptions, AdminContext $context): FormBuilderInterface
-    {
+    public function createNewFormBuilder(
+        EntityDto $entityDto,
+        KeyValueStore $formOptions,
+        AdminContext $context
+    ): FormBuilderInterface {
         $formBuilder = parent::createNewFormBuilder($entityDto, $formOptions, $context);
 
         $this->addEncodePasswordEventListener($formBuilder);

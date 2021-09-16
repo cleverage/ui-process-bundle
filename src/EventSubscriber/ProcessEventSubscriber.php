@@ -1,4 +1,5 @@
 <?php
+
 namespace CleverAge\ProcessUiBundle\EventSubscriber;
 
 use CleverAge\ProcessBundle\Event\ProcessEvent;
@@ -18,7 +19,7 @@ class ProcessEventSubscriber implements EventSubscriberInterface
 
     protected ProcessConfigurationRegistry $processConfigurationRegistry;
 
-    protected ProcessLogHandler$processLogHandler;
+    protected ProcessLogHandler $processLogHandler;
 
     protected MessageBusInterface $messageBus;
 
@@ -33,8 +34,7 @@ class ProcessEventSubscriber implements EventSubscriberInterface
         MessageBusInterface $messageBus,
         string $processLogDir,
         bool $indexLogs
-    )
-    {
+    ) {
         $this->entityManager = $entityManager;
         $this->processConfigurationRegistry = $processConfigurationRegistry;
         $this->processLogHandler = $processLogHandler;

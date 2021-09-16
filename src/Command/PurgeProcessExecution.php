@@ -1,4 +1,5 @@
 <?php
+
 namespace CleverAge\ProcessUiBundle\Command;
 
 use CleverAge\ProcessUiBundle\Entity\ProcessExecution;
@@ -40,8 +41,20 @@ class PurgeProcessExecution extends Command
         $this->setDescription('Purge process_execution table.');
         $this->setDefinition(
             new InputDefinition([
-                new InputOption('days', 'd', InputOption::VALUE_OPTIONAL, 'Days to keep. Default 180', 180),
-                new InputOption('remove-files', 'rf', InputOption::VALUE_NEGATABLE, 'Remove log files ? (default false)', false)
+                new InputOption(
+                    'days',
+                    'd',
+                    InputOption::VALUE_OPTIONAL,
+                    'Days to keep. Default 180',
+                    180
+                ),
+                new InputOption(
+                    'remove-files',
+                    'rf',
+                    InputOption::VALUE_NEGATABLE,
+                    'Remove log files ? (default false)',
+                    false
+                )
             ])
         );
     }
@@ -64,7 +77,9 @@ class PurgeProcessExecution extends Command
         $repository = $this->managerRegistry->getRepository(ProcessExecution::class);
         $repository->deleteBefore($date);
 
-        $output->writeln('<info>Process Execution before '.$date->format(\DateTime::ATOM).' are deleted into database.</info>');
+        $output->writeln(<<<EOT
+'<info>Process Execution before ' . $date->format(\DateTime::ATOM) . ' are deleted into database.</info>');
+EOT);
         return Command::SUCCESS;
     }
 }

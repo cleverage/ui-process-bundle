@@ -1,4 +1,5 @@
 <?php
+
 namespace CleverAge\ProcessUiBundle;
 
 use CleverAge\ProcessUiBundle\DependencyInjection\Compiler\RegisterLogHandlerCompilerPass;

@@ -1,4 +1,5 @@
 <?php
+
 namespace CleverAge\ProcessUiBundle\DependencyInjection;
 
 use Monolog\Logger;
@@ -17,12 +18,6 @@ class Configuration implements ConfigurationInterface
                     ->addDefaultsIfNotSet()
                     ->children()
                         ->booleanNode('enabled')->defaultFalse()->end()
-                        ->scalarNode('level')
-                            ->defaultValue('ERROR')
-                            ->validate()
-                                ->ifNotInArray(array_flip(Logger::getLevels()))
-                                ->thenInvalid('Invalid log level. Valid levels are '. implode(', ', array_flip(Logger::getLevels())))
-                        ->end()
                     ->end();
 
         return $treeBuilder;

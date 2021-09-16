@@ -1,4 +1,5 @@
 <?php
+
 namespace CleverAge\ProcessUiBundle\Message;
 
 class LogIndexerMessage
@@ -13,8 +14,12 @@ class LogIndexerMessage
 
     private int $offset;
 
-    public function __construct(int $processExecutionId, string $logPath, int $start, int $offset = self::DEFAULT_OFFSET)
-    {
+    public function __construct(
+        int $processExecutionId,
+        string $logPath,
+        int $start,
+        int $offset = self::DEFAULT_OFFSET
+    ) {
         $this->processExecutionId = $processExecutionId;
         $this->logPath = $logPath;
         $this->start = $start;
