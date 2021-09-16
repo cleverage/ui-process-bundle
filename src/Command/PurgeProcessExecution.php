@@ -78,7 +78,7 @@ class PurgeProcessExecution extends Command
         $repository->deleteBefore($date);
 
         $output->writeln(<<<EOT
-'<info>Process Execution before ' . $date->format(\DateTime::ATOM) . ' are deleted into database.</info>');
+<info>Process Execution before {$date->format(\DateTime::ATOM)} are deleted into database.</info>
 EOT);
         return Command::SUCCESS;
     }
