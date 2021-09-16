@@ -18,6 +18,3 @@ services:
       - '../src/Entity/'
       - '../src/Tests/'
       - '../src/Migrations'
-
-  CleverAge\ProcessUiBundle\Monolog\Handler\ProcessLogHandler:
-    arguments: ['%process_logs_dir%']

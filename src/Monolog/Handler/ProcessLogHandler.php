@@ -2,88 +2,51 @@
 
 namespace CleverAge\ProcessUiBundle\Monolog\Handler;
 
-use CleverAge\ProcessUiBundle\Entity\ProcessExecution;
-use Monolog\Handler\StreamHandler;
-use Monolog\Logger;
+use League\Flysystem\Filesystem;
+use League\Flysystem\FilesystemException;
+use League\Flysystem\Local\LocalFilesystemAdapter;
+use Monolog\Handler\AbstractProcessingHandler;
 
-class ProcessLogHandler extends StreamHandler
+class ProcessLogHandler extends AbstractProcessingHandler
 {
     private string $logDir;
 
     private ?string $logFilename;
 
-    private ?ProcessExecution $processExecution;
+    private ?Filesystem $filesystem = null;
 
-    public function __construct(string $logDir)
+    /**
+     * @required
+     */
+    public function setLogDir(string $processLogDir): void
     {
-        $this->logDir = $logDir;
-
-        $this->filePermission = null;
-        $this->useLocking = false;
-        $this->bubble = true;
-
-        $this->setLevel(Logger::DEBUG);
+        $this->logDir = $processLogDir;
     }
 
     /**
-     * Get the filename of the log file
+     * @param array <string, mixed> $record
+     * @throws FilesystemException
      */
-    public function getFilename(): string
+    protected function write(array $record): void
     {
-        return (string) $this->url;
-    }
-
-    public function setSubDirectory(string $subDirectory): void
-    {
-        $this->url = $this->getRealPath($this->generateLogFilename(), $subDirectory);
-    }
-
-    /**
-     * Get the real path of the log file
-     */
-    public function getRealPath(string $filename, ?string $subDirectory = null): string
-    {
-        if ($subDirectory) {
-            return sprintf('%s/%s/%s', $this->logDir, $subDirectory, $filename);
+        if (null === $logFilename = $this->logFilename) {
+            return;
         }
-
-        return sprintf('%s/%s', $this->logDir, $filename);
-    }
-
-    /**
-     * @param array <int, mixed> $record
-     */
-    public function write(array $record): void
-    {
-        if (!$this->url && null !== $logFileName = $this->getLogFilename()) {
-            $this->url = $this->getRealPath($logFileName);
+        if (null === $this->filesystem) {
+            $this->filesystem = new Filesystem(
+                new LocalFilesystemAdapter($this->logDir, null, FILE_APPEND)
+            );
         }
-
-        if (
-            ! is_dir(dirname($this->url)) && ! mkdir(
-                $concurrentDirectory = dirname($this->url),
-                0755,
-                true
-            ) && ! is_dir($concurrentDirectory)
-        ) {
-                throw new \RuntimeException(sprintf('Directory "%s" was not created', $concurrentDirectory));
-        }
-
-        parent::write($record);
-    }
-
-    private function generateLogFilename(): string
-    {
-        return sprintf('process_%s.log', sha1(uniqid((string)mt_rand(), true)));
-    }
-
-    public function getLogFilename(): ?string
-    {
-        return $this->logFilename;
+        $this->filesystem->write($logFilename, $record['formatted']);
     }
 
     public function setLogFilename(string $logFilename): void
     {
         $this->logFilename = $logFilename;
+    }
+
+    public function getLogFilename(): ?string
+    {
+        return $this->logFilename;
     }
 }
