@@ -3,6 +3,7 @@
 namespace CleverAge\ProcessUiBundle\Controller\Crud;
 
 use CleverAge\ProcessUiBundle\Entity\ProcessExecution;
+use CleverAge\ProcessUiBundle\Manager\ProcessUiConfigurationManager;
 use CleverAge\ProcessUiBundle\Repository\ProcessExecutionRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
@@ -26,6 +27,8 @@ class ProcessExecutionCrudController extends AbstractCrudController
 
     private string $processLogDir;
 
+    private ProcessUiConfigurationManager $processUiConfigurationManager;
+
     /**
      * @required
      */
@@ -48,6 +51,14 @@ class ProcessExecutionCrudController extends AbstractCrudController
     public function setManagerRegistry(ManagerRegistry $managerRegistry): void
     {
         $this->managerRegistry = $managerRegistry;
+    }
+
+    /**
+     * @required true
+     */
+    public function setProcessUiConfigurationManager(ProcessUiConfigurationManager $processUiConfigurationManager): void
+    {
+        $this->processUiConfigurationManager = $processUiConfigurationManager;
     }
 
     public static function getEntityFqcn(): string
@@ -90,20 +101,17 @@ class ProcessExecutionCrudController extends AbstractCrudController
 
     public function configureFilters(Filters $filters): Filters
     {
-        /** @var ProcessExecutionRepository $repository */
-        $repository = $this->managerRegistry->getRepository(ProcessExecution::class);
-
-        $processCodeChoices = $repository->getProcessCodeChoices();
+        $processCodeChoices = $this->processUiConfigurationManager->getProcessChoices();
         if (count($processCodeChoices) > 0) {
             $filters->add(ChoiceFilter::new('processCode', 'Process')->setChoices($processCodeChoices));
         }
 
-        $sourceChoices = $repository->getSourceChoices();
+        $sourceChoices = $this->processUiConfigurationManager->getSourceChoices();
         if (count($sourceChoices) > 0) {
             $filters->add(ChoiceFilter::new('source')->setChoices($sourceChoices));
         }
 
-        $targetChoices = $repository->getTargetChoices();
+        $targetChoices = $this->processUiConfigurationManager->getTargetChoices();
         if (count($targetChoices) > 0) {
             $filters->add(ChoiceFilter::new('target')->setChoices($targetChoices));
         }

@@ -2,6 +2,8 @@
 
 namespace CleverAge\ProcessUiBundle\DependencyInjection;
 
+use CleverAge\ProcessUiBundle\Message\LogIndexerMessage;
+use CleverAge\ProcessUiBundle\Message\ProcessRunMessage;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\Extension;
@@ -34,7 +36,25 @@ class CleverAgeProcessUiExtension extends Extension implements PrependExtensionI
         $container->loadFromExtension(
             'framework',
             [
-                'assets' => ['json_manifest_path' => null]
+                'assets' => ['json_manifest_path' => null],
+                'messenger' => [
+                    'transport' => [
+                        [
+                            'name' => 'run_process',
+                            'dsn' => 'doctrine://default',
+                            'retry_strategy' => ['max_retries' => 0]
+                        ],
+                        [
+                            'name' => 'index_logs',
+                            'dsn' => 'doctrine://default',
+                            'retry_strategy' => ['max_retries' => 0]
+                        ]
+                    ],
+                    'routing' => [
+                        ProcessRunMessage::class => 'run_process',
+                        LogIndexerMessage::class => 'index_logs'
+                    ]
+                ]
             ]
         );
     }

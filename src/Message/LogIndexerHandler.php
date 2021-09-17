@@ -42,8 +42,10 @@ class LogIndexerHandler implements MessageHandlerInterface
             $file->next();
             --$offset;
         }
-        $statement = $this->getStatement($table, (int)(count($parameters) / 3));
-        $manager->getConnection()->executeStatement($statement, $parameters);
+        if (count($parameters) > 0) {
+            $statement = $this->getStatement($table, (int)(count($parameters) / 3));
+            $manager->getConnection()->executeStatement($statement, $parameters);
+        }
     }
 
     private function getStatement(string $table, int $size): string

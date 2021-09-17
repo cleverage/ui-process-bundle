@@ -3,6 +3,7 @@
 namespace CleverAge\ProcessUiBundle\Entity;
 
 use CleverAge\ProcessUiBundle\Repository\ProcessExecutionRepository;
+use DateTime;
 use DateTimeInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -70,15 +71,22 @@ class ProcessExecution
     private ?string $log;
 
     /**
+     * @ORM\ManyToOne(targetEntity="CleverAge\ProcessUiBundle\Entity\Process", inversedBy="executions")
+     * @ORM\JoinColumn(name="process_id", referencedColumnName="id", onDelete="SET NULL")
+     */
+    private Process $process;
+
+    /**
      * @ORM\OneToMany(targetEntity="ProcessExecutionLogRecord", mappedBy="processExecution", cascade={"persist"})
      * @var Collection<int, ProcessExecutionLogRecord>
      */
     private Collection $logRecords;
 
-    public function __construct()
+    public function __construct(Process $process)
     {
+        $this->process = $process;
         $this->status = self::STATUS_START;
-        $this->startDate = new \DateTime();
+        $this->startDate = new DateTime();
         $this->logRecords = new ArrayCollection();
     }
 
@@ -123,7 +131,7 @@ class ProcessExecution
         return $this;
     }
 
-    public function getStartDate(): \DateTimeInterface
+    public function getStartDate(): DateTimeInterface
     {
         return $this->startDate;
     }
@@ -135,7 +143,7 @@ class ProcessExecution
         return $this;
     }
 
-    public function getEndDate(): ?\DateTimeInterface
+    public function getEndDate(): ?DateTimeInterface
     {
         return $this->endDate;
     }
@@ -211,6 +219,7 @@ class ProcessExecution
 
     /**
      * @param Collection<int, ProcessExecutionLogRecord> $logRecords
+     * @return ProcessExecution
      */
     public function setLogRecords(Collection $logRecords): ProcessExecution
     {
@@ -219,5 +228,10 @@ class ProcessExecution
         }
 
         return $this;
+    }
+
+    public function getProcess(): Process
+    {
+        return $this->process;
     }
 }

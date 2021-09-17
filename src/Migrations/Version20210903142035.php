@@ -70,15 +70,33 @@ ALTER TABLE process_execution_log_record
             REFERENCES process_execution (id) 
             ON DELETE CASCADE
 SQL);
+        $this->addSql(<<<SQL
+CREATE TABLE process 
+    (
+        id INT AUTO_INCREMENT NOT NULL, 
+        process_code TINYTEXT NOT NULL, 
+        source TINYTEXT DEFAULT NULL, 
+        target TINYTEXT DEFAULT NULL, 
+        last_execution_date DATETIME DEFAULT NULL, 
+        last_execution_status INT DEFAULT NULL, 
+        PRIMARY KEY(id)) 
+        DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
+SQL);
+        $this->addSql('ALTER TABLE process_execution ADD process_id INT DEFAULT NULL');
+        $this->addSql(<<<SQL
+ALTER TABLE process_execution 
+    ADD CONSTRAINT FK_98E995D27EC2F574 
+        FOREIGN KEY (process_id) REFERENCES process (id) ON DELETE SET NULL
+SQL);
+        $this->addSql('CREATE INDEX IDX_98E995D27EC2F574 ON process_execution (process_id)');
     }
 
     public function down(Schema $schema): void
     {
         // this down() migration is auto-generated, please modify it to your needs
-        $this->addSql('ALTER TABLE process_execution_log_record DROP FOREIGN KEY FK_F7C4B6683DAC0075');
+        $this->addSql('DROP TABLE process');
         $this->addSql('DROP TABLE process_execution');
         $this->addSql('DROP TABLE process_execution_log_record');
         $this->addSql('DROP TABLE user');
-        $this->addSql('DROP TABLE messenger_messages');
     }
 }

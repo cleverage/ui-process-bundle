@@ -2,7 +2,8 @@
 
 namespace CleverAge\ProcessUiBundle\Controller;
 
-use CleverAge\ProcessUiBundle\Controller\Crud\ProcessExecutionCrudController;
+use CleverAge\ProcessUiBundle\Controller\Crud\ProcessCrudController;
+use CleverAge\ProcessUiBundle\Entity\Process;
 use CleverAge\ProcessUiBundle\Entity\ProcessExecution;
 use CleverAge\ProcessUiBundle\Entity\User;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Dashboard;
@@ -20,7 +21,7 @@ class DashboardController extends AbstractDashboardController
         /** @var AdminUrlGenerator $routeBuilder */
         $routeBuilder = $this->get(AdminUrlGenerator::class);
 
-        return $this->redirect($routeBuilder->setController(ProcessExecutionCrudController::class)->generateUrl());
+        return $this->redirect($routeBuilder->setController(ProcessCrudController::class)->generateUrl());
     }
 
     public function configureDashboard(): Dashboard
@@ -31,6 +32,7 @@ class DashboardController extends AbstractDashboardController
     public function configureMenuItems(): iterable
     {
         yield MenuItem::section('Process', 'fas fa-tasks')->setPermission('ROLE_ADMIN');
+        yield MenuItem::linkToCrud('List', 'fa fa-list', Process::class)->setPermission('ROLE_ADMIN');
         yield MenuItem::linkToCrud('History', 'fa fa-history', ProcessExecution::class)->setPermission('ROLE_ADMIN');
 
         yield MenuItem::section();

@@ -11,7 +11,7 @@ class ProcessLogHandler extends AbstractProcessingHandler
 {
     private string $logDir;
 
-    private ?string $logFilename;
+    private ?string $logFilename = null;
 
     private ?Filesystem $filesystem = null;
 
