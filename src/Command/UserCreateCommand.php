@@ -21,9 +21,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 final class UserCreateCommand extends Command
 {
     private ValidatorInterface $validator;
-
     private UserPasswordHasherInterface $passwordEncoder;
-
     private EntityManagerInterface $em;
 
     public function __construct(

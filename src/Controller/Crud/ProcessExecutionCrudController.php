@@ -4,8 +4,6 @@ namespace CleverAge\ProcessUiBundle\Controller\Crud;
 
 use CleverAge\ProcessUiBundle\Entity\ProcessExecution;
 use CleverAge\ProcessUiBundle\Manager\ProcessUiConfigurationManager;
-use CleverAge\ProcessUiBundle\Repository\ProcessExecutionRepository;
-use Doctrine\Persistence\ManagerRegistry;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
@@ -21,12 +19,8 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class ProcessExecutionCrudController extends AbstractCrudController
 {
-    private ManagerRegistry $managerRegistry;
-
     private bool $indexLogs;
-
     private string $processLogDir;
-
     private ProcessUiConfigurationManager $processUiConfigurationManager;
 
     /**
@@ -43,14 +37,6 @@ class ProcessExecutionCrudController extends AbstractCrudController
     public function setProcessLogDir(string $processLogDir): void
     {
         $this->processLogDir = $processLogDir;
-    }
-
-    /**
-     * @required
-     */
-    public function setManagerRegistry(ManagerRegistry $managerRegistry): void
-    {
-        $this->managerRegistry = $managerRegistry;
     }
 
     /**

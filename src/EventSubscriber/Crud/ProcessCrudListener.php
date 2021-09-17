@@ -12,12 +12,15 @@ class ProcessCrudListener implements EventSubscriberInterface
 {
     private EntityManagerInterface $entityManager;
 
-    public function __construct(EntityManagerInterface $entityManager,)
+    public function __construct(EntityManagerInterface $entityManager)
     {
         $this->entityManager = $entityManager;
     }
 
-    public static function getSubscribedEvents()
+    /**
+     * @return array <string, string>
+     */
+    public static function getSubscribedEvents(): array
     {
         return [BeforeCrudActionEvent::class => 'syncProcessIntoDatabase'];
     }

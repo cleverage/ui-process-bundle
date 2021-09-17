@@ -16,7 +16,6 @@ use Symfony\Component\Finder\Finder;
 class PurgeProcessExecution extends Command
 {
     private ManagerRegistry $managerRegistry;
-
     private string $processLogDir;
 
     /**

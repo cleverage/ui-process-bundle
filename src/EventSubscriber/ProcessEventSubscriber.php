@@ -3,33 +3,31 @@
 namespace CleverAge\ProcessUiBundle\EventSubscriber;
 
 use CleverAge\ProcessBundle\Event\ProcessEvent;
-use CleverAge\ProcessBundle\Registry\ProcessConfigurationRegistry;
 use CleverAge\ProcessUiBundle\Entity\Process;
 use CleverAge\ProcessUiBundle\Entity\ProcessExecution;
 use CleverAge\ProcessUiBundle\Manager\ProcessUiConfigurationManager;
 use CleverAge\ProcessUiBundle\Message\LogIndexerMessage;
 use CleverAge\ProcessUiBundle\Monolog\Handler\ProcessLogHandler;
 use CleverAge\ProcessUiBundle\Repository\ProcessRepository;
+use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use RuntimeException;
+use SplFileObject;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
 
 class ProcessEventSubscriber implements EventSubscriberInterface
 {
-    protected ?ProcessExecution $processExecution = null;
-    protected EntityManagerInterface $entityManager;
-    protected ProcessConfigurationRegistry $processConfigurationRegistry;
-    protected ProcessLogHandler $processLogHandler;
-    protected MessageBusInterface $messageBus;
-    protected ProcessUiConfigurationManager $processUiConfigurationManager;
-    protected string $processLogDir;
-
-    protected bool $indexLogs;
+    private ?ProcessExecution $processExecution = null;
+    private EntityManagerInterface $entityManager;
+    private ProcessLogHandler $processLogHandler;
+    private MessageBusInterface $messageBus;
+    private ProcessUiConfigurationManager $processUiConfigurationManager;
+    private string $processLogDir;
+    private bool $indexLogs;
 
     public function __construct(
         EntityManagerInterface $entityManager,
-        ProcessConfigurationRegistry $processConfigurationRegistry,
         ProcessLogHandler $processLogHandler,
         MessageBusInterface $messageBus,
         ProcessUiConfigurationManager $processUiConfigurationManager,
@@ -37,7 +35,6 @@ class ProcessEventSubscriber implements EventSubscriberInterface
         bool $indexLogs
     ) {
         $this->entityManager = $entityManager;
-        $this->processConfigurationRegistry = $processConfigurationRegistry;
         $this->processLogHandler = $processLogHandler;
         $this->messageBus = $messageBus;
         $this->processUiConfigurationManager = $processUiConfigurationManager;
@@ -83,10 +80,10 @@ class ProcessEventSubscriber implements EventSubscriberInterface
         $this->entityManager->flush();
     }
 
-    public function onProcessEnded(ProcessEvent $event): void
+    public function onProcessEnded(): void
     {
         if ($this->processExecution) {
-            $this->processExecution->setEndDate(new \DateTime());
+            $this->processExecution->setEndDate(new DateTime());
             $this->processExecution->setStatus(ProcessExecution::STATUS_SUCCESS);
             $this->processExecution->getProcess()->setLastExecutionDate($this->processExecution->getStartDate());
             $this->processExecution->getProcess()->setLastExecutionStatus(
@@ -99,10 +96,10 @@ class ProcessEventSubscriber implements EventSubscriberInterface
         }
     }
 
-    public function onProcessFailed(ProcessEvent $event): void
+    public function onProcessFailed(): void
     {
         if ($this->processExecution) {
-            $this->processExecution->setEndDate(new \DateTime());
+            $this->processExecution->setEndDate(new DateTime());
             $this->processExecution->setStatus(ProcessExecution::STATUS_FAIL);
             $this->processExecution->getProcess()->setLastExecutionDate($this->processExecution->getStartDate());
             $this->processExecution->getProcess()->setLastExecutionStatus(ProcessExecution::STATUS_FAIL);
@@ -113,7 +110,7 @@ class ProcessEventSubscriber implements EventSubscriberInterface
         }
     }
 
-    public function syncProcessIntoDatabase(ProcessEvent $event): void
+    public function syncProcessIntoDatabase(): void
     {
         /** @var ProcessRepository $repository */
         $repository = $this->entityManager->getRepository(Process::class);
@@ -124,7 +121,7 @@ class ProcessEventSubscriber implements EventSubscriberInterface
     {
         if ($this->indexLogs && null !== $processExecutionId = $processExecution->getId()) {
             $filePath = $this->processLogDir . DIRECTORY_SEPARATOR . $processExecution->getLog();
-            $file     = new \SplFileObject($filePath);
+            $file     = new SplFileObject($filePath);
             $file->seek(PHP_INT_MAX);
             $chunkSize = LogIndexerMessage::DEFAULT_OFFSET;
             $chunk     = (int)($file->key() / $chunkSize) + 1;

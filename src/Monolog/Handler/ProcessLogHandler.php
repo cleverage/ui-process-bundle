@@ -10,9 +10,7 @@ use Monolog\Handler\AbstractProcessingHandler;
 class ProcessLogHandler extends AbstractProcessingHandler
 {
     private string $logDir;
-
     private ?string $logFilename = null;
-
     private ?Filesystem $filesystem = null;
 
     /**

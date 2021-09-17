@@ -2,7 +2,6 @@
 
 namespace CleverAge\ProcessUiBundle\Controller\Crud;
 
-use CleverAge\ProcessUiBundle\Controller\DashboardController;
 use CleverAge\ProcessUiBundle\Entity\Process;
 use CleverAge\ProcessUiBundle\Entity\ProcessExecution;
 use CleverAge\ProcessUiBundle\Manager\ProcessUiConfigurationManager;
