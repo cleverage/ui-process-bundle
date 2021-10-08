@@ -5,6 +5,7 @@
   "description": "UI for cleverage/process-bundle",
   "minimum-stability": "dev",
   "prefer-stable": true,
+  "version": "dev-develop",
   "authors": [
     {
       "name": "Baudouin Douliery",
