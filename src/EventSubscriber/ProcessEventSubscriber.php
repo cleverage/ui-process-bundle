@@ -5,6 +5,8 @@ namespace CleverAge\ProcessUiBundle\EventSubscriber;
 use CleverAge\ProcessBundle\Event\ProcessEvent;
 use CleverAge\ProcessUiBundle\Entity\Process;
 use CleverAge\ProcessUiBundle\Entity\ProcessExecution;
+use CleverAge\ProcessUiBundle\Event\IncrementReportInfoEvent;
+use CleverAge\ProcessUiBundle\Event\SetReportInfoEvent;
 use CleverAge\ProcessUiBundle\Manager\ProcessUiConfigurationManager;
 use CleverAge\ProcessUiBundle\Message\LogIndexerMessage;
 use CleverAge\ProcessUiBundle\Monolog\Handler\ProcessLogHandler;
@@ -54,6 +56,12 @@ class ProcessEventSubscriber implements EventSubscriberInterface
             ],
             ProcessEvent::EVENT_PROCESS_FAILED => [
                 ['onProcessFailed'],
+            ],
+            IncrementReportInfoEvent::NAME => [
+                ['updateProcessExecutionReport']
+            ],
+            SetReportInfoEvent::NAME => [
+                ['updateProcessExecutionReport']
             ]
         ];
     }
@@ -80,7 +88,7 @@ class ProcessEventSubscriber implements EventSubscriberInterface
         $this->entityManager->flush();
     }
 
-    public function onProcessEnded(): void
+    public function onProcessEnded(ProcessEvent $processEvent): void
     {
         if ($this->processExecution) {
             $this->processExecution->setEndDate(new DateTime());
@@ -96,7 +104,7 @@ class ProcessEventSubscriber implements EventSubscriberInterface
         }
     }
 
-    public function onProcessFailed(): void
+    public function onProcessFailed(ProcessEvent $processEvent): void
     {
         if ($this->processExecution) {
             $this->processExecution->setEndDate(new DateTime());
@@ -134,6 +142,17 @@ class ProcessEventSubscriber implements EventSubscriberInterface
                     )
                 );
             }
+        }
+    }
+
+    public function updateProcessExecutionReport(IncrementReportInfoEvent | SetReportInfoEvent $event): void
+    {
+        if ($this->processExecution) {
+            $report = $this->processExecution->getReport();
+            $event instanceof IncrementReportInfoEvent
+                ? $report[$event->getKey()] = ($report[$event->getKey()] ?? 0) + 1
+                : $report[$event->getKey()] = $event->getValue();
+            $this->processExecution->setReport($report);
         }
     }
 }

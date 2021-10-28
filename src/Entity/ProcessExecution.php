@@ -66,6 +66,11 @@ class ProcessExecution
     private ?string $data;
 
     /**
+     * @ORM\Column(type="json", nullable=true)
+     */
+    private ?array $report;
+
+    /**
      * @ORM\Column(type="string", length=255, nullable=true)
      */
     private ?string $log;
@@ -233,5 +238,17 @@ class ProcessExecution
     public function getProcess(): Process
     {
         return $this->process;
+    }
+
+    public function getReport(): array
+    {
+        return $this->report ?? [];
+    }
+
+    public function setReport(?array $report): ProcessExecution
+    {
+        $this->report = $report;
+        
+        return $this;
     }
 }
