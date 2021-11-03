@@ -20,7 +20,7 @@ use Symfony\Component\Messenger\MessageBusInterface;
 
 class ProcessEventSubscriber implements EventSubscriberInterface
 {
-    private ?ProcessExecution $processExecution = null;
+    private array $processExecution = [];
     private EntityManagerInterface $entityManager;
     private ProcessLogHandler $processLogHandler;
     private MessageBusInterface $messageBus;
@@ -73,48 +73,53 @@ class ProcessEventSubscriber implements EventSubscriberInterface
         if (null === $process) {
             throw new RuntimeException("Unable to found process into database.");
         }
-        $this->processExecution = new ProcessExecution($process);
-        $this->processExecution->setProcessCode($event->getProcessCode());
-        $this->processExecution->setSource($this->processUiConfigurationManager->getSource($event->getProcessCode()));
-        $this->processExecution->setTarget($this->processUiConfigurationManager->getTarget($event->getProcessCode()));
+        $processExecution = new ProcessExecution($process);
+        $processExecution->setProcessCode($event->getProcessCode());
+        $processExecution->setSource($this->processUiConfigurationManager->getSource($event->getProcessCode()));
+        $processExecution->setTarget($this->processUiConfigurationManager->getTarget($event->getProcessCode()));
         $logFilename =  sprintf(
             'process_%s_%s.log',
             $event->getProcessCode(),
             sha1(uniqid((string)mt_rand(), true))
         );
-        $this->processLogHandler->setLogFilename($logFilename);
-        $this->processExecution->setLog($logFilename);
-        $this->entityManager->persist($this->processExecution);
+        $this->processLogHandler->setLogFilename($logFilename, $event->getProcessCode());
+        $this->processLogHandler->setCurrentProcessCode($event->getProcessCode());
+        $processExecution->setLog($logFilename);
+        $this->entityManager->persist($processExecution);
         $this->entityManager->flush();
+        $this->processExecution[$event->getProcessCode()] = $processExecution;
     }
 
     public function onProcessEnded(ProcessEvent $processEvent): void
     {
-        if ($this->processExecution) {
-            $this->processExecution->setEndDate(new DateTime());
-            $this->processExecution->setStatus(ProcessExecution::STATUS_SUCCESS);
-            $this->processExecution->getProcess()->setLastExecutionDate($this->processExecution->getStartDate());
-            $this->processExecution->getProcess()->setLastExecutionStatus(
+        if ($processExecution = ($this->processExecution[$processEvent->getProcessCode()] ?? null)) {
+            $this->processExecution = array_filter($this->processExecution);
+            array_pop($this->processExecution);
+            $this->processLogHandler->setCurrentProcessCode(array_key_last($this->processExecution));
+            $processExecution->setEndDate(new DateTime());
+            $processExecution->setStatus(ProcessExecution::STATUS_SUCCESS);
+            $processExecution->getProcess()->setLastExecutionDate($processExecution->getStartDate());
+            $processExecution->getProcess()->setLastExecutionStatus(
                 ProcessExecution::STATUS_SUCCESS
             );
-            $this->entityManager->persist($this->processExecution);
+            $this->entityManager->persist($processExecution);
             $this->entityManager->flush();
-            $this->dispatchLogIndexerMessage($this->processExecution);
-            $this->processExecution = null;
+            $this->dispatchLogIndexerMessage($processExecution);
+            $this->processExecution[$processEvent->getProcessCode()] = null;
         }
     }
 
     public function onProcessFailed(ProcessEvent $processEvent): void
     {
-        if ($this->processExecution) {
-            $this->processExecution->setEndDate(new DateTime());
-            $this->processExecution->setStatus(ProcessExecution::STATUS_FAIL);
-            $this->processExecution->getProcess()->setLastExecutionDate($this->processExecution->getStartDate());
-            $this->processExecution->getProcess()->setLastExecutionStatus(ProcessExecution::STATUS_FAIL);
-            $this->entityManager->persist($this->processExecution);
+        if ($processExecution = ($this->processExecution[$processEvent->getProcessCode()] ?? null)) {
+            $processExecution->setEndDate(new DateTime());
+            $processExecution->setStatus(ProcessExecution::STATUS_FAIL);
+            $processExecution->getProcess()->setLastExecutionDate($processExecution->getStartDate());
+            $processExecution->getProcess()->setLastExecutionStatus(ProcessExecution::STATUS_FAIL);
+            $this->entityManager->persist($processExecution);
             $this->entityManager->flush();
-            $this->dispatchLogIndexerMessage($this->processExecution);
-            $this->processExecution = null;
+            $this->dispatchLogIndexerMessage($processExecution);
+            $this->processExecution[$processEvent->getProcessCode()] = null;
         }
     }
 
@@ -147,12 +152,12 @@ class ProcessEventSubscriber implements EventSubscriberInterface
 
     public function updateProcessExecutionReport(IncrementReportInfoEvent | SetReportInfoEvent $event): void
     {
-        if ($this->processExecution) {
-            $report = $this->processExecution->getReport();
+        if ($processExecution = ($this->processExecution[$event->getProcessCode()] ?? false)) {
+            $report = $processExecution->getReport();
             $event instanceof IncrementReportInfoEvent
                 ? $report[$event->getKey()] = ($report[$event->getKey()] ?? 0) + 1
                 : $report[$event->getKey()] = $event->getValue();
-            $this->processExecution->setReport($report);
+            $processExecution->setReport($report);
         }
     }
 }

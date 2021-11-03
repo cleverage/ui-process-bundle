@@ -10,7 +10,8 @@ use Monolog\Handler\AbstractProcessingHandler;
 class ProcessLogHandler extends AbstractProcessingHandler
 {
     private string $logDir;
-    private ?string $logFilename = null;
+    private ?array $logFilenames = [];
+    private ?string $currentProcessCode = null;
     private ?Filesystem $filesystem = null;
 
     /**
@@ -27,7 +28,7 @@ class ProcessLogHandler extends AbstractProcessingHandler
      */
     protected function write(array $record): void
     {
-        if (null === $logFilename = $this->logFilename) {
+        if (null === $logFilename = ($this->logFilenames[$this->currentProcessCode] ?? null)) {
             return;
         }
         if (null === $this->filesystem) {
@@ -38,13 +39,18 @@ class ProcessLogHandler extends AbstractProcessingHandler
         $this->filesystem->write($logFilename, $record['formatted']);
     }
 
-    public function setLogFilename(string $logFilename): void
+    public function setLogFilename(string $logFilename, string $processCode): void
     {
-        $this->logFilename = $logFilename;
+        $this->logFilenames[$processCode] = $logFilename;
+    }
+
+    public function setCurrentProcessCode(?string $code): void
+    {
+        $this->currentProcessCode = $code;
     }
 
     public function getLogFilename(): ?string
     {
-        return $this->logFilename;
+        return $this->logFilenames[$this->currentProcessCode] ?? null;
     }
 }
