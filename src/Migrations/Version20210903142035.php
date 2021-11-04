@@ -99,4 +99,9 @@ SQL);
         $this->addSql('DROP TABLE process_execution_log_record');
         $this->addSql('DROP TABLE user');
     }
+
+    public function isTransactional(): bool
+    {
+        return false;
+    }
 }

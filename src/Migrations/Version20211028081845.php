@@ -28,4 +28,9 @@ final class Version20211028081845 extends AbstractMigration
         // this down() migration is auto-generated, please modify it to your needs
         $this->addSql('ALTER TABLE process_execution DROP report');
     }
+
+    public function isTransactional(): bool
+    {
+        return false;
+    }
 }
