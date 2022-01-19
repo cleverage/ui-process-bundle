@@ -16,6 +16,11 @@
       "name": "Grégory Tonon",
       "email": "gtonon@clever-age.com",
       "role": "Developer"
+    },
+    {
+      "name": "Xavier Marchegay",
+      "email": "xmarchegay@clever-age.com",
+      "role": "Developer"
     }
   ],
   "require": {
@@ -32,18 +37,18 @@
     "doctrine/orm": "^2.9",
     "sensio/framework-extra-bundle": "^6.1",
     "symfony/console": "*",
-    "symfony/messenger": "^5.3",
-    "symfony/doctrine-messenger": "^5.3",
-    "symfony/filesystem": "^5.3",
+    "symfony/messenger": "^5.4",
+    "symfony/doctrine-messenger": "^5.4",
+    "symfony/filesystem": "^5.4",
     "symfony/flex": "^1.3.1",
-    "symfony/form": "^5.3",
+    "symfony/form": "^5.4",
     "symfony/framework-bundle": "*",
-    "symfony/mime": "^5.3",
-    "symfony/proxy-manager-bridge": "^5.3",
-    "symfony/runtime": "^5.3",
-    "symfony/security-bundle": "^5.3",
-    "symfony/stopwatch": "^5.3",
-    "symfony/twig-bundle": "^5.3",
+    "symfony/mime": "^5.4",
+    "symfony/proxy-manager-bridge": "^5.4",
+    "symfony/runtime": "^5.4",
+    "symfony/security-bundle": "^5.4",
+    "symfony/stopwatch": "^5.4",
+    "symfony/twig-bundle": "^5.4",
     "symfony/validator": "*",
     "symfony/webpack-encore-bundle": "^1.11",
     "symfony/yaml": "*",
@@ -51,14 +56,26 @@
     "twig/intl-extra": "^3.3"
   },
   "require-dev": {
-    "symfony/dotenv": "^5.3"
+    "roave/security-advisories": "dev-latest",
+    "symfony/dotenv": "^5.4",
+    "doctrine/doctrine-fixtures-bundle": "^3.4",
+    "phpmd/phpmd": "^2.10",
+    "phpstan/phpstan": "^0.12.89",
+    "squizlabs/php_codesniffer": "^3.6",
+    "symfony/maker-bundle": "^1.31",
+    "symfony/web-profiler-bundle": "^5.4"
   },
   "config": {
     "optimize-autoloader": true,
     "preferred-install": {
       "*": "dist"
     },
-    "sort-packages": true
+    "sort-packages": true,
+    "allow-plugins": {
+      "composer/package-versions-deprecated": true,
+      "symfony/flex": true,
+      "symfony/runtime": true
+    }
   },
   "autoload": {
     "psr-4": {
@@ -88,15 +105,7 @@
   "extra": {
     "symfony": {
       "allow-contrib": false,
-      "require": "5.3.*"
+      "require": "5.4.*"
     }
-  },
-  "require-dev": {
-    "doctrine/doctrine-fixtures-bundle": "^3.4",
-    "phpmd/phpmd": "^2.10",
-    "phpstan/phpstan": "^0.12.89",
-    "squizlabs/php_codesniffer": "^3.6",
-    "symfony/maker-bundle": "^1.31",
-    "symfony/web-profiler-bundle": "^5.3"
   }
 }
