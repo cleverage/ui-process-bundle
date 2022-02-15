@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CleverAge\ProcessUiBundle\Controller\Crud;
 
 use CleverAge\ProcessUiBundle\Entity\Process;
@@ -58,7 +60,7 @@ class ProcessCrudController extends AbstractCrudController
             'target',
             'lastExecutionDate',
             IntegerField::new('lastExecutionStatus')->formatValue(static function (?int $value) {
-                /** @phpstan-ignore-next-line */
+                /* @phpstan-ignore-next-line */
                 return match ($value) {
                     ProcessExecution::STATUS_FAIL => '<button class="btn btn-danger btn-lm">failed</button>',
                     ProcessExecution::STATUS_START => '<button class="btn btn-warning btn-lm">started</button>',
@@ -77,9 +79,7 @@ class ProcessCrudController extends AbstractCrudController
         $runProcess = Action::new('run', '', 'fa fa-rocket')
             ->linkToCrudAction('runProcessAction');
         $runProcess->setHtmlAttributes(['data-toggle' => 'tooltip', 'title' => 'Run process in background']);
-        $runProcess->displayIf(function (Process $process) {
-            return $this->processUiConfigurationManager->canRun($process);
-        });
+        $runProcess->displayIf(fn (Process $process) => $this->processUiConfigurationManager->canRun($process));
         $viewHistoryAction = Action::new('viewHistory', '', 'fa fa-history')
             ->linkToCrudAction('viewHistoryAction');
         $viewHistoryAction->setHtmlAttributes(['data-toggle' => 'tooltip', 'title' => 'View executions history']);
@@ -133,8 +133,8 @@ class ProcessCrudController extends AbstractCrudController
                 ->setAction(Action::INDEX)
                 ->setAll([
                     'filters' => [
-                        'processCode' => ['comparison' => ComparisonType::EQ, 'value' => $process->getProcessCode()]
-                    ]
+                        'processCode' => ['comparison' => ComparisonType::EQ, 'value' => $process->getProcessCode()],
+                    ],
                 ])
                 ->generateUrl()
         );

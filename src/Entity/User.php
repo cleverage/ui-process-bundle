@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CleverAge\ProcessUiBundle\Entity;
 
 use CleverAge\ProcessUiBundle\Repository\UserRepository;
@@ -37,6 +39,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     /**
      * @ORM\Column(type="json")
+     *
      * @var array <int, string>
      */
     private array $roles = [];
@@ -68,7 +71,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->firstname;
     }
 
-    public function setFirstname(?string $firstname): User
+    public function setFirstname(?string $firstname): self
     {
         $this->firstname = $firstname;
 
@@ -80,7 +83,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->lastname;
     }
 
-    public function setLastname(?string $lastname): User
+    public function setLastname(?string $lastname): self
     {
         $this->lastname = $lastname;
 

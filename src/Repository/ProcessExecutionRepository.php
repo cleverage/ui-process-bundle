@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CleverAge\ProcessUiBundle\Repository;
 
 use CleverAge\ProcessUiBundle\Entity\ProcessExecution;
@@ -26,7 +28,7 @@ class ProcessExecutionRepository extends ServiceEntityRepository
         $qb->distinct(true);
         $qb->select('pe.processCode');
         foreach ($qb->getQuery()->getArrayResult() as $result) {
-            $choices[(string)$result['processCode']] = (string)$result['processCode'];
+            $choices[(string) $result['processCode']] = (string) $result['processCode'];
         }
 
         return $choices;
@@ -42,7 +44,7 @@ class ProcessExecutionRepository extends ServiceEntityRepository
         $qb->distinct(true);
         $qb->select('pe.source');
         foreach ($qb->getQuery()->getArrayResult() as $result) {
-            $choices[(string)$result['source']] = (string)$result['source'];
+            $choices[(string) $result['source']] = (string) $result['source'];
         }
 
         return $choices;
@@ -58,7 +60,7 @@ class ProcessExecutionRepository extends ServiceEntityRepository
         $qb->distinct(true);
         $qb->select('pe.target');
         foreach ($qb->getQuery()->getArrayResult() as $result) {
-            $choices[(string)$result['target']] = (string)$result['target'];
+            $choices[(string) $result['target']] = (string) $result['target'];
         }
 
         return $choices;

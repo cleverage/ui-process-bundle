@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CleverAge\ProcessUiBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
@@ -53,7 +55,7 @@ class ProcessExecutionLogRecord
         return $this->logLevel;
     }
 
-    public function setLogLevel(int $logLevel): ProcessExecutionLogRecord
+    public function setLogLevel(int $logLevel): self
     {
         $this->logLevel = $logLevel;
 
@@ -65,14 +67,14 @@ class ProcessExecutionLogRecord
         return $this->message;
     }
 
-    public function setMessage(string $message): ProcessExecutionLogRecord
+    public function setMessage(string $message): self
     {
         $this->message = $message;
 
         return $this;
     }
 
-    public function setProcessExecution(ProcessExecution $processExecution): ProcessExecutionLogRecord
+    public function setProcessExecution(ProcessExecution $processExecution): self
     {
         $this->processExecution = $processExecution;
 

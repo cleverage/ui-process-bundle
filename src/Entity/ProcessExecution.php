@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CleverAge\ProcessUiBundle\Entity;
 
 use CleverAge\ProcessUiBundle\Repository\ProcessExecutionRepository;
@@ -83,6 +85,7 @@ class ProcessExecution
 
     /**
      * @ORM\OneToMany(targetEntity="ProcessExecutionLogRecord", mappedBy="processExecution", cascade={"persist"})
+     *
      * @var Collection<int, ProcessExecutionLogRecord>
      */
     private Collection $logRecords;
@@ -224,9 +227,8 @@ class ProcessExecution
 
     /**
      * @param Collection<int, ProcessExecutionLogRecord> $logRecords
-     * @return ProcessExecution
      */
-    public function setLogRecords(Collection $logRecords): ProcessExecution
+    public function setLogRecords(Collection $logRecords): self
     {
         foreach ($logRecords as $logRecord) {
             $this->addLogRecord($logRecord);
@@ -245,9 +247,10 @@ class ProcessExecution
         return $this->report ?? [];
     }
 
-    public function setReport(?array $report): ProcessExecution
+    public function setReport(?array $report): self
     {
         $this->report = $report;
+
         return $this;
     }
 }

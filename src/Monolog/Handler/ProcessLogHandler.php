@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CleverAge\ProcessUiBundle\Monolog\Handler;
 
 use League\Flysystem\Filesystem;
@@ -24,6 +26,7 @@ class ProcessLogHandler extends AbstractProcessingHandler
 
     /**
      * @param array <string, mixed> $record
+     *
      * @throws FilesystemException
      */
     protected function write(array $record): void
@@ -33,7 +36,7 @@ class ProcessLogHandler extends AbstractProcessingHandler
         }
         if (null === $this->filesystem) {
             $this->filesystem = new Filesystem(
-                new LocalFilesystemAdapter($this->logDir, null, FILE_APPEND)
+                new LocalFilesystemAdapter($this->logDir, null, \FILE_APPEND)
             );
         }
         $this->filesystem->write($logFilename, $record['formatted']);

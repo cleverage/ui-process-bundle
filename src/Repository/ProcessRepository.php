@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CleverAge\ProcessUiBundle\Repository;
 
 use CleverAge\ProcessBundle\Registry\ProcessConfigurationRegistry;

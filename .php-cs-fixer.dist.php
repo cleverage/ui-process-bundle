@@ -1,10 +1,10 @@
 <?php
 
 $finder = PhpCsFixer\Finder::create()
-    ->in(__DIR__)
+    ->in(__DIR__.'/src')
     ->ignoreDotFiles(true)
     ->ignoreVCS(true)
-    ->exclude(array('build', 'vendor'))
+    ->exclude(['build', 'vendor'])
     ->files()
     ->name('*.php')
 ;
@@ -15,19 +15,17 @@ return $config
     ->setUsingCache(true)
     ->setRiskyAllowed(true)
     ->setFinder($finder)
-    ->setRules(array(
+    ->setRules([
+        '@PHP80Migration' => true,
+        '@PHP80Migration:risky' => true,
         '@Symfony' => true,
         '@Symfony:risky' => true,
         'array_syntax' => ['syntax' => 'short'],
         'fopen_flags' => false,
         'ordered_imports' => true,
         'protected_to_private' => false,
-        // Part of @Symfony:risky in PHP-CS-Fixer 2.13.0. To be removed from the config file once upgrading
-        'native_function_invocation' => ['include' => ['@compiler_optimized'], 'scope' => 'namespaced', 'strict' => true],
-        // Part of future @Symfony ruleset in PHP-CS-Fixer To be removed from the config file once upgrading
-        'phpdoc_types_order' => ['null_adjustment' => 'always_last', 'sort_algorithm' => 'none'],
         'single_line_throw' => false,
         // this must be disabled because the output of some tests include NBSP characters
         'non_printable_character' => false,
-    ))
+    ])
     ;

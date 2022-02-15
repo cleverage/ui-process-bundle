@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CleverAge\ProcessUiBundle\DependencyInjection\Compiler;
 
 use CleverAge\ProcessUiBundle\Monolog\Handler\ProcessLogHandler;
@@ -14,7 +16,7 @@ class RegisterLogHandlerCompilerPass implements CompilerPassInterface
         $loggers = [
             'monolog.logger.cleverage_process',
             'monolog.logger.cleverage_process_task',
-            'monolog.logger.cleverage_process_transformer'
+            'monolog.logger.cleverage_process_transformer',
         ];
         foreach ($loggers as $logger) {
             if ($container->has($logger)) {

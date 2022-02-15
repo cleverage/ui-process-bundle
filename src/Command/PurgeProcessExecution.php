@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CleverAge\ProcessUiBundle\Command;
 
 use CleverAge\ProcessUiBundle\Entity\ProcessExecution;
@@ -54,7 +56,7 @@ class PurgeProcessExecution extends Command
                     InputOption::VALUE_NEGATABLE,
                     'Remove log files ? (default false)',
                     false
-                )
+                ),
             ])
         );
     }
@@ -68,7 +70,7 @@ class PurgeProcessExecution extends Command
         if ($removeFiles) {
             $finder = new Finder();
             $fs = new Filesystem();
-            $finder->in($this->processLogDir)->date("before " . $date->format(DateTimeInterface::ATOM));
+            $finder->in($this->processLogDir)->date('before '.$date->format(DateTimeInterface::ATOM));
             $count = $finder->count();
             $fs->remove($finder);
             $output->writeln("<info>$count log files are deleted on filesystem.</info>");
@@ -78,8 +80,9 @@ class PurgeProcessExecution extends Command
         $repository->deleteBefore($date);
 
         $output->writeln(<<<EOT
-<info>Process Execution before {$date->format(DateTimeInterface::ATOM)} are deleted into database.</info>
-EOT);
+            <info>Process Execution before {$date->format(DateTimeInterface::ATOM)} are deleted into database.</info>
+            EOT);
+
         return Command::SUCCESS;
     }
 }

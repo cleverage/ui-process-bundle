@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CleverAge\ProcessUiBundle\EventSubscriber\Crud;
 
 use CleverAge\ProcessUiBundle\Entity\Process;
@@ -27,7 +29,7 @@ class ProcessCrudListener implements EventSubscriberInterface
 
     public function syncProcessIntoDatabase(BeforeCrudActionEvent $event): void
     {
-        if ($event->getAdminContext()?->getEntity()->getFqcn() === Process::class) {
+        if (Process::class === $event->getAdminContext()?->getEntity()->getFqcn()) {
             /** @var ProcessRepository $repository */
             $repository = $this->entityManager->getRepository(Process::class);
             $repository->sync();

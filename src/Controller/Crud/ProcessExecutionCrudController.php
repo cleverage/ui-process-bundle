@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CleverAge\ProcessUiBundle\Controller\Crud;
 
 use CleverAge\ProcessUiBundle\Entity\ProcessExecution;
@@ -57,7 +59,7 @@ class ProcessExecutionCrudController extends AbstractCrudController
         $crud->showEntityActionsInlined();
         $crud->setDefaultSort(['startDate' => SortOrder::DESC]);
         $crud->setEntityPermission('ROLE_ADMIN');
-        $crud->setSearchFields($this->indexLogs === true ? ['logRecords.message'] : null);
+        $crud->setSearchFields(true === $this->indexLogs ? ['logRecords.message'] : null);
 
         return $crud;
     }
@@ -67,7 +69,6 @@ class ProcessExecutionCrudController extends AbstractCrudController
      */
     public function configureFields(string $pageName): array
     {
-
         return [
             Field::new('processCode', 'Process'),
             'source',
@@ -75,7 +76,7 @@ class ProcessExecutionCrudController extends AbstractCrudController
             'startDate',
             'endDate',
             IntegerField::new('status')->formatValue(static function (int $value) {
-                /** @phpstan-ignore-next-line */
+                /* @phpstan-ignore-next-line */
                 return match ($value) {
                     ProcessExecution::STATUS_FAIL => '<button class="btn btn-danger btn-lm">failed</button>',
                     ProcessExecution::STATUS_START => '<button class="btn btn-warning btn-lm">started</button>',
@@ -88,17 +89,17 @@ class ProcessExecutionCrudController extends AbstractCrudController
     public function configureFilters(Filters $filters): Filters
     {
         $processCodeChoices = $this->processUiConfigurationManager->getProcessChoices();
-        if (count($processCodeChoices) > 0) {
+        if (\count($processCodeChoices) > 0) {
             $filters->add(ChoiceFilter::new('processCode', 'Process')->setChoices($processCodeChoices));
         }
 
         $sourceChoices = $this->processUiConfigurationManager->getSourceChoices();
-        if (count($sourceChoices) > 0) {
+        if (\count($sourceChoices) > 0) {
             $filters->add(ChoiceFilter::new('source')->setChoices($sourceChoices));
         }
 
         $targetChoices = $this->processUiConfigurationManager->getTargetChoices();
-        if (count($targetChoices) > 0) {
+        if (\count($targetChoices) > 0) {
             $filters->add(ChoiceFilter::new('target')->setChoices($targetChoices));
         }
         $filters->add(ChoiceFilter::new('status')->setChoices([
@@ -130,11 +131,11 @@ class ProcessExecutionCrudController extends AbstractCrudController
     {
         /** @var ProcessExecution $processExecution */
         $processExecution = $context->getEntity()->getInstance();
-        $filepath = $this->processLogDir . DIRECTORY_SEPARATOR . $processExecution->getLog();
+        $filepath = $this->processLogDir.\DIRECTORY_SEPARATOR.$processExecution->getLog();
         $basename = basename($filepath);
         $content = file_get_contents($filepath);
         if (false === $content) {
-            throw new NotFoundHttpException("Log file not found.");
+            throw new NotFoundHttpException('Log file not found.');
         }
         $response = new Response($content);
         $response->headers->set('Content-Type', 'text/plain; charset=utf-8');

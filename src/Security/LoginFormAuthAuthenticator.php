@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CleverAge\ProcessUiBundle\Security;
 
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -31,13 +33,13 @@ class LoginFormAuthAuthenticator extends AbstractLoginFormAuthenticator
 
     public function authenticate(Request $request): PassportInterface
     {
-        $username = (string)$request->request->get('email', '');
+        $username = (string) $request->request->get('email', '');
 
         $request->getSession()->set(Security::LAST_USERNAME, $username);
 
         return new Passport(
             new UserBadge($username),
-            new PasswordCredentials((string)$request->request->get('password', '')),
+            new PasswordCredentials((string) $request->request->get('password', '')),
             [
                 new CsrfTokenBadge('authenticate', $request->get('_csrf_token')),
             ]

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CleverAge\ProcessUiBundle\Manager;
 
 use CleverAge\ProcessBundle\Configuration\ProcessConfiguration;
@@ -25,9 +27,7 @@ class ProcessUiConfigurationManager
      */
     public function getProcessChoices(): array
     {
-        return array_map(static function (ProcessConfiguration $configuration) {
-            return $configuration->getCode();
-        }, $this->processConfigurationRegistry->getProcessConfigurations());
+        return array_map(static fn (ProcessConfiguration $configuration) => $configuration->getCode(), $this->processConfigurationRegistry->getProcessConfigurations());
     }
 
     /**
@@ -38,7 +38,7 @@ class ProcessUiConfigurationManager
         $sources = [];
         foreach ($this->processConfigurationRegistry->getProcessConfigurations() as $configuration) {
             $source = $this->getSource($configuration->getCode());
-            $sources[(string)$source] = (string)$source;
+            $sources[(string) $source] = (string) $source;
         }
 
         return $sources;
@@ -52,7 +52,7 @@ class ProcessUiConfigurationManager
         $targets = [];
         foreach ($this->processConfigurationRegistry->getProcessConfigurations() as $configuration) {
             $target = $this->getTarget($configuration->getCode());
-            $targets[(string)$target] = (string)$target;
+            $targets[(string) $target] = (string) $target;
         }
 
         return $targets;
@@ -70,11 +70,10 @@ class ProcessUiConfigurationManager
 
     public function canRun(Process|string $process): bool
     {
-        return (bool)$this->resolveUiOptions($process)[self::UI_OPTION_RUN];
+        return (bool) $this->resolveUiOptions($process)[self::UI_OPTION_RUN];
     }
 
     /**
-     * @param Process|string $process
      * @return array <string, string>
      */
     private function resolveUiOptions(Process|string $process): array
@@ -85,11 +84,12 @@ class ProcessUiConfigurationManager
         $resolver->setDefaults([
             self::UI_OPTION_SOURCE => null,
             self::UI_OPTION_TARGET => null,
-            self::UI_OPTION_RUN => true
+            self::UI_OPTION_RUN => true,
         ]);
         $resolver->setAllowedTypes(self::UI_OPTION_RUN, 'bool');
         $resolver->setAllowedTypes(self::UI_OPTION_SOURCE, ['string', 'null']);
         $resolver->setAllowedTypes(self::UI_OPTION_TARGET, ['string', 'null']);
+
         return $resolver->resolve(
             $this->processConfigurationRegistry->getProcessConfiguration($code)->getOptions()['ui_options'] ?? []
         );

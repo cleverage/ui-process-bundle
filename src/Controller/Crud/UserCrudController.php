@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CleverAge\ProcessUiBundle\Controller\Crud;
 
 use CleverAge\ProcessUiBundle\CleverAgeProcessUiBundle;
@@ -114,7 +116,7 @@ class UserCrudController extends AbstractCrudController
 
     protected function addEncodePasswordEventListener(FormBuilderInterface $formBuilder): void
     {
-        $formBuilder->addEventListener(FormEvents::SUBMIT, function (FormEvent $event) {
+        $formBuilder->addEventListener(FormEvents::SUBMIT, function (FormEvent $event): void {
             /** @var User $user */
             $user = $event->getData();
             $password = $user->getPassword();

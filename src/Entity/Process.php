@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CleverAge\ProcessUiBundle\Entity;
 
+use CleverAge\ProcessUiBundle\Repository\ProcessRepository;
 use DateTime;
 use DateTimeInterface;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use CleverAge\ProcessUiBundle\Repository\ProcessRepository;
 
 /**
  * @ORM\Entity(repositoryClass=ProcessRepository::class)
@@ -95,15 +97,17 @@ class Process
         return $this->lastExecutionStatus;
     }
 
-    public function setLastExecutionDate(DateTimeInterface $lastExecutionDate): Process
+    public function setLastExecutionDate(DateTimeInterface $lastExecutionDate): self
     {
         $this->lastExecutionDate = $lastExecutionDate;
+
         return $this;
     }
 
-    public function setLastExecutionStatus(int $lastExecutionStatus): Process
+    public function setLastExecutionStatus(int $lastExecutionStatus): self
     {
         $this->lastExecutionStatus = $lastExecutionStatus;
+
         return $this;
     }
 }

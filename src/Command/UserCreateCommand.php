@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CleverAge\ProcessUiBundle\Command;
 
 use CleverAge\ProcessUiBundle\Entity\User;
@@ -10,13 +12,12 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Validator\Constraints\Email;
-use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Length;
+use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
- * Class UserCreateCommand
- * @package App\Command
+ * Class UserCreateCommand.
  */
 final class UserCreateCommand extends Command
 {
@@ -45,7 +46,7 @@ final class UserCreateCommand extends Command
     {
         $style = new SymfonyStyle($input, $output);
         $username = $this->ask('Please enter the email.', $style, [new Email()]);
-        $password = $this->ask('Please enter the user password.', $style, [new NotBlank(), new Length(min:8)]);
+        $password = $this->ask('Please enter the user password.', $style, [new NotBlank(), new Length(min: 8)]);
 
         $user = new User();
         $user->setEmail($username);
@@ -61,10 +62,7 @@ final class UserCreateCommand extends Command
     }
 
     /**
-     * @param string $question
-     * @param SymfonyStyle $style
      * @param array <int, mixed> $constraints
-     * @return mixed
      */
     private function ask(string $question, SymfonyStyle $style, array $constraints = []): mixed
     {

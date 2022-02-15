@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CleverAge\ProcessUiBundle;
 
 use CleverAge\ProcessUiBundle\DependencyInjection\Compiler\RegisterLogHandlerCompilerPass;
@@ -17,7 +19,6 @@ class CleverAgeProcessUiBundle extends Bundle
     public const CLASS_NEW = '';
     public const CLASS_EDIT = 'text-warning';
     public const CLASS_DELETE = '';
-
 
     public function build(ContainerBuilder $container): void
     {

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CleverAge\ProcessUiBundle\Message;
 
 class ProcessRunMessage
@@ -10,7 +12,6 @@ class ProcessRunMessage
     private array $processInput;
 
     /**
-     * @param string $processCode
      * @param array <string, string> $processInput
      */
     public function __construct(string $processCode, array $processInput = [])
@@ -19,9 +20,6 @@ class ProcessRunMessage
         $this->processInput = $processInput;
     }
 
-    /**
-     * @return string
-     */
     public function getProcessCode(): string
     {
         return $this->processCode;

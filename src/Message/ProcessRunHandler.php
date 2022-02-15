@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CleverAge\ProcessUiBundle\Message;
 
 use CleverAge\ProcessBundle\Command\ExecuteProcessCommand;
@@ -18,7 +20,6 @@ class ProcessRunHandler implements MessageHandlerInterface
     }
 
     /**
-     * @param ProcessRunMessage $processRunMessage
      * @throws Exception
      */
     public function __invoke(ProcessRunMessage $processRunMessage): void

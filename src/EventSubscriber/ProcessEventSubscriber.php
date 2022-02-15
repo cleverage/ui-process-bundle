@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CleverAge\ProcessUiBundle\EventSubscriber;
 
 use CleverAge\ProcessBundle\Event\ProcessEvent;
@@ -58,11 +60,11 @@ class ProcessEventSubscriber implements EventSubscriberInterface
                 ['onProcessFailed'],
             ],
             IncrementReportInfoEvent::NAME => [
-                ['updateProcessExecutionReport']
+                ['updateProcessExecutionReport'],
             ],
             SetReportInfoEvent::NAME => [
-                ['updateProcessExecutionReport']
-            ]
+                ['updateProcessExecutionReport'],
+            ],
         ];
     }
 
@@ -71,16 +73,16 @@ class ProcessEventSubscriber implements EventSubscriberInterface
         $process = $this->entityManager->getRepository(Process::class)
             ->findOneBy(['processCode' => $event->getProcessCode()]);
         if (null === $process) {
-            throw new RuntimeException("Unable to found process into database.");
+            throw new RuntimeException('Unable to found process into database.');
         }
         $processExecution = new ProcessExecution($process);
         $processExecution->setProcessCode($event->getProcessCode());
         $processExecution->setSource($this->processUiConfigurationManager->getSource($event->getProcessCode()));
         $processExecution->setTarget($this->processUiConfigurationManager->getTarget($event->getProcessCode()));
-        $logFilename =  sprintf(
+        $logFilename = sprintf(
             'process_%s_%s.log',
             $event->getProcessCode(),
-            sha1(uniqid((string)mt_rand(), true))
+            sha1(uniqid((string) mt_rand(), true))
         );
         $this->processLogHandler->setLogFilename($logFilename, $event->getProcessCode());
         $this->processLogHandler->setCurrentProcessCode($event->getProcessCode());
@@ -133,16 +135,16 @@ class ProcessEventSubscriber implements EventSubscriberInterface
     protected function dispatchLogIndexerMessage(ProcessExecution $processExecution): void
     {
         if ($this->indexLogs && null !== $processExecutionId = $processExecution->getId()) {
-            $filePath = $this->processLogDir . DIRECTORY_SEPARATOR . $processExecution->getLog();
-            $file     = new SplFileObject($filePath);
-            $file->seek(PHP_INT_MAX);
+            $filePath = $this->processLogDir.\DIRECTORY_SEPARATOR.$processExecution->getLog();
+            $file = new SplFileObject($filePath);
+            $file->seek(\PHP_INT_MAX);
             $chunkSize = LogIndexerMessage::DEFAULT_OFFSET;
-            $chunk     = (int)($file->key() / $chunkSize) + 1;
-            for ($i = 0; $i < $chunk; $i++) {
+            $chunk = (int) ($file->key() / $chunkSize) + 1;
+            for ($i = 0; $i < $chunk; ++$i) {
                 $this->messageBus->dispatch(
                     new LogIndexerMessage(
                         $processExecutionId,
-                        $this->processLogDir . DIRECTORY_SEPARATOR . $processExecution->getLog(),
+                        $this->processLogDir.\DIRECTORY_SEPARATOR.$processExecution->getLog(),
                         $i * $chunkSize
                     )
                 );
@@ -150,7 +152,7 @@ class ProcessEventSubscriber implements EventSubscriberInterface
         }
     }
 
-    public function updateProcessExecutionReport(IncrementReportInfoEvent | SetReportInfoEvent $event): void
+    public function updateProcessExecutionReport(IncrementReportInfoEvent|SetReportInfoEvent $event): void
     {
         if ($processExecution = ($this->processExecution[$event->getProcessCode()] ?? false)) {
             $report = $processExecution->getReport();

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CleverAge\ProcessUiBundle\Message;
 
 use CleverAge\ProcessUiBundle\Entity\ProcessExecutionLogRecord;
@@ -41,17 +43,17 @@ class LogIndexerHandler implements MessageHandlerInterface
             $file->next();
             --$offset;
         }
-        if (count($parameters) > 0) {
-            $statement = $this->getStatement($table, (int)(count($parameters) / 3));
+        if (\count($parameters) > 0) {
+            $statement = $this->getStatement($table, (int) (\count($parameters) / 3));
             $manager->getConnection()->executeStatement($statement, $parameters);
         }
     }
 
     private function getStatement(string $table, int $size): string
     {
-        $sql = 'INSERT INTO ' . $table . ' (process_execution_id, log_level, message) VALUES ';
+        $sql = 'INSERT INTO '.$table.' (process_execution_id, log_level, message) VALUES ';
         while ($size > 0) {
-            $sql .= $size > 1 ? '(?, ?, ?),' : '(?, ?, ?)' ;
+            $sql .= $size > 1 ? '(?, ?, ?),' : '(?, ?, ?)';
             --$size;
         }
 

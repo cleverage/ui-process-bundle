@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CleverAge\ProcessUiBundle\Controller;
 
 use CleverAge\ProcessUiBundle\Controller\Crud\ProcessCrudController;
