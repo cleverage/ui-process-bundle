@@ -1,3 +1,5 @@
+![Code Style](https://github.com/cleverage/processuibundle/actions/workflows/super-linter.yml/badge.svg) ![Composer](https://github.com/cleverage/processuibundle/actions/workflows/php.yml/badge.svg)
+
 ## CleverAge/ProcessUIBundle
 A simple UX for cleverage/processbundle using EasyAdmin
 
