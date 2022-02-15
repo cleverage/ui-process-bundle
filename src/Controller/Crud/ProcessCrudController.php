@@ -64,7 +64,7 @@ class ProcessCrudController extends AbstractCrudController
                     ProcessExecution::STATUS_FAIL => '<button class="btn btn-danger btn-lm">failed</button>',
                     ProcessExecution::STATUS_START => '<button class="btn btn-warning btn-lm">started</button>',
                     ProcessExecution::STATUS_SUCCESS => '<button class="btn btn-success btn-lm">success</button>',
-                    null => ''
+                    default => '<button class="btn btn-info btn-lm">unknown</button>',
                 };
             }),
         ];
