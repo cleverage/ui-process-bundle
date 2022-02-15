@@ -248,7 +248,6 @@ class ProcessExecution
     public function setReport(?array $report): ProcessExecution
     {
         $this->report = $report;
-        
         return $this;
     }
 }

@@ -4,6 +4,7 @@ namespace CleverAge\ProcessUiBundle\DependencyInjection;
 
 use CleverAge\ProcessUiBundle\Message\LogIndexerMessage;
 use CleverAge\ProcessUiBundle\Message\ProcessRunMessage;
+use Exception;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\Extension;

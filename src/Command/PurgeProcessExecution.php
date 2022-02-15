@@ -4,6 +4,7 @@ namespace CleverAge\ProcessUiBundle\Command;
 
 use CleverAge\ProcessUiBundle\Entity\ProcessExecution;
 use CleverAge\ProcessUiBundle\Repository\ProcessExecutionRepository;
+use DateTimeInterface;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputDefinition;
@@ -67,7 +68,7 @@ class PurgeProcessExecution extends Command
         if ($removeFiles) {
             $finder = new Finder();
             $fs = new Filesystem();
-            $finder->in($this->processLogDir)->date("before " . $date->format(\DateTime::ATOM));
+            $finder->in($this->processLogDir)->date("before " . $date->format(DateTimeInterface::ATOM));
             $count = $finder->count();
             $fs->remove($finder);
             $output->writeln("<info>$count log files are deleted on filesystem.</info>");
@@ -77,7 +78,7 @@ class PurgeProcessExecution extends Command
         $repository->deleteBefore($date);
 
         $output->writeln(<<<EOT
-<info>Process Execution before {$date->format(\DateTime::ATOM)} are deleted into database.</info>
+<info>Process Execution before {$date->format(DateTimeInterface::ATOM)} are deleted into database.</info>
 EOT);
         return Command::SUCCESS;
     }

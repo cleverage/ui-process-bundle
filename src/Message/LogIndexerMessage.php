@@ -5,7 +5,6 @@ namespace CleverAge\ProcessUiBundle\Message;
 class LogIndexerMessage
 {
     public const DEFAULT_OFFSET = 2500;
-    
     private int $processExecutionId;
     private string $logPath;
     private int $start;

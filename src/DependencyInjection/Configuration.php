@@ -17,7 +17,7 @@ class Configuration implements ConfigurationInterface
                     ->addDefaultsIfNotSet()
                     ->children()
                         ->booleanNode('enabled')->defaultFalse()->end()
-                    ->end();
+                    ?->end();
 
         return $treeBuilder;
     }
