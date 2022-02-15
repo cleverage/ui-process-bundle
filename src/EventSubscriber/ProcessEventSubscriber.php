@@ -97,7 +97,7 @@ class ProcessEventSubscriber implements EventSubscriberInterface
         if ($processExecution = ($this->processExecution[$processEvent->getProcessCode()] ?? null)) {
             $this->processExecution = array_filter($this->processExecution);
             array_pop($this->processExecution);
-            $this->processLogHandler->setCurrentProcessCode(array_key_last($this->processExecution));
+            $this->processLogHandler->setCurrentProcessCode((string) array_key_last($this->processExecution));
             $processExecution->setEndDate(new DateTime());
             $processExecution->setStatus(ProcessExecution::STATUS_SUCCESS);
             $processExecution->getProcess()->setLastExecutionDate($processExecution->getStartDate());

@@ -1,8 +1,10 @@
 parameters:
-	level: 5
+	level: 8
 	paths:
 		- src
 	excludePaths:
 		- src/DependencyInjection/Configuration.php
 	ignoreErrors:
 		- '#is never written, only read#'
+		- '#has no value type specified in iterable type#'
+		- '#has parameter .* with no value type specified in iterable type#'
