@@ -35,7 +35,7 @@ class UserCrudController extends AbstractCrudController
 
     public function configureCrud(Crud $crud): Crud
     {
-        $crud->showEntityActionsAsDropdown(false);
+        $crud->showEntityActionsInlined();
         $crud->setEntityPermission('ROLE_ADMIN');
 
         return $crud;

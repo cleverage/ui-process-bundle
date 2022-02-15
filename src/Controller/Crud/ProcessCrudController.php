@@ -60,7 +60,6 @@ class ProcessCrudController extends AbstractCrudController
             'target',
             'lastExecutionDate',
             IntegerField::new('lastExecutionStatus')->formatValue(static function (?int $value) {
-                /* @phpstan-ignore-next-line */
                 return match ($value) {
                     ProcessExecution::STATUS_FAIL => '<button class="btn btn-danger btn-lm">failed</button>',
                     ProcessExecution::STATUS_START => '<button class="btn btn-warning btn-lm">started</button>',
