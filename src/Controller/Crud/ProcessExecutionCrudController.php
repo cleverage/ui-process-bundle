@@ -54,7 +54,7 @@ class ProcessExecutionCrudController extends AbstractCrudController
 
     public function configureCrud(Crud $crud): Crud
     {
-        $crud->showEntityActionsAsDropdown(false);
+        $crud->showEntityActionsInlined();
         $crud->setDefaultSort(['startDate' => SortOrder::DESC]);
         $crud->setEntityPermission('ROLE_ADMIN');
         $crud->setSearchFields($this->indexLogs === true ? ['logRecords.message'] : null);
