@@ -59,7 +59,7 @@ class ProcessExecutionCrudController extends AbstractCrudController
         $crud->showEntityActionsInlined();
         $crud->setDefaultSort(['startDate' => SortOrder::DESC]);
         $crud->setEntityPermission('ROLE_ADMIN');
-        $crud->setSearchFields(true === $this->indexLogs ? ['logRecords.message'] : null);
+        $crud->setSearchFields(true === $this->indexLogs ? ['processCode', 'source', 'target', 'logRecords.message'] : ['processCode', 'source', 'target']);
 
         return $crud;
     }
