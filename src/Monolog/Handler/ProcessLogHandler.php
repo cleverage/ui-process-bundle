@@ -8,6 +8,8 @@ use League\Flysystem\Filesystem;
 use League\Flysystem\FilesystemException;
 use League\Flysystem\Local\LocalFilesystemAdapter;
 use Monolog\Handler\AbstractProcessingHandler;
+use Monolog\Logger;
+
 
 class ProcessLogHandler extends AbstractProcessingHandler
 {
