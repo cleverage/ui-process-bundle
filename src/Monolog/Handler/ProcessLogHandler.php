@@ -34,6 +34,11 @@ class ProcessLogHandler extends AbstractProcessingHandler
         if (null === $logFilename = ($this->logFilenames[$this->currentProcessCode] ?? null)) {
             return;
         }
+
+        if ($record['level'] < Logger::INFO) {
+            return;
+        }
+
         if (null === $this->filesystem) {
             $this->filesystem = new Filesystem(
                 new LocalFilesystemAdapter($this->logDir, null, \FILE_APPEND)
