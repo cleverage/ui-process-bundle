@@ -1,15 +1,9 @@
 parameters:
-  uploads_directory: '%kernel.project_dir%/public/uploads'
-  cleverage_processes: '%kernel.project_dir%/config/packages'
-  process_logs_dir: '%kernel.logs_dir%/process'
-
+  upload_directory: '%kernel.project_dir%/var/storage/uploads'
 services:
   _defaults:
     autowire: true
     autoconfigure: true
-    bind:
-      $processLogDir: '%process_logs_dir%'
-      $indexLogs: '%clever_age_process_ui.index_logs.enabled%'
 
   CleverAge\ProcessUiBundle\:
     resource: '../src'

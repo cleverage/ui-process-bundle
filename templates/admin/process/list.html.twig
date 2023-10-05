@@ -1,0 +1,104 @@
+{# @var urlGenerator \EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator #}
+{% extends ea.templatePath('layout') %}
+{% trans_default_domain ea.i18n.translationDomain %}
+
+{% block main %}
+    <table class="table datagrid">
+        <thead>
+        {% block table_head %}
+            <tr>
+                <th>Process code</th>
+                <th>Last execution</th>
+                <th>Status</th>
+                <th>Source</th>
+                <th>Target</th>
+                <th class="text-center">Actions</th>
+            </tr>
+        {% endblock %}
+        </thead>
+        <tbody>
+        {% block table_body %}
+            {# @var process \CleverAge\ProcessBundle\Configuration\ProcessConfiguration #}
+            {% for process in processes %}
+                {% set lastExecution = get_last_execution_date(process.code) %}
+                {% set statusClass = '' %}
+                {% if lastExecution is not null %}
+                    {% set statusClass = lastExecution.status.value == 'failed' ? 'danger' : 'success' %}
+                {% endif %}
+                <tr>
+                    <td>{{ process.code }}</td>
+                    <td>{% if lastExecution is not null %}{{ lastExecution.startDate|date('Y/m/d H:i:s') }}{% endif %}</td>
+                    <td><span class="badge badge-{{ statusClass }}">{% if lastExecution is not null %}{{ lastExecution.status.value }}{% endif %}</span></td>
+                    <td>{% if process.options.ui.source is defined %}{{ process.options.ui.source }}{% endif %}</td>
+                    <td>{% if process.options.ui.target is defined %}{{ process.options.ui.target }}{% endif %}</td>
+                    <td class="text-center">
+                        {% if process.options.ui.upload_and_run is defined and true == process.options.ui.upload_and_run %}
+                            <a class="px-1" data-toggle="tooltip" data-placement="top" title="{{ 'Upload & run'|trans }}" href="{{ url('process', {'routeName': 'process_upload_and_execute', 'process': process.code }) }}">
+                                <i class="fas fa-upload"></i>
+                            </a>
+                        {% endif %}
+                        {% if process.options.ui.run is defined and true == process.options.ui.run %}
+                            <a
+                                    href="#"
+                                    class="px-1"
+                                    data-toggle="tooltip"
+                                    data-placement="top"
+                                    title="{{ 'Execute process in background'|trans }}"
+                                    style="cursor: pointer"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#modal-execute-process-{{ process.code|md5 }}"
+                            >
+                                <i class="fas fa-rocket" data-toggle="modal" data-target="#modal-{{ process.code }}"></i>
+                            </a>
+                        {% endif %}
+                        <a
+                            class="px-1"
+                            data-toggle="tooltip"
+                            data-placement="top"
+                            title="{{ 'View executions'|trans }}"
+                            href="{{ url(
+                                'process',
+                                {
+                                    'crudAction': 'index',
+                                    'crudControllerFqcn': 'CleverAge\\ProcessUiBundle\\Controller\\Admin\\ProcessExecutionCrudController',
+                                    'filters': {
+                                        'code': {
+                                            'comparison': '=',
+                                            'value': process.code
+                                        }
+                                    }
+                                }
+                            ) }}"
+                        >
+                            <i class="fas fa-eye"></i>
+                        </a>
+                    </td>
+                </tr>
+            {% endfor %}
+        {% endblock %}
+        </tbody>
+    </table>
+    {% for process in processes %}
+        <form method="post" id="execute-process-form-{{ process.code|md5 }}" style="display: none" action="{{ url('process_execute') }}">
+            <input type="hidden" name="token" value="{{ ea_csrf_token('ea-delete') }}" />
+            <input type="hidden" name="process" value="{{ process.code }}" />
+        </form>
+
+        <div class="modal fade" id="modal-execute-process-{{ process.code|md5 }}" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Execute process</h5>
+                    </div>
+                    <div class="modal-body">
+                        Do you really want to execute process {{ process.code }} ?
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+                        <button type="button" class="btn btn-primary" onclick="document.getElementById('execute-process-form-{{ process.code|md5 }}').submit();">Yes</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+{% endblock %}

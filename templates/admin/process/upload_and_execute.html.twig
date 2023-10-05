@@ -1,0 +1,23 @@
+{% extends ea.templatePath('layout') %}
+{% trans_default_domain ea.i18n.translationDomain %}
+
+{% block main %}
+    <div class="container text-center">
+        <div class="row py-5">
+            <div class="col">
+                {{ 'Upload you file then click on button to run process in background' }}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                {{ form_start(form) }}
+                    {{ form_widget(form) }}
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-warning btn-block">{{ 'Upload & run'|trans }}</button>
+                    </div>
+                {{ form_end(form) }}
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
