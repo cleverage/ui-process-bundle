@@ -16,64 +16,71 @@ final class Version20231006111525 extends AbstractMigration
 
     public function up(Schema $schema): void
     {
-        // this up() migration is auto-generated, please modify it to your needs
-        if (!$schema->hasTable('log_record')) {
-            $this->addSql(
-                <<<SQL
-                CREATE TABLE log_record (
-                    id INT NOT NULL, 
-                    process_execution_id INT DEFAULT NULL, 
-                    channel VARCHAR(64) NOT NULL, 
-                    level INT NOT NULL, 
-                    message VARCHAR(512) NOT NULL, 
-                    context JSON NOT NULL, 
-                    created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, PRIMARY KEY(id)
-                )
-            SQL
-            );
-            $this->addSql('CREATE INDEX IDX_8ECECC333DAC0075 ON log_record (process_execution_id)');
-            $this->addSql('CREATE INDEX idx_log_record_level ON log_record (level)');
-            $this->addSql('CREATE INDEX idx_log_record_created_at ON log_record (created_at)');
+        $platform = $this->connection->getDatabasePlatform()->getName();
+        if ("sqlite" === $platform) {
+            if (!$schema->hasTable('log_record')) {
+                $this->addSql('CREATE TABLE log_record (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, process_execution_id INTEGER DEFAULT NULL, channel VARCHAR(64) NOT NULL, level INTEGER NOT NULL, message VARCHAR(512) NOT NULL, context CLOB NOT NULL --(DC2Type:json)
+        , created_at DATETIME NOT NULL --(DC2Type:datetime_immutable)
+        , CONSTRAINT FK_8ECECC333DAC0075 FOREIGN KEY (process_execution_id) REFERENCES process_execution (id) ON DELETE CASCADE NOT DEFERRABLE INITIALLY IMMEDIATE)');
+                $this->addSql('CREATE INDEX IDX_8ECECC333DAC0075 ON log_record (process_execution_id)');
+                $this->addSql('CREATE INDEX idx_log_record_level ON log_record (level)');
+                $this->addSql('CREATE INDEX idx_log_record_created_at ON log_record (created_at)');
+            }
+            if (!$schema->hasTable('process_execution')) {
+                $this->addSql('CREATE TABLE process_execution (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, code VARCHAR(255) NOT NULL, log_filename VARCHAR(255) NOT NULL, start_date DATETIME NOT NULL --(DC2Type:datetime_immutable)
+        , end_date DATETIME DEFAULT NULL --(DC2Type:datetime_immutable)
+        , status VARCHAR(255) NOT NULL, report CLOB NOT NULL --(DC2Type:json)
+        )');
+                $this->addSql('CREATE INDEX idx_process_execution_code ON process_execution (code)');
+                $this->addSql('CREATE INDEX idx_process_execution_start_date ON process_execution (start_date)');
+            }
+            if (!$schema->hasTable('process_user')) {
+                $this->addSql('CREATE TABLE process_user (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, email VARCHAR(255) NOT NULL, firstname VARCHAR(255) DEFAULT NULL, lastname VARCHAR(255) DEFAULT NULL, roles CLOB NOT NULL --(DC2Type:json)
+        , password VARCHAR(255) DEFAULT NULL)');
+                $this->addSql('CREATE UNIQUE INDEX UNIQ_627A047CE7927C74 ON process_user (email)');
+                $this->addSql('CREATE INDEX idx_process_user_email ON process_user (email)');
+            }
         }
 
-        if (!$schema->hasTable('process_execution')) {
-            $this->addSql(<<<SQL
-                CREATE TABLE process_execution (
-                    id INT NOT NULL, 
-                    code VARCHAR(255) NOT NULL, 
-                    log_filename VARCHAR(255) NOT NULL, 
-                    start_date TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, 
-                    end_date TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, 
-                    status VARCHAR(255) NOT NULL, 
-                    report JSON NOT NULL, PRIMARY KEY(id)
-                )
-            SQL);
-            $this->addSql(
-                <<<SQL
-                ALTER TABLE log_record 
-                    ADD CONSTRAINT FK_8ECECC333DAC0075 
-                    FOREIGN KEY (process_execution_id) 
-                    REFERENCES process_execution (id) 
-                    ON DELETE CASCADE NOT DEFERRABLE INITIALLY IMMEDIATE
-            SQL
-            );
-            $this->addSql('CREATE INDEX idx_process_execution_code ON process_execution (code)');
-            $this->addSql('CREATE INDEX idx_process_execution_start_date ON process_execution (start_date)');
+        if ("mysql" === $platform) {
+            if (!$schema->hasTable('log_record')) {
+                $this->addSql('CREATE TABLE log_record (id INT AUTO_INCREMENT NOT NULL, process_execution_id INT DEFAULT NULL, channel VARCHAR(64) NOT NULL, level INT NOT NULL, message VARCHAR(512) NOT NULL, context JSON NOT NULL COMMENT \'(DC2Type:json)\', created_at DATETIME NOT NULL COMMENT \'(DC2Type:datetime_immutable)\', INDEX IDX_8ECECC333DAC0075 (process_execution_id), INDEX idx_log_record_level (level), INDEX idx_log_record_created_at (created_at), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+            }
+            if (!$schema->hasTable('process_execution')) {
+                $this->addSql('CREATE TABLE process_execution (id INT AUTO_INCREMENT NOT NULL, code VARCHAR(255) NOT NULL, log_filename VARCHAR(255) NOT NULL, start_date DATETIME NOT NULL COMMENT \'(DC2Type:datetime_immutable)\', end_date DATETIME DEFAULT NULL COMMENT \'(DC2Type:datetime_immutable)\', status VARCHAR(255) NOT NULL, report JSON NOT NULL COMMENT \'(DC2Type:json)\', INDEX idx_process_execution_code (code), INDEX idx_process_execution_start_date (start_date), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+                $this->addSql('ALTER TABLE log_record ADD CONSTRAINT FK_8ECECC333DAC0075 FOREIGN KEY (process_execution_id) REFERENCES process_execution (id) ON DELETE CASCADE');
+            }
+            if (!$schema->hasTable('process_user')) {
+                $this->addSql('CREATE TABLE process_user (id INT AUTO_INCREMENT NOT NULL, email VARCHAR(255) NOT NULL, firstname VARCHAR(255) DEFAULT NULL, lastname VARCHAR(255) DEFAULT NULL, roles JSON NOT NULL COMMENT \'(DC2Type:json)\', password VARCHAR(255) DEFAULT NULL, UNIQUE INDEX UNIQ_627A047CE7927C74 (email), INDEX idx_process_user_email (email), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+            }
         }
 
-        if (!$schema->hasTable('process_user')) {
-            $this->addSql(<<<SQL
-                CREATE TABLE process_user (
-                    id INT NOT NULL, 
-                    email VARCHAR(255) NOT NULL, 
-                    firstname VARCHAR(255) DEFAULT NULL, 
-                    lastname VARCHAR(255) DEFAULT NULL, 
-                    roles JSON NOT NULL, 
-                    password VARCHAR(255) DEFAULT NULL, PRIMARY KEY(id)
-                )
-            SQL);
-            $this->addSql('CREATE UNIQUE INDEX UNIQ_627A047CE7927C74 ON process_user (email)');
-            $this->addSql('CREATE INDEX idx_process_user_email ON process_user (email)');
+        if ("postgresql" === $platform) {
+            if (!$schema->hasTable('log_record')) {
+                $this->addSql('CREATE SEQUENCE log_record_id_seq INCREMENT BY 1 MINVALUE 1 START 1');
+                $this->addSql('CREATE TABLE log_record (id INT NOT NULL, process_execution_id INT DEFAULT NULL, channel VARCHAR(64) NOT NULL, level INT NOT NULL, message VARCHAR(512) NOT NULL, context JSON NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, PRIMARY KEY(id))');
+                $this->addSql('CREATE INDEX IDX_8ECECC333DAC0075 ON log_record (process_execution_id)');
+                $this->addSql('CREATE INDEX idx_log_record_level ON log_record (level)');
+                $this->addSql('CREATE INDEX idx_log_record_created_at ON log_record (created_at)');
+                $this->addSql('COMMENT ON COLUMN log_record.created_at IS \'(DC2Type:datetime_immutable)\'');
+            }
+            if (!$schema->hasTable('process_execution')) {
+                $this->addSql('CREATE SEQUENCE process_execution_id_seq INCREMENT BY 1 MINVALUE 1 START 1');
+                $this->addSql('CREATE TABLE process_execution (id INT NOT NULL, code VARCHAR(255) NOT NULL, log_filename VARCHAR(255) NOT NULL, start_date TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, end_date TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, status VARCHAR(255) NOT NULL, report JSON NOT NULL, PRIMARY KEY(id))');
+                $this->addSql('CREATE INDEX idx_process_execution_code ON process_execution (code)');
+                $this->addSql('CREATE INDEX idx_process_execution_start_date ON process_execution (start_date)');
+                $this->addSql('COMMENT ON COLUMN process_execution.start_date IS \'(DC2Type:datetime_immutable)\'');
+                $this->addSql('COMMENT ON COLUMN process_execution.end_date IS \'(DC2Type:datetime_immutable)\'');
+                $this->addSql('ALTER TABLE log_record ADD CONSTRAINT FK_8ECECC333DAC0075 FOREIGN KEY (process_execution_id) REFERENCES process_execution (id) ON DELETE CASCADE NOT DEFERRABLE INITIALLY IMMEDIATE');
+            }
+            if (!$schema->hasTable('process_user')) {
+                $this->addSql('CREATE SEQUENCE process_user_id_seq INCREMENT BY 1 MINVALUE 1 START 1');
+                $this->addSql('CREATE TABLE process_user (id INT NOT NULL, email VARCHAR(255) NOT NULL, firstname VARCHAR(255) DEFAULT NULL, lastname VARCHAR(255) DEFAULT NULL, roles JSON NOT NULL, password VARCHAR(255) DEFAULT NULL, PRIMARY KEY(id))');
+                $this->addSql('CREATE UNIQUE INDEX UNIQ_627A047CE7927C74 ON process_user (email)');
+                $this->addSql('CREATE INDEX idx_process_user_email ON process_user (email)');
+            }
+
+
         }
     }
 
