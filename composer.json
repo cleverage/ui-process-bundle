@@ -27,6 +27,7 @@
     "symfony/uid": "^6.3",
     "symfony/string": "^6.3",
     "symfony/messenger": "^6.3",
+    "symfony/runtime": "^6.3",
     "symfony/doctrine-messenger": "^6.3",
     "easycorp/easyadmin-bundle": "^4.7"
   },
