@@ -31,6 +31,9 @@
     "symfony/doctrine-messenger": "^6.3",
     "easycorp/easyadmin-bundle": "^4.7"
   },
+  "require-dev": {
+    "vincentlanglet/twig-cs-fixer": "1.4.0"
+  },
   "config": {
     "optimize-autoloader": true,
     "preferred-install": {

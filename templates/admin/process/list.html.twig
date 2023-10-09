@@ -33,7 +33,7 @@
                     <td>{% if process.options.ui.target is defined %}{{ process.options.ui.target }}{% endif %}</td>
                     <td class="text-center">
                         {% if process.options.ui.upload_and_run is defined and true == process.options.ui.upload_and_run %}
-                            <a class="px-1" data-toggle="tooltip" data-placement="top" title="{{ 'Upload & run'|trans }}" href="{{ url('process', {'routeName': 'process_upload_and_execute', 'process': process.code }) }}">
+                            <a class="px-1" data-toggle="tooltip" data-placement="top" title="{{ 'Upload & run'|trans }}" href="{{ url('process', {'routeName': 'process_upload_and_execute', 'process': process.code}) }}">
                                 <i class="fas fa-upload"></i>
                             </a>
                         {% endif %}
