@@ -1,6 +1,10 @@
 # It checks the syntax of the PHP code (using PHP-CS-Fixer)
 name: "Linter: Code Syntax"
-on: [push, pull_request]
+on:
+  push:
+    branches: [ v2-dev ]
+  pull_request:
+    branches: [ v2-dev ]
 jobs:
   php-cs-fixer:
     name: PHP-CS-Fixer
