@@ -23,13 +23,13 @@
     "cleverage/process-bundle": "dev-v4-dev",
     "symfony/flex": "^2",
     "symfony/orm-pack": "^v2.4",
-    "symfony/dotenv": "^6.3",
-    "symfony/uid": "^6.3",
-    "symfony/string": "^6.3",
-    "symfony/messenger": "^6.3",
-    "symfony/runtime": "^6.3",
-    "symfony/doctrine-messenger": "^6.3",
-    "easycorp/easyadmin-bundle": "^4.7"
+    "symfony/dotenv": "^6.4",
+    "symfony/uid": "^6.4",
+    "symfony/string": "^6.4",
+    "symfony/messenger": "^6.4",
+    "symfony/runtime": "^6.4",
+    "symfony/doctrine-messenger": "^6.4",
+    "easycorp/easyadmin-bundle": "^4.8"
   },
   "require-dev": {
     "vincentlanglet/twig-cs-fixer": "1.4.0"
