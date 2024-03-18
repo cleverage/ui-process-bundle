@@ -16,6 +16,6 @@ readonly class ProcessExecuteHandler
 
     public function __invoke(ProcessExecuteMessage $message): void
     {
-        $this->manager->execute($message->code, $message->input);
+        $this->manager->execute($message->code, $message->input, $message->context);
     }
 }
