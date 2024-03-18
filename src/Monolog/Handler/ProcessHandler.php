@@ -34,6 +34,12 @@ class ProcessHandler extends StreamHandler
         $this->url = sprintf('%s/%s', $this->directory, $filename);
     }
 
+    public function close(): void
+    {
+        $this->url = $this->directory;
+        parent::close();
+    }
+
     public function getFilename(): ?string
     {
         return $this->url;

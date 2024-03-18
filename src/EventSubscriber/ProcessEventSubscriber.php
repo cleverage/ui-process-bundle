@@ -41,6 +41,7 @@ final readonly class ProcessEventSubscriber implements EventSubscriberInterface
         $this->processExecutionManager->getCurrentProcessExecution()?->setStatus(ProcessExecutionStatus::Finish);
         $this->processExecutionManager->getCurrentProcessExecution()?->end();
         $this->processExecutionManager->save()->unsetProcessExecution($event->getProcessCode());
+        $this->processHandler->close();
     }
 
     public function fail(ProcessEvent $event): void
@@ -48,6 +49,7 @@ final readonly class ProcessEventSubscriber implements EventSubscriberInterface
         $this->processExecutionManager->getCurrentProcessExecution()?->setStatus(ProcessExecutionStatus::Failed);
         $this->processExecutionManager->getCurrentProcessExecution()?->end();
         $this->processExecutionManager->save()->unsetProcessExecution($event->getProcessCode());
+        $this->processHandler->close();
     }
 
     public function flushDoctrineLogs(ProcessEvent $event): void
