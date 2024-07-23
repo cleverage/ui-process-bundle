@@ -7,6 +7,6 @@ namespace CleverAge\ProcessUiBundle\Entity\Enum;
 enum ProcessExecutionStatus: string
 {
     case Started = 'started';
-    case Finish = 'finish';
+    case Finish = 'completed';
     case Failed = 'failed';
 }
