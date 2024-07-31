@@ -6,6 +6,7 @@ namespace CleverAge\ProcessUiBundle\Controller\Admin;
 
 use CleverAge\ProcessUiBundle\Entity\LogRecord;
 use CleverAge\ProcessUiBundle\Entity\ProcessExecution;
+use CleverAge\ProcessUiBundle\Entity\ProcessSchedule;
 use CleverAge\ProcessUiBundle\Entity\User;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Dashboard;
 use EasyCorp\Bundle\EasyAdminBundle\Config\MenuItem;
@@ -44,6 +45,7 @@ class ProcessDashboardController extends AbstractDashboardController
                 MenuItem::linkToRoute('Process list', 'fas fa-list', 'process_list'),
                 MenuItem::linkToCrud('Executions', 'fas fa-rocket', ProcessExecution::class),
                 MenuItem::linkToCrud('Logs', 'fas fa-pen', LogRecord::class),
+                MenuItem::linkToCrud('Scheduler', 'fas fa-solid fa-clock', ProcessSchedule::class),
             ]
         );
         if ($this->isGranted('ROLE_ADMIN')) {
