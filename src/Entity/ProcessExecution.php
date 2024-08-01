@@ -86,4 +86,9 @@ class ProcessExecution
         $diff = $this->endDate->diff($this->startDate);
         return $diff->format($format);
     }
+
+    public function getCode(): string
+    {
+        return $this->code;
+    }
 }

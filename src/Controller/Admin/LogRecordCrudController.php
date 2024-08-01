@@ -4,33 +4,32 @@ declare(strict_types=1);
 
 namespace CleverAge\ProcessUiBundle\Controller\Admin;
 
-use CleverAge\ProcessBundle\Configuration\ProcessConfiguration;
 use CleverAge\ProcessUiBundle\Admin\Field\LogLevelField;
+use CleverAge\ProcessUiBundle\Admin\Filter\LogProcessCodeFilter;
 use CleverAge\ProcessUiBundle\Entity\LogRecord;
 use CleverAge\ProcessUiBundle\Manager\ProcessConfigurationsManager;
-use Doctrine\ORM\QueryBuilder;
-use EasyCorp\Bundle\EasyAdminBundle\Collection\FieldCollection;
-use EasyCorp\Bundle\EasyAdminBundle\Collection\FilterCollection;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
-use EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto;
-use EasyCorp\Bundle\EasyAdminBundle\Dto\SearchDto;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ArrayField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\ChoiceFilter;
 use Monolog\Level;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[IsGranted('ROLE_USER')]
 class LogRecordCrudController extends AbstractCrudController
 {
 
-    public function __construct(private readonly ProcessConfigurationsManager $processConfigurationsManager)
+    public function __construct(
+        private readonly ProcessConfigurationsManager $processConfigurationsManager,
+        private readonly RequestStack $request
+    )
     {
     }
 
@@ -76,24 +75,15 @@ class LogRecordCrudController extends AbstractCrudController
 
     public function configureFilters(Filters $filters): Filters
     {
-        return $filters->add('processExecution')
+        $id = $this->request->getMainRequest()->query->all('filters')['processExecution']['value'] ?? null;
+        return $filters->add(
+                LogProcessCodeFilter::new('process')
+                    ->addChoices($this->processConfigurationsManager)
+                    ->setCurrentProcessExecutionId((int) $id)
+            )
             ->add(
                 ChoiceFilter::new('level')->setChoices(array_combine(Level::NAMES, Level::VALUES))
             )
             ->add('createdAt');
-    }
-
-    public function createIndexQueryBuilder(SearchDto $searchDto, EntityDto $entityDto, FieldCollection $fields, FilterCollection $filters): QueryBuilder
-    {
-        $queryBuilder =  parent::createIndexQueryBuilder($searchDto, $entityDto, $fields, $filters);
-        if (false === isset($searchDto->getAppliedFilters()['processExecution'])) {
-            $publicProcesses = $this->processConfigurationsManager->getPublicProcesses();
-            $queryBuilder->join($queryBuilder->getRootAliases()[0] . '.processExecution', 'pe');
-            $codes = array_map(fn(ProcessConfiguration $configuration) => $configuration->getCode(), $publicProcesses);
-            $queryBuilder->where($queryBuilder->expr()->in('pe.code', ':codes'));
-            $queryBuilder->setParameter('codes', $codes);
-        }
-
-        return $queryBuilder;
     }
 }
