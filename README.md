@@ -1,5 +1,3 @@
-![Code Style](https://github.com/cleverage/processuibundle/actions/workflows/super-linter.yml/badge.svg) ![Composer](https://github.com/cleverage/processuibundle/actions/workflows/php.yml/badge.svg)
-
 
 ## CleverAge/ProcessUIBundle
 A simple UX for cleverage/processbundle using EasyAdmin
@@ -17,6 +15,26 @@ processui:
 Now you can access Process UI via http://your-domain.com/process
 
 # Features
+### Launch process via http request
+You can launch a process via http post request
+First you need to generate a token via UI User edit form. The ProcessUi generate for you a auth token (keep it in secured area, it will display once).
+
+It' all, now you can launch a process via http post request
+
+***Curl sample***
+```
+curl --location 'https://localhost:8080/http/process/execute?code=demo.die' \
+--header 'Authorization: Bearer 3da8409b5f5b640fb0c43d68e8ac8d23' \
+--form 'input=@"/file.csv"' \
+--form 'context[context_1]="FOO"' \
+--form 'context[context_2]="BAR"'
+```
+* Query string code parameter must be a valid process code
+* Header Autorization: Bearer is the previously generated token
+* input could be string or file representation
+* context you can pass multiple context values
+
+
 ### Scheduler
 You can schedule process execution via UI using cron expression (*/5 * * * *) or periodical triggers (5 seconds)
 For more details about cron expression and peridical triggers visit https://symfony.com/doc/6.4/scheduler.html#cron-expression-triggers and https://symfony.com/doc/6.4/scheduler.html#periodical-triggers

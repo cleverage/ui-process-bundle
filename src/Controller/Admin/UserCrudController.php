@@ -8,13 +8,17 @@ use CleverAge\ProcessUiBundle\Entity\User;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
+use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\EmailField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\FormField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
+use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\RepeatedType;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\PasswordHasher\Hasher\Pbkdf2PasswordHasher;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[IsGranted('ROLE_USER')]
@@ -57,7 +61,6 @@ class UserCrudController extends AbstractCrudController
                     'mapped' => false,
                 ]
             );
-
         yield FormField::addTab('Informations')->setIcon('fa fa-user');
         yield TextField::new('firstname');
         yield TextField::new('lastname');
@@ -86,6 +89,28 @@ class UserCrudController extends AbstractCrudController
             })->update(Crud::PAGE_INDEX, Action::BATCH_DELETE, function (Action $action) {
                 return $action->setLabel('Delete')
                     ->addCssClass('');
-            });
+            })->add(Crud::PAGE_EDIT, Action::new('generateToken')->linkToCrudAction('generateToken'));
+    }
+
+
+    public function generateToken(AdminContext $adminContext, AdminUrlGenerator $adminUrlGenerator): Response
+    {
+        /** @var User $user */
+        $user = $adminContext->getEntity()->getInstance();
+        $token = md5(uniqid(date('YmdHis')));
+        $user->setToken((new Pbkdf2PasswordHasher())->hash($token));
+        $this->persistEntity(
+            $this->container->get('doctrine')->getManagerForClass($adminContext->getEntity()->getFqcn()),
+            $user
+        );
+        $this->addFlash('success', 'New token generated ' . $token . ' (keep it in secured area. This token will never be displayed anymore)');
+
+        return $this->redirect(
+            $adminUrlGenerator
+                ->setController(UserCrudController::class)
+                ->setAction(Action::EDIT)
+                ->setEntityId($user->getId())
+                ->generateUrl()
+        );
     }
 }
