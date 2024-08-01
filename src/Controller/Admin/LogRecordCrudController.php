@@ -86,15 +86,14 @@ class LogRecordCrudController extends AbstractCrudController
     public function createIndexQueryBuilder(SearchDto $searchDto, EntityDto $entityDto, FieldCollection $fields, FilterCollection $filters): QueryBuilder
     {
         $queryBuilder =  parent::createIndexQueryBuilder($searchDto, $entityDto, $fields, $filters);
-        $queryBuilder->join($queryBuilder->getRootAliases()[0].'.processExecution', 'pe');
-        $codes = array_map(
-            fn(ProcessConfiguration $configuration) => $configuration->getCode(),
-            $this->processConfigurationsManager->getPublicProcesses()
-        );
-        $queryBuilder->where($queryBuilder->expr()->in('pe.code', ':codes'));
-        $queryBuilder->setParameter('codes', $codes);
+        if (false === isset($searchDto->getAppliedFilters()['processExecution'])) {
+            $publicProcesses = $this->processConfigurationsManager->getPublicProcesses();
+            $queryBuilder->join($queryBuilder->getRootAliases()[0] . '.processExecution', 'pe');
+            $codes = array_map(fn(ProcessConfiguration $configuration) => $configuration->getCode(), $publicProcesses);
+            $queryBuilder->where($queryBuilder->expr()->in('pe.code', ':codes'));
+            $queryBuilder->setParameter('codes', $codes);
+        }
 
         return $queryBuilder;
-
     }
 }
