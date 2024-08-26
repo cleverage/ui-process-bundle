@@ -28,7 +28,8 @@ final class Version20240729151928 extends AbstractMigration
             $this->addSql('CREATE TABLE process_schedule (id INT AUTO_INCREMENT NOT NULL, process VARCHAR(255) NOT NULL, type VARCHAR(6) NOT NULL, expression VARCHAR(255) NOT NULL, input VARCHAR(255), context JSON NOT NULL, PRIMARY KEY(id))');
         }
         if ($platform instanceof SqlitePlatform) {
-            $this->addSql('CREATE TABLE process_schedule (id INTEGER AUTO_INCREMENT PRIMARY KEY AUTOINCREMENT NOT NULL, process VARCHAR(255) NOT NULL, type VARCHAR(6) NOT NULL, expression VARCHAR(255) NOT NULL, input VARCHAR(255), context CLOB NOT NULL --(DC2Type:json))');
+            $this->addSql('CREATE TABLE process_schedule (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, process VARCHAR(255) NOT NULL, type VARCHAR(6) NOT NULL, expression VARCHAR(255) NOT NULL, input CLOB DEFAULT NULL, context CLOB NOT NULL --(DC2Type:json)
+);');
         }
 
         if ($platform instanceof MariaDBPlatform or $platform instanceof MySQLPlatform) {
@@ -41,3 +42,4 @@ final class Version20240729151928 extends AbstractMigration
         $this->addSql('DROP TABLE process_schedule');
     }
 }
+
