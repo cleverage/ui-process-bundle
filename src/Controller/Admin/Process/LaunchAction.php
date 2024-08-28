@@ -53,7 +53,7 @@ class LaunchAction extends AbstractController
                 (new Filesystem())->dumpFile($filename, $input->getContent());
                 $input = $filename;
             }
-            $context = $form->get('context')->getData();
+            $context = array_column($form->get('context')->getData(), 'value', 'key');
             $message = new ProcessExecuteMessage(
                 $form->getConfig()->getOption('process_code'),
                 $input,
