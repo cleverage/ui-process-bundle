@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CleverAge\ProcessUiBundle\Twig\Runtime;
 
-use CleverAge\ProcessBundle\Registry\ProcessConfigurationRegistry;
 use CleverAge\ProcessUiBundle\Entity\ProcessExecution;
+use CleverAge\ProcessUiBundle\Manager\ProcessConfigurationsManager;
 use CleverAge\ProcessUiBundle\Repository\ProcessExecutionRepository;
 use Twig\Extension\RuntimeExtensionInterface;
 
@@ -13,7 +13,7 @@ readonly class ProcessExecutionExtensionRuntime implements RuntimeExtensionInter
 {
     public function __construct(
         private ProcessExecutionRepository $processExecutionRepository,
-        private ProcessConfigurationRegistry $processConfigurationRegistry
+        private ProcessConfigurationsManager $processConfigurationsManager,
     )
     {
     }
@@ -25,13 +25,11 @@ readonly class ProcessExecutionExtensionRuntime implements RuntimeExtensionInter
 
     public function getProcessSource(string $code): ?string
     {
-        return $this->processConfigurationRegistry
-            ->getProcessConfiguration($code)?->getOptions()['ui']['source'] ?? null;
+        return $this->processConfigurationsManager->getUiOptions($code)['source'];
     }
 
     public function getProcessTarget(string $code): ?string
     {
-        return $this->processConfigurationRegistry
-            ->getProcessConfiguration($code)?->getOptions()['ui']['target'] ?? null;
+        return $this->processConfigurationsManager->getUiOptions($code)['target'];
     }
 }

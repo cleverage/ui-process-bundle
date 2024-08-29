@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace CleverAge\ProcessUiBundle\Form\Type;
 
 use CleverAge\ProcessBundle\Registry\ProcessConfigurationRegistry;
+use CleverAge\ProcessUiBundle\Manager\ProcessConfigurationsManager;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\CallbackTransformer;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
@@ -15,7 +17,10 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class LaunchType extends AbstractType
 {
-    public function __construct(private readonly ProcessConfigurationRegistry $registry)
+    public function __construct(
+        private readonly ProcessConfigurationRegistry $registry,
+        private readonly ProcessConfigurationsManager $configurationsManager,
+    )
     {
 
     }
@@ -23,11 +28,12 @@ class LaunchType extends AbstractType
     {
         $code = $options['process_code'];
         $configuration = $this->registry->getProcessConfiguration($code);
+        $uiOptions = $this->configurationsManager->getUiOptions($code);
         $builder->add(
             'input',
-            "file" === ($configuration->getOptions()['ui']['entrypoint_type'] ?? null) ? FileType::class : TextType::class,
+            "file" === $uiOptions['entrypoint_type'] ? FileType::class : TextType::class,
             [
-                'required' => !(null === $configuration->getEntryPoint())
+                'required' => !(null === $configuration->getEntryPoint()),
             ]
         );
         $builder->add(
@@ -40,6 +46,14 @@ class LaunchType extends AbstractType
                     'required' => false,
                 ]
         );
+        $builder->get('context')->addModelTransformer(new CallbackTransformer(
+            function ($data) {
+                return null === $data ? [] : $data;
+            },
+            function ($data) {
+                return array_column($data ?? [], 'value', 'key');
+            },
+        ));
 
     }
 

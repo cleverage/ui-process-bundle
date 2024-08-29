@@ -6,14 +6,14 @@ namespace CleverAge\ProcessUiBundle\Controller\Admin\Process;
 
 use CleverAge\ProcessBundle\Configuration\ProcessConfiguration;
 use CleverAge\ProcessUiBundle\Form\Type\LaunchType;
-use CleverAge\ProcessUiBundle\Form\Type\ProcessUploadFileType;
+use CleverAge\ProcessUiBundle\Manager\ProcessConfigurationsManager;
 use CleverAge\ProcessUiBundle\Message\ProcessExecuteMessage;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Asset;
 use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
-use EasyCorp\Bundle\EasyAdminBundle\Dto\AssetDto;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
@@ -37,13 +37,27 @@ class LaunchAction extends AbstractController
         MessageBusInterface $messageBus,
         #[Autowire(param: 'upload_directory')] string $uploadDirectory,
         #[ValueResolver('process')] ProcessConfiguration $processConfiguration,
-        AdminContext $context
+        ProcessConfigurationsManager $configurationsManager,
+        AdminContext $context,
     ): Response {
+        $uiOptions = $configurationsManager->getUiOptions($requestStack->getMainRequest()->get('process'));
         $form = $this->createForm(
             LaunchType::class,
             null,
-            ['process_code' => $requestStack->getMainRequest()?->get('process')]
+            [
+                'constraints' => $uiOptions['constraints'],
+                'process_code' => $requestStack->getMainRequest()?->get('process'),
+            ]
         );
+        if (false === $form->isSubmitted()) {
+            $default = $uiOptions['default'];
+            if (false === $form->get('input')->getConfig()->getType()->getInnerType() instanceof TextType
+                && isset($default['input'])
+            ) {
+                unset($default['input']);
+            }
+            $form->setData($default);
+        }
         $form->handleRequest($requestStack->getMainRequest());
         if ($form->isSubmitted() && $form->isValid()) {
             /** @var mixed|UploadedFile $file */
@@ -53,11 +67,11 @@ class LaunchAction extends AbstractController
                 (new Filesystem())->dumpFile($filename, $input->getContent());
                 $input = $filename;
             }
-            $context = array_column($form->get('context')->getData(), 'value', 'key');
+
             $message = new ProcessExecuteMessage(
                 $form->getConfig()->getOption('process_code'),
                 $input,
-                $context
+                $form->get('context')->getData()
             );
             $messageBus->dispatch($message);
             $this->addFlash(

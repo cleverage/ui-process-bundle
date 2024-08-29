@@ -37,9 +37,6 @@ class UploadAndExecuteAction extends AbstractController
         if (null === $processConfiguration->getEntryPoint()) {
             throw new \RuntimeException('You must set an entry_point.');
         }
-        if (false === ($processConfiguration->getOptions()['ui']['upload_and_run'] ?? false)) {
-            throw new \RuntimeException('ui.upload_and_run options not set to true in process options.');
-        }
         $form = $this->createForm(
             ProcessUploadFileType::class,
             null,
