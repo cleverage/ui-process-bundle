@@ -25,16 +25,15 @@ class ProcessExecutionRepository extends ServiceEntityRepository
 
     public function save(ProcessExecution $processExecution): void
     {
-        $this->_em->persist($processExecution);
-        $this->_em->flush();
+        $this->getEntityManager()->persist($processExecution);
+        $this->getEntityManager()->flush();
     }
 
     public function getLastProcessExecution(string $code): ?ProcessExecution
     {
-        $qb = $this->_em->createQueryBuilder();
+        $qb = $this->createQueryBuilder('pe');
 
         return $qb->select('pe')
-            ->from(ProcessExecution::class, 'pe')
             ->where($qb->expr()->eq('pe.code', $qb->expr()->literal($code)))
             ->orderBy('pe.startDate', 'DESC')
             ->setMaxResults(1)
