@@ -12,6 +12,7 @@ use Symfony\Component\Scheduler\RecurringMessage;
 use Symfony\Component\Scheduler\Schedule;
 use Symfony\Component\Scheduler\ScheduleProviderInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Doctrine\DBAL\Driver\AbstractException;
 
 #[AsSchedule('cron')]
 #[WithMonologChannel('scheduler')]
@@ -28,34 +29,39 @@ readonly class CronScheduler implements ScheduleProviderInterface
     public function getSchedule(): Schedule
     {
         $schedule = new Schedule();
-        foreach ($this->repository->findAll() as $processSchedule) {
-            $violations = $this->validator->validate($processSchedule);
-            if (0 !== $violations->count()) {
-                foreach ($violations as $violation) {
-                    $this->logger->info(
-                        'Scheduler configuration is not valid.',
-                        ['reason' => $violation->getMessage()]
+        try {
+            foreach ($this->repository->findAll() as $processSchedule) {
+                $violations = $this->validator->validate($processSchedule);
+                if (0 !== $violations->count()) {
+                    foreach ($violations as $violation) {
+                        $this->logger->info(
+                            'Scheduler configuration is not valid.',
+                            ['reason' => $violation->getMessage()]
+                        );
+                    }
+                    continue;
+                }
+                if (ProcessScheduleType::CRON === $processSchedule->getType()) {
+                    $schedule->add(
+                        RecurringMessage::cron(
+                            $processSchedule->getExpression(),
+                            new CronProcessMessage($processSchedule)
+                        )
+                    );
+                } elseif (ProcessScheduleType::EVERY === $processSchedule->getType()) {
+                    $schedule->add(
+                        RecurringMessage::every(
+                            $processSchedule->getExpression(),
+                            new CronProcessMessage($processSchedule)
+                        )
                     );
                 }
-                continue;
             }
-            if (ProcessScheduleType::CRON === $processSchedule->getType()) {
-                $schedule->add(
-                    RecurringMessage::cron(
-                        $processSchedule->getExpression(),
-                        new CronProcessMessage($processSchedule)
-                    )
-                );
-            } elseif (ProcessScheduleType::EVERY === $processSchedule->getType()) {
-                $schedule->add(
-                    RecurringMessage::every(
-                        $processSchedule->getExpression(),
-                        new CronProcessMessage($processSchedule)
-                    )
-                );
-            }
+        } catch (\Exception $e) {
+            $this->logger->critical($e->getMessage());
         }
 
         return $schedule;
     }
 }
+
