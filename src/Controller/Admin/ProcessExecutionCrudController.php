@@ -138,17 +138,4 @@ class ProcessExecutionCrudController extends AbstractCrudController
     {
         return $filters->add('code')->add('startDate');
     }
-
-    public function createIndexQueryBuilder(SearchDto $searchDto, EntityDto $entityDto, FieldCollection $fields, FilterCollection $filters): QueryBuilder
-    {
-        $codes = array_map(
-            fn(ProcessConfiguration $configuration) => $configuration->getCode(),
-            $this->processConfigurationsManager->getPublicProcesses()
-        );
-        $queryBuilder = parent::createIndexQueryBuilder($searchDto, $entityDto, $fields, $filters);
-        $queryBuilder->where($queryBuilder->expr()->in($queryBuilder->getRootAliases()[0] . '.code', ':codes'));
-        $queryBuilder->setParameter('codes', $codes);
-
-        return $queryBuilder;
-    }
 }
