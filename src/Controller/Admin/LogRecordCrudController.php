@@ -85,6 +85,7 @@ class LogRecordCrudController extends AbstractCrudController
                 ChoiceFilter::new('level')->setChoices(array_combine(Level::NAMES, Level::VALUES))
             )
             ->add('message')
+            ->add('context')
             ->add('createdAt');
     }
 }
