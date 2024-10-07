@@ -8,6 +8,7 @@ use CleverAge\ProcessUiBundle\Entity\LogRecord;
 use CleverAge\ProcessUiBundle\Entity\ProcessExecution;
 use CleverAge\ProcessUiBundle\Entity\ProcessSchedule;
 use CleverAge\ProcessUiBundle\Entity\User;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Dashboard;
 use EasyCorp\Bundle\EasyAdminBundle\Config\MenuItem;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractDashboardController;
@@ -55,5 +56,12 @@ class ProcessDashboardController extends AbstractDashboardController
                 ]
             );
         }
+    }
+
+    public function configureCrud(): Crud
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+        return parent::configureCrud()->setTimezone($user?->getTimezone() ?? date_default_timezone_get());
     }
 }

@@ -34,6 +34,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $password;
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $timezone;
+
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private ?string $token;
 
     public function getId(): ?int
@@ -91,6 +94,19 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         return $this->getUserIdentifier();
     }
+
+    public function getTimezone(): ?string
+    {
+        return $this->timezone;
+    }
+
+    public function setTimezone(?string $timezone): self
+    {
+        $this->timezone = $timezone;
+
+        return $this;
+    }
+
 
     /**
      * @see UserInterface

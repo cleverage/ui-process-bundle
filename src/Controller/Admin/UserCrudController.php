@@ -14,6 +14,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\EmailField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\FormField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\TimezoneField;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\RepeatedType;
@@ -69,6 +70,8 @@ class UserCrudController extends AbstractCrudController
         yield ChoiceField::new('roles', false)
             ->setChoices($this->roles)
             ->setFormTypeOptions(['multiple' => true, 'expanded' => true]);
+        yield FormField::addTab('Intl.')->setIcon('fa fa-flag');
+        yield TimezoneField::new('timezone');
     }
 
     public function configureActions(Actions $actions): Actions
