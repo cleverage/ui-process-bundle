@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CleverAge\ProcessUiBundle\Controller\Admin\Process;
 
 use CleverAge\ProcessBundle\Configuration\ProcessConfiguration;
+use CleverAge\ProcessUiBundle\Entity\User;
 use CleverAge\ProcessUiBundle\Form\Type\LaunchType;
 use CleverAge\ProcessUiBundle\Manager\ProcessConfigurationsManager;
 use CleverAge\ProcessUiBundle\Message\ProcessExecuteMessage;
@@ -71,7 +72,10 @@ class LaunchAction extends AbstractController
             $message = new ProcessExecuteMessage(
                 $form->getConfig()->getOption('process_code'),
                 $input,
-                $form->get('context')->getData()
+                array_merge(
+                    ['execution_user' => $this->getUser()?->getEmail()],
+                    $form->get('context')->getData()
+                )
             );
             $messageBus->dispatch($message);
             $this->addFlash(
@@ -88,5 +92,12 @@ class LaunchAction extends AbstractController
                 'form' => $form->createView(),
             ]
         );
+    }
+
+    protected function getUser(): ?User
+    {
+        /** @var User $user */
+        $user = parent::getUser();
+        return $user;
     }
 }

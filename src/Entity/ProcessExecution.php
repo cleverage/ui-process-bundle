@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CleverAge\ProcessUiBundle\Entity;
 
 use CleverAge\ProcessUiBundle\Entity\Enum\ProcessExecutionStatus;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\String\UnicodeString;
 
@@ -18,35 +19,39 @@ class ProcessExecution
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(type: 'string', length: 255)]
+    #[ORM\Column(type: Types::STRING, length: 255)]
     public readonly string $code;
 
-    #[ORM\Column(type: 'string', length: 255)]
+    #[ORM\Column(type: Types::STRING, length: 255)]
     public readonly string $logFilename;
 
-    #[ORM\Column(type: 'datetime_immutable')]
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     public readonly \DateTimeImmutable $startDate;
 
-    #[ORM\Column(type: 'datetime_immutable', nullable: true)]
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
     public ?\DateTimeImmutable $endDate = null;
 
-    #[ORM\Column(type: 'string', enumType: ProcessExecutionStatus::class)]
+    #[ORM\Column(type: Types::STRING, enumType: ProcessExecutionStatus::class)]
     public ProcessExecutionStatus $status;
 
-    #[ORM\Column(type: 'json')]
+    #[ORM\Column(type: Types::JSON)]
     private array $report = [];
+
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    private ?array $context = [];
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function __construct(string $code, string $logFilename)
+    public function __construct(string $code, string $logFilename, ?array $context = [])
     {
         $this->code = (string) (new UnicodeString($code))->truncate(255);
         $this->logFilename = $logFilename;
         $this->startDate = \DateTimeImmutable::createFromMutable(new \DateTime());
         $this->status = ProcessExecutionStatus::Started;
+        $this->context = $context ?? [];
     }
 
     public function setStatus(ProcessExecutionStatus $status): void
@@ -90,5 +95,15 @@ class ProcessExecution
     public function getCode(): string
     {
         return $this->code;
+    }
+
+    public function getContext(): array
+    {
+        return $this->context;
+    }
+
+    public function setContext(array $context): void
+    {
+        $this->context = $context;
     }
 }

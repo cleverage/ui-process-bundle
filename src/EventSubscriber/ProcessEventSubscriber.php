@@ -30,7 +30,8 @@ final readonly class ProcessEventSubscriber implements EventSubscriberInterface
         if (null === $this->processExecutionManager->getCurrentProcessExecution()) {
             $processExecution = new ProcessExecution(
                 $event->getProcessCode(),
-                basename($this->processHandler->getFilename())
+                basename($this->processHandler->getFilename()),
+                $event->getProcessContext()
             );
             $this->processExecutionManager->setCurrentProcessExecution($processExecution)->save();
         }

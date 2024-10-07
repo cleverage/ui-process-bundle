@@ -53,6 +53,7 @@ class ProcessExecutionCrudController extends AbstractCrudController
                 return $entity->duration(); // returned format can be changed here
             }),
             ArrayField::new('report')->setTemplatePath('@CleverAgeProcessUi/admin/field/report.html.twig'),
+            ArrayField::new('context')->setTemplatePath('@CleverAgeProcessUi/admin/field/report.html.twig'),
         ];
     }
 
