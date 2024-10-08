@@ -20,7 +20,7 @@ final class Version20241007152613 extends AbstractMigration
     public function up(Schema $schema): void
     {
         if ($schema->hasTable('process_execution') && !$schema->getTable('process_execution')->hasColumn('context')) {
-            $this->addSql('ALTER TABLE process_execution ADD context JSON NOT NULL COMMENT \'(DC2Type:json)\'');
+            $this->addSql('ALTER TABLE process_execution ADD context JSON NOT NULL');
         }
     }
 
