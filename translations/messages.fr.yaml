@@ -1,0 +1,54 @@
+Generate Token: Générer un jeton
+Credentials: Informations d'identification
+User: Utilisateur
+Dashboard: Tableau de bord
+Process: Processus
+Process list: Liste des processus
+Executions: Exécutions
+Logs: Logs
+Scheduler: Planificateur
+Users: Utilisateurs
+User List: Liste des utilisateurs
+Informations: Informations
+Roles: Rôles
+Intl.: Internationalisation
+Email: Email
+New password: Nouveau mot de passe
+Repeat password: Répéter le mot de passe
+Firstname: Prénom
+Lastname: Nom
+Timezone: Fuseau horaire
+Locale: Locale
+ProcessExecution: Exécution des processus
+Code: Code
+Status: Status
+Start Date: Date de début
+End Date: Date de fin
+Source: Source
+Target: Destination
+Duration: Durée
+Report: Rapport
+Context: Context
+Launch: Exécuter
+View executions: Voir les éxécutions
+Process code: Code du processus
+Last execution: Dernière exécution
+Actions: Actions
+LogRecord: Logs
+Level: Niveau
+Message: Message
+Created At: Date de création
+Has context info ?: Context ?
+ProcessSchedule: Planificateur
+To run scheduler, ensure "bin/console messenger:consume scheduler_cron" console is alive. See https://symfony.com/doc/current/messenger.html#supervisor-configuration.: "Pour fonctionner, assurez vous que la commande \"bin/console messenger:consume scheduler_cron\" soit exécutée. Plus d''informations sur https://symfony.com/doc/current/messenger.html#supervisor-configuration."
+Delete: Supprimer
+Type: Type
+Expression: Expression
+Next Execution: Prochaîne exécution
+Input: Input
+General: Général
+Context (key/value): Context (clé/valeur)
+key: clé
+value: valeur
+Context Key: Context clé
+Context Value: Context valeur

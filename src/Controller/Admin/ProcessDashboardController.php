@@ -16,11 +16,15 @@ use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\Translation\LocaleSwitcher;
 
 #[IsGranted('ROLE_USER')]
 class ProcessDashboardController extends AbstractDashboardController
 {
-    public function __construct(private readonly string $logoPath = '')
+    public function __construct(
+        private readonly LocaleSwitcher $localeSwitcher,
+        private readonly string $logoPath = ''
+    )
     {
     }
 
@@ -62,6 +66,9 @@ class ProcessDashboardController extends AbstractDashboardController
     {
         /** @var User $user */
         $user = $this->getUser();
+        if (null !== $user->getLocale()) {
+            $this->localeSwitcher->setLocale($user->getLocale());
+        }
         return parent::configureCrud()->setTimezone($user?->getTimezone() ?? date_default_timezone_get());
     }
 }

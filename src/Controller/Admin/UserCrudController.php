@@ -13,6 +13,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\EmailField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\FormField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\LocaleField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TimezoneField;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
@@ -72,6 +73,7 @@ class UserCrudController extends AbstractCrudController
             ->setFormTypeOptions(['multiple' => true, 'expanded' => true]);
         yield FormField::addTab('Intl.')->setIcon('fa fa-flag');
         yield TimezoneField::new('timezone');
+        yield LocaleField::new('locale');
     }
 
     public function configureActions(Actions $actions): Actions
