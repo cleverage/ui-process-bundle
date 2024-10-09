@@ -65,7 +65,7 @@ class ProcessDashboardController extends AbstractDashboardController
     {
         /** @var User $user */
         $user = $this->getUser();
-        if (null !== $user->getLocale()) {
+        if (null !== $user?->getLocale()) {
             $this->localeSwitcher->setLocale($user->getLocale());
         }
 
