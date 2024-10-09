@@ -18,7 +18,6 @@ class DoctrineProcessHandler extends AbstractProcessingHandler
     private ArrayCollection $records;
     private ?ProcessExecutionManager $processExecutionManager;
     private ?EntityManagerInterface $em = null;
-    private bool $enabled = false;
 
     public function __construct(int|string|Level $level = Level::Debug, bool $bubble = true)
     {
@@ -36,11 +35,6 @@ class DoctrineProcessHandler extends AbstractProcessingHandler
     public function setProcessExecutionManager(ProcessExecutionManager $processExecutionManager): void
     {
         $this->processExecutionManager = $processExecutionManager;
-    }
-
-    public function setEnabled(bool $flag): void
-    {
-        $this->enabled = $flag;
     }
 
     public function __destruct()
@@ -66,9 +60,6 @@ class DoctrineProcessHandler extends AbstractProcessingHandler
 
     protected function write(LogRecord $record): void
     {
-        if (false === $this->enabled) {
-            return;
-        }
         $this->records->add($record);
         if (500 === $this->records->count()) {
             $this->flush();
