@@ -13,8 +13,8 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 enum ProcessScheduleType: string
 {
-    case CRON = "cron";
-    case EVERY = "every";
+    case CRON = 'cron';
+    case EVERY = 'every';
 }
 
 #[ORM\Entity(repositoryClass: ProcessScheduleRepository::class)]

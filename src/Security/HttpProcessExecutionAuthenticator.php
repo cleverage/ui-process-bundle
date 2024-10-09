@@ -53,7 +53,7 @@ class HttpProcessExecutionAuthenticator extends AbstractAuthenticator
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception): ?Response
     {
         $data = [
-            'message' => $exception->getMessage()
+            'message' => $exception->getMessage(),
         ];
 
         return new JsonResponse($data, Response::HTTP_UNAUTHORIZED);

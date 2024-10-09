@@ -21,8 +21,7 @@ class ProcessExecuteController extends AbstractController
         #[ValueResolver('http_process_execution')] HttpProcessExecution $httpProcessExecution,
         ValidatorInterface $validator,
         MessageBusInterface $bus
-    ): JsonResponse
-    {
+    ): JsonResponse {
         $violations = $validator->validate($httpProcessExecution);
         if ($violations->count() > 0) {
             $violationsMessages = [];

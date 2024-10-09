@@ -122,7 +122,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-
     /**
      * @see UserInterface
      */
@@ -167,7 +166,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
         return $this;
     }
-
 
     /**
      * Returning a salt is only needed, if you are not using a modern

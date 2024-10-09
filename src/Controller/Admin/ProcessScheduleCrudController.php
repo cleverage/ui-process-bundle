@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace CleverAge\ProcessUiBundle\Controller\Admin;
 
+use CleverAge\ProcessBundle\Configuration\ProcessConfiguration;
+use CleverAge\ProcessUiBundle\Admin\Field\EnumField;
 use CleverAge\ProcessUiBundle\Entity\ProcessSchedule;
 use CleverAge\ProcessUiBundle\Entity\ProcessScheduleType;
 use CleverAge\ProcessUiBundle\Form\Type\ProcessContextType;
-use CleverAge\ProcessBundle\Configuration\ProcessConfiguration;
-use CleverAge\ProcessUiBundle\Admin\Field\EnumField;
 use CleverAge\ProcessUiBundle\Manager\ProcessConfigurationsManager;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
@@ -68,10 +68,10 @@ class ProcessScheduleCrudController extends AbstractCrudController
 
     public function configureFields(string $pageName): iterable
     {
-
-        $choices = array_map(function(ProcessConfiguration $configuration) {
+        $choices = array_map(function (ProcessConfiguration $configuration) {
             return [$configuration->getCode()];
         }, $this->processConfigurationsManager->getPublicProcesses());
+
         return [
             FormField::addTab('General'),
             TextField::new('process')
@@ -99,7 +99,7 @@ class ProcessScheduleCrudController extends AbstractCrudController
                 ->hideOnIndex()
                 ->setFormTypeOption('entry_options.label', 'Context (key/value)')
                 ->setFormTypeOption('label', '')
-                ->setFormTypeOption('required', false)
+                ->setFormTypeOption('required', false),
         ];
     }
 
@@ -114,7 +114,6 @@ class ProcessScheduleCrudController extends AbstractCrudController
 
     private function schedulerIsRunning(): bool
     {
-
         $process = Process::fromShellCommandline('ps -faux');
         $process->run();
         $out = $process->getOutput();

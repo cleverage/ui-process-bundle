@@ -17,7 +17,7 @@ final class Version20231006111525 extends AbstractMigration
     public function up(Schema $schema): void
     {
         $platform = $this->connection->getDatabasePlatform()->getName();
-        if ("sqlite" === $platform) {
+        if ('sqlite' === $platform) {
             if (!$schema->hasTable('log_record')) {
                 $this->addSql('CREATE TABLE log_record (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, process_execution_id INTEGER DEFAULT NULL, channel VARCHAR(64) NOT NULL, level INTEGER NOT NULL, message VARCHAR(512) NOT NULL, context CLOB NOT NULL --(DC2Type:json)
         , created_at DATETIME NOT NULL --(DC2Type:datetime_immutable)
@@ -42,7 +42,7 @@ final class Version20231006111525 extends AbstractMigration
             }
         }
 
-        if ("mysql" === $platform) {
+        if ('mysql' === $platform) {
             if (!$schema->hasTable('log_record')) {
                 $this->addSql('CREATE TABLE log_record (id INT AUTO_INCREMENT NOT NULL, process_execution_id INT DEFAULT NULL, channel VARCHAR(64) NOT NULL, level INT NOT NULL, message VARCHAR(512) NOT NULL, context JSON NOT NULL COMMENT \'(DC2Type:json)\', created_at DATETIME NOT NULL COMMENT \'(DC2Type:datetime_immutable)\', INDEX IDX_8ECECC333DAC0075 (process_execution_id), INDEX idx_log_record_level (level), INDEX idx_log_record_created_at (created_at), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
             }
@@ -55,7 +55,7 @@ final class Version20231006111525 extends AbstractMigration
             }
         }
 
-        if ("postgresql" === $platform) {
+        if ('postgresql' === $platform) {
             if (!$schema->hasTable('log_record')) {
                 $this->addSql('CREATE SEQUENCE log_record_id_seq INCREMENT BY 1 MINVALUE 1 START 1');
                 $this->addSql('CREATE TABLE log_record (id INT NOT NULL, process_execution_id INT DEFAULT NULL, channel VARCHAR(64) NOT NULL, level INT NOT NULL, message VARCHAR(512) NOT NULL, context JSON NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, PRIMARY KEY(id))');
@@ -79,8 +79,6 @@ final class Version20231006111525 extends AbstractMigration
                 $this->addSql('CREATE UNIQUE INDEX UNIQ_627A047CE7927C74 ON process_user (email)');
                 $this->addSql('CREATE INDEX idx_process_user_email ON process_user (email)');
             }
-
-
         }
     }
 

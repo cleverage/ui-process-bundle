@@ -97,7 +97,6 @@ class UserCrudController extends AbstractCrudController
             })->add(Crud::PAGE_EDIT, Action::new('generateToken')->linkToCrudAction('generateToken'));
     }
 
-
     public function generateToken(AdminContext $adminContext, AdminUrlGenerator $adminUrlGenerator): Response
     {
         /** @var User $user */
@@ -108,7 +107,7 @@ class UserCrudController extends AbstractCrudController
             $this->container->get('doctrine')->getManagerForClass($adminContext->getEntity()->getFqcn()),
             $user
         );
-        $this->addFlash('success', 'New token generated ' . $token . ' (keep it in secured area. This token will never be displayed anymore)');
+        $this->addFlash('success', 'New token generated '.$token.' (keep it in secured area. This token will never be displayed anymore)');
 
         return $this->redirect(
             $adminUrlGenerator

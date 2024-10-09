@@ -20,10 +20,9 @@ class LaunchType extends AbstractType
     public function __construct(
         private readonly ProcessConfigurationRegistry $registry,
         private readonly ProcessConfigurationsManager $configurationsManager,
-    )
-    {
-
+    ) {
     }
+
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $code = $options['process_code'];
@@ -31,7 +30,7 @@ class LaunchType extends AbstractType
         $uiOptions = $this->configurationsManager->getUiOptions($code);
         $builder->add(
             'input',
-            "file" === $uiOptions['entrypoint_type'] ? FileType::class : TextType::class,
+            'file' === $uiOptions['entrypoint_type'] ? FileType::class : TextType::class,
             [
                 'required' => !(null === $configuration->getEntryPoint()),
             ]
@@ -39,12 +38,12 @@ class LaunchType extends AbstractType
         $builder->add(
             'context',
             CollectionType::class,
-                [
-                    'entry_type' => ProcessContextType::class,
-                    'allow_add' => true,
-                    'allow_delete' => true,
-                    'required' => false,
-                ]
+            [
+                'entry_type' => ProcessContextType::class,
+                'allow_add' => true,
+                'allow_delete' => true,
+                'required' => false,
+            ]
         );
         $builder->get('context')->addModelTransformer(new CallbackTransformer(
             function ($data) {
@@ -54,7 +53,6 @@ class LaunchType extends AbstractType
                 return array_column($data ?? [], 'value', 'key');
             },
         ));
-
     }
 
     public function configureOptions(OptionsResolver $resolver): void

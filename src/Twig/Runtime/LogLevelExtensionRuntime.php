@@ -23,11 +23,11 @@ class LogLevelExtensionRuntime implements RuntimeExtensionInterface
             Level::Debug->value, Level::Info->value => 'success',
             default => ''
         }
-            : match ($value) {
-                Level::Warning->name => 'warning',
-                Level::Error->name, Level::Emergency->name, Level::Critical->name, Level::Alert->name => 'danger',
-                Level::Debug->name, Level::Info->name => 'success',
-                default => ''
-            };
+        : match ($value) {
+            Level::Warning->name => 'warning',
+            Level::Error->name, Level::Emergency->name, Level::Critical->name, Level::Alert->name => 'danger',
+            Level::Debug->name, Level::Info->name => 'success',
+            default => ''
+        };
     }
 }

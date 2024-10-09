@@ -14,8 +14,7 @@ readonly class ProcessExecutionExtensionRuntime implements RuntimeExtensionInter
     public function __construct(
         private ProcessExecutionRepository $processExecutionRepository,
         private ProcessConfigurationsManager $processConfigurationsManager,
-    )
-    {
+    ) {
     }
 
     public function getLastExecutionDate(string $code): ?ProcessExecution

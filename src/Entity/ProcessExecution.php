@@ -74,7 +74,7 @@ class ProcessExecution
         $this->report[$key] = $value;
     }
 
-    public function getReport(string $key = null, mixed $default = null): mixed
+    public function getReport(?string $key = null, mixed $default = null): mixed
     {
         if (null === $key) {
             return $this->report;
@@ -89,6 +89,7 @@ class ProcessExecution
             return null;
         }
         $diff = $this->endDate->diff($this->startDate);
+
         return $diff->format($format);
     }
 

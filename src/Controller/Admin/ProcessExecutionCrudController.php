@@ -4,21 +4,14 @@ declare(strict_types=1);
 
 namespace CleverAge\ProcessUiBundle\Controller\Admin;
 
-use CleverAge\ProcessBundle\Configuration\ProcessConfiguration;
 use CleverAge\ProcessUiBundle\Admin\Field\EnumField;
 use CleverAge\ProcessUiBundle\Entity\ProcessExecution;
-use CleverAge\ProcessUiBundle\Manager\ProcessConfigurationsManager;
-use Doctrine\ORM\QueryBuilder;
-use EasyCorp\Bundle\EasyAdminBundle\Collection\FieldCollection;
-use EasyCorp\Bundle\EasyAdminBundle\Collection\FilterCollection;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
 use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
-use EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto;
-use EasyCorp\Bundle\EasyAdminBundle\Dto\SearchDto;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ArrayField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
@@ -32,9 +25,6 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_USER')]
 class ProcessExecutionCrudController extends AbstractCrudController
 {
-    public function __construct(private readonly ProcessConfigurationsManager $processConfigurationsManager)
-    {
-    }
     public static function getEntityFqcn(): string
     {
         return ProcessExecution::class;
@@ -49,7 +39,7 @@ class ProcessExecutionCrudController extends AbstractCrudController
             DateTimeField::new('endDate')->setFormat('Y/M/dd H:mm:ss'),
             TextField::new('source')->setTemplatePath('@CleverAgeProcessUi/admin/field/process_source.html.twig'),
             TextField::new('target')->setTemplatePath('@CleverAgeProcessUi/admin/field/process_target.html.twig'),
-            TextField::new('duration')->formatValue(function($value, ProcessExecution $entity) {
+            TextField::new('duration')->formatValue(function ($value, ProcessExecution $entity) {
                 return $entity->duration(); // returned format can be changed here
             }),
             ArrayField::new('report')->setTemplatePath('@CleverAgeProcessUi/admin/field/report.html.twig'),

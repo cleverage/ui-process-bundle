@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CleverAge\ProcessUiBundle\Scheduler;
 
 use CleverAge\ProcessUiBundle\Entity\ProcessScheduleType;
@@ -12,7 +14,6 @@ use Symfony\Component\Scheduler\RecurringMessage;
 use Symfony\Component\Scheduler\Schedule;
 use Symfony\Component\Scheduler\ScheduleProviderInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
-use Doctrine\DBAL\Driver\AbstractException;
 
 #[AsSchedule('cron')]
 #[WithMonologChannel('scheduler')]
@@ -22,10 +23,9 @@ readonly class CronScheduler implements ScheduleProviderInterface
         private ProcessScheduleRepository $repository,
         private ValidatorInterface $validator,
         private LoggerInterface $logger
-    )
-    {
-
+    ) {
     }
+
     public function getSchedule(): Schedule
     {
         $schedule = new Schedule();
@@ -64,4 +64,3 @@ readonly class CronScheduler implements ScheduleProviderInterface
         return $schedule;
     }
 }
-

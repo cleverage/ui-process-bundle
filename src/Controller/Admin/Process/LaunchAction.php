@@ -86,6 +86,7 @@ class LaunchAction extends AbstractController
             return $this->redirectToRoute('process', ['routeName' => 'process_list']);
         }
         $context->getAssets()->addJsAsset(Asset::fromEasyAdminAssetPackage('field-collection.js')->getAsDto());
+
         return $this->render(
             '@CleverAgeProcessUi/admin/process/launch.html.twig',
             [
@@ -98,6 +99,7 @@ class LaunchAction extends AbstractController
     {
         /** @var User $user */
         $user = parent::getUser();
+
         return $user;
     }
 }

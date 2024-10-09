@@ -19,7 +19,7 @@ class ListAction extends AbstractController
         return $this->render(
             '@CleverAgeProcessUi/admin/process/list.html.twig',
             [
-                'processes' => $processConfigurationsManager->getPublicProcesses()
+                'processes' => $processConfigurationsManager->getPublicProcesses(),
             ]
         );
     }

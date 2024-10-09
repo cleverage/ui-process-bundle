@@ -25,12 +25,10 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_USER')]
 class LogRecordCrudController extends AbstractCrudController
 {
-
     public function __construct(
         private readonly ProcessConfigurationsManager $processConfigurationsManager,
         private readonly RequestStack $request
-    )
-    {
+    ) {
     }
 
     public static function getEntityFqcn(): string
@@ -76,16 +74,13 @@ class LogRecordCrudController extends AbstractCrudController
     public function configureFilters(Filters $filters): Filters
     {
         $id = $this->request->getMainRequest()->query->all('filters')['processExecution']['value'] ?? null;
+
         return $filters->add(
-                LogProcessCodeFilter::new('process')
-                    ->addChoices($this->processConfigurationsManager)
-                    ->setCurrentProcessExecutionId((int) $id)
-            )
-            ->add(
-                ChoiceFilter::new('level')->setChoices(array_combine(Level::NAMES, Level::VALUES))
-            )
-            ->add('message')
-            ->add('context')
-            ->add('createdAt');
+            LogProcessCodeFilter::new('process')
+                ->addChoices($this->processConfigurationsManager)
+                ->setCurrentProcessExecutionId((int) $id)
+        )->add(
+            ChoiceFilter::new('level')->setChoices(array_combine(Level::NAMES, Level::VALUES))
+        )->add('message')->add('context')->add('createdAt');
     }
 }

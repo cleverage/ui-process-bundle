@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace CleverAge\ProcessUiBundle\Admin\Filter;
@@ -31,7 +32,7 @@ class LogProcessCodeFilter implements FilterInterface
     public function addChoices(ProcessConfigurationsManager $manager): self
     {
         $choices = $manager->getPublicProcesses();
-        $choices = array_map(fn(ProcessConfiguration $cfg) => $cfg->getCode(), $choices);
+        $choices = array_map(fn (ProcessConfiguration $cfg) => $cfg->getCode(), $choices);
         $this->setFormTypeOption('choices', $choices);
 
         return $this;
@@ -43,6 +44,7 @@ class LogProcessCodeFilter implements FilterInterface
         if (0 !== $this->currentProcessExecutionId) {
             $this->setFormTypeOption('disabled', true);
         }
+
         return $this;
     }
 
@@ -52,6 +54,7 @@ class LogProcessCodeFilter implements FilterInterface
         if (null !== $this->currentProcessExecutionId) {
             $queryBuilder->andWhere($queryBuilder->expr()->eq('pe.id', ':id'));
             $queryBuilder->setParameter('id', $this->currentProcessExecutionId);
+
             return;
         }
         $queryBuilder->where('pe.code IN (:codes)');

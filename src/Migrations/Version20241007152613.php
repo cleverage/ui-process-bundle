@@ -28,7 +28,6 @@ final class Version20241007152613 extends AbstractMigration
     {
         if ($schema->hasTable('process_execution') && $schema->getTable('process_execution')->hasColumn('context')) {
             $this->addSql('ALTER TABLE process_execution DROP context');
-
         }
     }
 }

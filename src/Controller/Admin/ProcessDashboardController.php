@@ -24,8 +24,7 @@ class ProcessDashboardController extends AbstractDashboardController
     public function __construct(
         private readonly LocaleSwitcher $localeSwitcher,
         private readonly string $logoPath = ''
-    )
-    {
+    ) {
     }
 
     #[Route('/process', name: 'process')]
@@ -69,6 +68,7 @@ class ProcessDashboardController extends AbstractDashboardController
         if (null !== $user->getLocale()) {
             $this->localeSwitcher->setLocale($user->getLocale());
         }
+
         return parent::configureCrud()->setTimezone($user?->getTimezone() ?? date_default_timezone_get());
     }
 }

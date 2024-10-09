@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace CleverAge\ProcessUiBundle\Manager;
@@ -18,13 +19,13 @@ final readonly class ProcessConfigurationsManager
     /** @return ProcessConfiguration[] */
     public function getPublicProcesses(): array
     {
-        return array_filter($this->getConfigurations(), fn(ProcessConfiguration $cfg) => $cfg->isPublic());
+        return array_filter($this->getConfigurations(), fn (ProcessConfiguration $cfg) => $cfg->isPublic());
     }
 
     /** @return ProcessConfiguration[] */
     public function getPrivateProcesses(): array
     {
-        return array_filter($this->getConfigurations(), fn(ProcessConfiguration $cfg) => !$cfg->isPublic());
+        return array_filter($this->getConfigurations(), fn (ProcessConfiguration $cfg) => !$cfg->isPublic());
     }
 
     public function getUiOptions(string $processCode): ?array
@@ -49,13 +50,13 @@ final readonly class ProcessConfigurationsManager
                     'entrypoint_type' => 'text',
                     'constraints' => [],
                     'run' => null,
-                    'default' => function(OptionsResolver $defaultResolver) {
+                    'default' => function (OptionsResolver $defaultResolver) {
                         $defaultResolver->setDefault('input', null);
-                        $defaultResolver->setDefault('context', function(OptionsResolver $contextResolver) {
+                        $defaultResolver->setDefault('context', function (OptionsResolver $contextResolver) {
                             $contextResolver->setPrototype(true);
                             $contextResolver->setRequired(['key', 'value']);
                         });
-                    }
+                    },
                 ]
             );
             $uiResolver->setDeprecated(

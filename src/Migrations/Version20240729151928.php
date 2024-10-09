@@ -42,4 +42,3 @@ final class Version20240729151928 extends AbstractMigration
         $this->addSql('DROP TABLE process_schedule');
     }
 }
-

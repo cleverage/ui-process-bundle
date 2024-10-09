@@ -19,7 +19,7 @@ class ProcessContextType extends AbstractType
             [
                 'label' => 'Context Key',
                 'attr' => ['placeholder' => 'key'],
-                'constraints' => [new NotBlank()]
+                'constraints' => [new NotBlank()],
             ]
         )->add(
             'value',
@@ -27,11 +27,10 @@ class ProcessContextType extends AbstractType
             [
                 'label' => 'Context Value',
                 'attr' => ['placeholder' => 'value'],
-                'constraints' => [new NotBlank()]
+                'constraints' => [new NotBlank()],
             ]
         );
     }
-
 
     public function configureOptions(OptionsResolver $resolver): void
     {

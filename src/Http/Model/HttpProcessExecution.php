@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CleverAge\ProcessUiBundle\Http\Model;
 
 use CleverAge\ProcessUiBundle\Validator\IsValidProcessCode;
@@ -13,8 +15,6 @@ final readonly class HttpProcessExecution
         public ?string $code = null,
         public ?string $input = null,
         public array $context = []
-    )
-    {
-
+    ) {
     }
 }
