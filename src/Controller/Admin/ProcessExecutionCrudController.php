@@ -94,7 +94,7 @@ class ProcessExecutionCrudController extends AbstractCrudController
                 ->set(
                     'filters',
                     [
-                        'processExecution' => [
+                        'process' => [
                             'comparison' => '=',
                             'value' => $this->getContext()->getEntity()->getInstance()->getId(),
                         ],

@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace CleverAge\ProcessUiBundle\Controller\Admin;
 
+use CleverAge\ProcessBundle\Configuration\ProcessConfiguration;
 use CleverAge\ProcessUiBundle\Admin\Field\LogLevelField;
-use CleverAge\ProcessUiBundle\Admin\Filter\LogProcessCodeFilter;
+use CleverAge\ProcessUiBundle\Admin\Filter\LogProcessFilter;
 use CleverAge\ProcessUiBundle\Entity\LogRecord;
 use CleverAge\ProcessUiBundle\Manager\ProcessConfigurationsManager;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
@@ -73,12 +74,12 @@ class LogRecordCrudController extends AbstractCrudController
 
     public function configureFilters(Filters $filters): Filters
     {
-        $id = $this->request->getMainRequest()->query->all('filters')['processExecution']['value'] ?? null;
+        $id = $this->request->getMainRequest()->query->all('filters')['process']['value'] ?? null;
+        $processList = $this->processConfigurationsManager->getPublicProcesses();
+        $processList = array_map(fn (ProcessConfiguration $cfg) => $cfg->getCode(), $processList);
 
         return $filters->add(
-            LogProcessCodeFilter::new('process')
-                ->addChoices($this->processConfigurationsManager)
-                ->setCurrentProcessExecutionId((int) $id)
+            LogProcessFilter::new('process', $processList, $id)
         )->add(
             ChoiceFilter::new('level')->setChoices(array_combine(Level::NAMES, Level::VALUES))
         )->add('message')->add('context')->add('createdAt');
