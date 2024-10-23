@@ -21,7 +21,7 @@ class Configuration implements ConfigurationInterface
                 ->arrayNode('security')
                 ->addDefaultsIfNotSet()
                     ->children()
-                        ->scalarNode('roles')->defaultValue(['ROLE_ADMIN'])->end(); // Roles displayed inside user edit form
+                        ->arrayNode('roles')->defaultValue(['ROLE_ADMIN'])->scalarPrototype()->end(); // Roles displayed inside user edit form
         $rootNode
             ->children()
                 ->arrayNode('logs')
