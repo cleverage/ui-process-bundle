@@ -41,7 +41,7 @@ class LogRecordCrudController extends AbstractCrudController
     {
         return [
             LogLevelField::new('level'),
-            TextField::new('message'),
+            TextField::new('message')->setMaxLength(512),
             DateTimeField::new('createdAt')->setFormat('Y/M/dd H:mm:ss'),
             ArrayField::new('context')
                 ->setTemplatePath('@CleverAgeProcessUi/admin/field/array.html.twig')
