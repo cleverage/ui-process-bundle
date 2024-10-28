@@ -2,6 +2,15 @@
 
 declare(strict_types=1);
 
+/*
+ * This file is part of the CleverAge/UiProcessBundle package.
+ *
+ * Copyright (c) Clever-Age
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace CleverAge\ProcessUiBundle\Message;
 
 use CleverAge\ProcessUiBundle\Entity\ProcessExecutionLogRecord;
@@ -15,11 +24,9 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 class LogIndexerHandler
 {
     public const INDEX_LOG_RECORD = 'index_log_record';
-    private ManagerRegistry $managerRegistry;
 
-    public function __construct(ManagerRegistry $managerRegistry)
+    public function __construct(private readonly ManagerRegistry $managerRegistry)
     {
-        $this->managerRegistry = $managerRegistry;
     }
 
     public function __invoke(LogIndexerMessage $logIndexerMessage): void
@@ -39,12 +46,12 @@ class LogIndexerHandler
             if (!empty($parsedLine) && true === ($parsedLine['context'][self::INDEX_LOG_RECORD] ?? false)) {
                 $parameters[] = $logIndexerMessage->getProcessExecutionId();
                 $parameters[] = Logger::toMonologLevel($parsedLine['level']);
-                $parameters[] = substr($parsedLine['message'], 0, 255);
+                $parameters[] = substr((string) $parsedLine['message'], 0, 255);
             }
             $file->next();
             --$offset;
         }
-        if (\count($parameters) > 0) {
+        if ([] !== $parameters) {
             $statement = $this->getStatement($table, (int) (\count($parameters) / 3));
             $manager->getConnection()->executeStatement($statement, $parameters);
         }

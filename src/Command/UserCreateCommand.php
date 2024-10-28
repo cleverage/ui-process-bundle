@@ -2,6 +2,15 @@
 
 declare(strict_types=1);
 
+/*
+ * This file is part of the CleverAge/UiProcessBundle package.
+ *
+ * Copyright (c) Clever-Age
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace CleverAge\ProcessUiBundle\Command;
 
 use CleverAge\ProcessUiBundle\Entity\User;
@@ -20,18 +29,11 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 #[AsCommand(name: 'cleverage:process-ui:user-create', description: 'Command to create a new admin into database for process ui.')]
 final class UserCreateCommand extends Command
 {
-    private ValidatorInterface $validator;
-    private UserPasswordHasherInterface $passwordEncoder;
-    private EntityManagerInterface $em;
-
     public function __construct(
-        ValidatorInterface $validator,
-        UserPasswordHasherInterface $passwordEncoder,
-        EntityManagerInterface $em
+        private readonly ValidatorInterface $validator,
+        private readonly UserPasswordHasherInterface $passwordEncoder,
+        private readonly EntityManagerInterface $em,
     ) {
-        $this->validator = $validator;
-        $this->passwordEncoder = $passwordEncoder;
-        $this->em = $em;
         parent::__construct();
     }
 

@@ -2,6 +2,15 @@
 
 declare(strict_types=1);
 
+/*
+ * This file is part of the CleverAge/UiProcessBundle package.
+ *
+ * Copyright (c) Clever-Age
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace CleverAge\ProcessUiBundle\Entity;
 
 use CleverAge\ProcessUiBundle\Repository\UserRepository;
@@ -11,31 +20,34 @@ use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
  * @ORM\Entity(repositoryClass=UserRepository::class)
+ *
  * @ORM\Table(name="user")
  */
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     /**
      * @ORM\Id
+     *
      * @ORM\GeneratedValue
+     *
      * @ORM\Column(type="integer")
      */
-    private ?int $id;
+    private ?int $id = null;
 
     /**
      * @ORM\Column(type="string", length=255, unique=true)
      */
-    private ?string $email;
+    private ?string $email = null;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    private ?string $firstname;
+    private ?string $firstname = null;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    private ?string $lastname;
+    private ?string $lastname = null;
 
     /**
      * @ORM\Column(type="json")
@@ -47,7 +59,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @ORM\Column(type="string")
      */
-    private ?string $password;
+    private ?string $password = null;
 
     public function getId(): ?int
     {

@@ -2,6 +2,15 @@
 
 declare(strict_types=1);
 
+/*
+ * This file is part of the CleverAge/UiProcessBundle package.
+ *
+ * Copyright (c) Clever-Age
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace CleverAge\ProcessUiBundle\Controller\Crud;
 
 use CleverAge\ProcessUiBundle\Entity\Process;
@@ -18,7 +27,6 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\Field;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use EasyCorp\Bundle\EasyAdminBundle\Form\Type\ComparisonType;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
-use Exception;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Messenger\MessageBusInterface;
@@ -26,9 +34,9 @@ use Symfony\Component\Messenger\MessageBusInterface;
 class ProcessCrudController extends AbstractCrudController
 {
     public function __construct(
-        private ProcessUiConfigurationManager $processUiConfigurationManager,
-        private AdminUrlGenerator $adminUrlGenerator,
-        private MessageBusInterface $messageBus,
+        private readonly ProcessUiConfigurationManager $processUiConfigurationManager,
+        private readonly AdminUrlGenerator $adminUrlGenerator,
+        private readonly MessageBusInterface $messageBus,
     ) {
     }
 
@@ -57,13 +65,11 @@ class ProcessCrudController extends AbstractCrudController
             'source',
             'target',
             'lastExecutionDate',
-            IntegerField::new('lastExecutionStatus')->formatValue(static function (?int $value) {
-                return match ($value) {
-                    ProcessExecution::STATUS_FAIL => '<button class="btn btn-danger btn-lm">failed</button>',
-                    ProcessExecution::STATUS_START => '<button class="btn btn-warning btn-lm">started</button>',
-                    ProcessExecution::STATUS_SUCCESS => '<button class="btn btn-success btn-lm">success</button>',
-                    default => '<button class="btn btn-info btn-lm">unknown</button>',
-                };
+            IntegerField::new('lastExecutionStatus')->formatValue(static fn (?int $value) => match ($value) {
+                ProcessExecution::STATUS_FAIL => '<button class="btn btn-danger btn-lm">failed</button>',
+                ProcessExecution::STATUS_START => '<button class="btn btn-warning btn-lm">started</button>',
+                ProcessExecution::STATUS_SUCCESS => '<button class="btn btn-success btn-lm">success</button>',
+                default => '<button class="btn btn-info btn-lm">unknown</button>',
             }),
         ];
     }
@@ -86,7 +92,7 @@ class ProcessCrudController extends AbstractCrudController
         return $actions;
     }
 
-    public function runProcessAction(AdminContext $context): Response
+    public function runProcess(AdminContext $context): Response
     {
         try {
             /** @var Process $process */
@@ -104,16 +110,16 @@ class ProcessCrudController extends AbstractCrudController
                     'Process has been added to queue. It will start as soon as possible'
                 );
             }
-        } catch (Exception $e) {
+        } catch (\Exception) {
             $this->addFlash('warning', 'Cannot run process.');
         }
 
         return $this->redirect(
-            $this->adminUrlGenerator->setController(__CLASS__)->setAction(Action::INDEX)->generateUrl()
+            $this->adminUrlGenerator->setController(self::class)->setAction(Action::INDEX)->generateUrl()
         );
     }
 
-    public function viewHistoryAction(AdminContext $adminContext): RedirectResponse
+    public function viewHistory(AdminContext $adminContext): RedirectResponse
     {
         /** @var Process $process */
         $process = $adminContext->getEntity()->getInstance();

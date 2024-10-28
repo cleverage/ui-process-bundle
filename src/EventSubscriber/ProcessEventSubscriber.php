@@ -2,6 +2,15 @@
 
 declare(strict_types=1);
 
+/*
+ * This file is part of the CleverAge/UiProcessBundle package.
+ *
+ * Copyright (c) Clever-Age
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace CleverAge\ProcessUiBundle\EventSubscriber;
 
 use CleverAge\ProcessBundle\Event\ProcessEvent;
@@ -13,37 +22,16 @@ use CleverAge\ProcessUiBundle\Manager\ProcessUiConfigurationManager;
 use CleverAge\ProcessUiBundle\Message\LogIndexerMessage;
 use CleverAge\ProcessUiBundle\Monolog\Handler\ProcessLogHandler;
 use CleverAge\ProcessUiBundle\Repository\ProcessRepository;
-use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
-use RuntimeException;
-use SplFileObject;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
 
 class ProcessEventSubscriber implements EventSubscriberInterface
 {
     private array $processExecution = [];
-    private EntityManagerInterface $entityManager;
-    private ProcessLogHandler $processLogHandler;
-    private MessageBusInterface $messageBus;
-    private ProcessUiConfigurationManager $processUiConfigurationManager;
-    private string $processLogDir;
-    private bool $indexLogs;
 
-    public function __construct(
-        EntityManagerInterface $entityManager,
-        ProcessLogHandler $processLogHandler,
-        MessageBusInterface $messageBus,
-        ProcessUiConfigurationManager $processUiConfigurationManager,
-        string $processLogDir,
-        bool $indexLogs
-    ) {
-        $this->entityManager = $entityManager;
-        $this->processLogHandler = $processLogHandler;
-        $this->messageBus = $messageBus;
-        $this->processUiConfigurationManager = $processUiConfigurationManager;
-        $this->processLogDir = $processLogDir;
-        $this->indexLogs = $indexLogs;
+    public function __construct(private readonly EntityManagerInterface $entityManager, private readonly ProcessLogHandler $processLogHandler, private readonly MessageBusInterface $messageBus, private readonly ProcessUiConfigurationManager $processUiConfigurationManager, private readonly string $processLogDir, private readonly bool $indexLogs)
+    {
     }
 
     public static function getSubscribedEvents(): array
@@ -73,13 +61,13 @@ class ProcessEventSubscriber implements EventSubscriberInterface
         $process = $this->entityManager->getRepository(Process::class)
             ->findOneBy(['processCode' => $event->getProcessCode()]);
         if (null === $process) {
-            throw new RuntimeException('Unable to found process into database.');
+            throw new \RuntimeException('Unable to found process into database.');
         }
         $processExecution = new ProcessExecution($process);
         $processExecution->setProcessCode($event->getProcessCode());
         $processExecution->setSource($this->processUiConfigurationManager->getSource($event->getProcessCode()));
         $processExecution->setTarget($this->processUiConfigurationManager->getTarget($event->getProcessCode()));
-        $logFilename = sprintf(
+        $logFilename = \sprintf(
             'process_%s_%s.log',
             $event->getProcessCode(),
             sha1(uniqid((string) mt_rand(), true))
@@ -98,7 +86,7 @@ class ProcessEventSubscriber implements EventSubscriberInterface
             $this->processExecution = array_filter($this->processExecution);
             array_pop($this->processExecution);
             $this->processLogHandler->setCurrentProcessCode((string) array_key_last($this->processExecution));
-            $processExecution->setEndDate(new DateTime());
+            $processExecution->setEndDate(new \DateTime());
             $processExecution->setStatus(ProcessExecution::STATUS_SUCCESS);
             $processExecution->getProcess()->setLastExecutionDate($processExecution->getStartDate());
             $processExecution->getProcess()->setLastExecutionStatus(
@@ -114,7 +102,7 @@ class ProcessEventSubscriber implements EventSubscriberInterface
     public function onProcessFailed(ProcessEvent $processEvent): void
     {
         if ($processExecution = ($this->processExecution[$processEvent->getProcessCode()] ?? null)) {
-            $processExecution->setEndDate(new DateTime());
+            $processExecution->setEndDate(new \DateTime());
             $processExecution->setStatus(ProcessExecution::STATUS_FAIL);
             $processExecution->getProcess()->setLastExecutionDate($processExecution->getStartDate());
             $processExecution->getProcess()->setLastExecutionStatus(ProcessExecution::STATUS_FAIL);
@@ -136,7 +124,7 @@ class ProcessEventSubscriber implements EventSubscriberInterface
     {
         if ($this->indexLogs && null !== $processExecutionId = $processExecution->getId()) {
             $filePath = $this->processLogDir.\DIRECTORY_SEPARATOR.$processExecution->getLog();
-            $file = new SplFileObject($filePath);
+            $file = new \SplFileObject($filePath);
             $file->seek(\PHP_INT_MAX);
             $chunkSize = LogIndexerMessage::DEFAULT_OFFSET;
             $chunk = (int) ($file->key() / $chunkSize) + 1;

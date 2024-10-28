@@ -2,6 +2,15 @@
 
 declare(strict_types=1);
 
+/*
+ * This file is part of the CleverAge/UiProcessBundle package.
+ *
+ * Copyright (c) Clever-Age
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace CleverAge\ProcessUiBundle\Monolog\Handler;
 
 use League\Flysystem\Filesystem;
@@ -9,7 +18,7 @@ use League\Flysystem\FilesystemException;
 use League\Flysystem\Local\LocalFilesystemAdapter;
 use Monolog\Handler\AbstractProcessingHandler;
 use Monolog\Logger;
-
+use Symfony\Contracts\Service\Attribute\Required;
 
 class ProcessLogHandler extends AbstractProcessingHandler
 {
@@ -18,9 +27,7 @@ class ProcessLogHandler extends AbstractProcessingHandler
     private ?string $currentProcessCode = null;
     private ?Filesystem $filesystem = null;
 
-    /**
-     * @required
-     */
+    #[Required]
     public function setLogDir(string $processLogDir): void
     {
         $this->logDir = $processLogDir;
@@ -41,7 +48,7 @@ class ProcessLogHandler extends AbstractProcessingHandler
             return;
         }
 
-        if (null === $this->filesystem) {
+        if (!$this->filesystem instanceof Filesystem) {
             $this->filesystem = new Filesystem(
                 new LocalFilesystemAdapter($this->logDir, null, \FILE_APPEND)
             );

@@ -2,14 +2,25 @@
 
 declare(strict_types=1);
 
+/*
+ * This file is part of the CleverAge/UiProcessBundle package.
+ *
+ * Copyright (c) Clever-Age
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace CleverAge\ProcessUiBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
 /**
  * @ORM\Entity
+ *
  * @ORM\Table(
  *  indexes={
+ *
  *      @ORM\Index(name="process_execution_log_message", columns={"message"})
  *  }
  * )
@@ -18,31 +29,31 @@ class ProcessExecutionLogRecord
 {
     /**
      * @ORM\Id
+     *
      * @ORM\Column(type="integer")
+     *
      * @ORM\GeneratedValue()
      */
-    private ?int $id;
-
-    /**
-     * @ORM\Column(type="integer")
-     */
-    private int $logLevel;
-
-    /**
-     * @ORM\Column(type="string")
-     */
-    private string $message;
+    private ?int $id = null;
 
     /**
      * @ORM\ManyToOne(targetEntity="ProcessExecution", inversedBy="logRecords")
+     *
      * @ORM\JoinColumn(name="process_execution_id", referencedColumnName="id", onDelete="CASCADE")
      */
-    private ?ProcessExecution $processExecution;
+    private ?ProcessExecution $processExecution = null;
 
-    public function __construct(int $logLevel, string $message)
-    {
-        $this->logLevel = $logLevel;
-        $this->message = $message;
+    public function __construct(
+        /**
+         * @ORM\Column(type="integer")
+         */
+        private int $logLevel,
+
+        /**
+         * @ORM\Column(type="string")
+         */
+        private string $message,
+    ) {
     }
 
     public function getId(): ?int

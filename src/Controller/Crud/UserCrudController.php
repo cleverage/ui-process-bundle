@@ -2,6 +2,15 @@
 
 declare(strict_types=1);
 
+/*
+ * This file is part of the CleverAge/UiProcessBundle package.
+ *
+ * Copyright (c) Clever-Age
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace CleverAge\ProcessUiBundle\Controller\Crud;
 
 use CleverAge\ProcessUiBundle\CleverAgeProcessUiBundle;
@@ -26,11 +35,8 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class UserCrudController extends AbstractCrudController
 {
-    private UserPasswordHasherInterface $passwordHasher;
-
-    public function __construct(UserPasswordHasherInterface $passwordHasher)
+    public function __construct(private readonly UserPasswordHasherInterface $passwordHasher)
     {
-        $this->passwordHasher = $passwordHasher;
     }
 
     public function configureCrud(Crud $crud): Crud
@@ -72,28 +78,28 @@ class UserCrudController extends AbstractCrudController
     public function configureActions(Actions $actions): Actions
     {
         return $actions
-            ->update(Crud::PAGE_INDEX, Action::NEW, function (Action $action) {
-                return $action->setIcon(CleverAgeProcessUiBundle::ICON_NEW)
-                    ->setLabel(CleverAgeProcessUiBundle::LABEL_NEW)
-                    ->addCssClass(CleverAgeProcessUiBundle::CLASS_NEW);
-            })->update(Crud::PAGE_INDEX, Action::EDIT, function (Action $action) {
-                return $action->setIcon(CleverAgeProcessUiBundle::ICON_EDIT)
-                    ->setLabel(CleverAgeProcessUiBundle::LABEL_EDIT)
-                    ->addCssClass(CleverAgeProcessUiBundle::CLASS_EDIT);
-            })->update(Crud::PAGE_INDEX, Action::DELETE, function (Action $action) {
-                return $action->setIcon(CleverAgeProcessUiBundle::ICON_DELETE)
-                    ->setLabel(CleverAgeProcessUiBundle::LABEL_DELETE)
-                    ->addCssClass(CleverAgeProcessUiBundle::CLASS_DELETE);
-            })->update(Crud::PAGE_INDEX, Action::BATCH_DELETE, function (Action $action) {
-                return $action->setLabel('Delete')
-                    ->addCssClass(CleverAgeProcessUiBundle::CLASS_DELETE);
-            });
+            ->update(Crud::PAGE_INDEX, Action::NEW, fn (Action $action) => $action
+                ->setIcon(CleverAgeProcessUiBundle::ICON_NEW)
+                ->setLabel(CleverAgeProcessUiBundle::LABEL_NEW)
+                ->addCssClass(CleverAgeProcessUiBundle::CLASS_NEW)
+            )->update(Crud::PAGE_INDEX, Action::EDIT, fn (Action $action) => $action
+                ->setIcon(CleverAgeProcessUiBundle::ICON_EDIT)
+                ->setLabel(CleverAgeProcessUiBundle::LABEL_EDIT)
+                ->addCssClass(CleverAgeProcessUiBundle::CLASS_EDIT)
+            )->update(Crud::PAGE_INDEX, Action::DELETE, fn (Action $action) => $action
+                ->setIcon(CleverAgeProcessUiBundle::ICON_DELETE)
+                ->setLabel(CleverAgeProcessUiBundle::LABEL_DELETE)
+                ->addCssClass(CleverAgeProcessUiBundle::CLASS_DELETE)
+            )->update(Crud::PAGE_INDEX, Action::BATCH_DELETE, fn (Action $action) => $action
+                ->setLabel('Delete')
+                ->addCssClass(CleverAgeProcessUiBundle::CLASS_DELETE)
+            );
     }
 
     public function createEditFormBuilder(
         EntityDto $entityDto,
         KeyValueStore $formOptions,
-        AdminContext $context
+        AdminContext $context,
     ): FormBuilderInterface {
         $formBuilder = parent::createEditFormBuilder($entityDto, $formOptions, $context);
 
@@ -105,7 +111,7 @@ class UserCrudController extends AbstractCrudController
     public function createNewFormBuilder(
         EntityDto $entityDto,
         KeyValueStore $formOptions,
-        AdminContext $context
+        AdminContext $context,
     ): FormBuilderInterface {
         $formBuilder = parent::createNewFormBuilder($entityDto, $formOptions, $context);
 

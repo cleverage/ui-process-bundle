@@ -2,20 +2,29 @@
 
 declare(strict_types=1);
 
+/*
+ * This file is part of the CleverAge/UiProcessBundle package.
+ *
+ * Copyright (c) Clever-Age
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace CleverAge\ProcessUiBundle\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
 class SecurityController extends AbstractController
 {
-    #[Route('/login', name: 'app_login')]
+    #[Route('/login', name: 'cleverage_ui_process_login')]
     public function login(AuthenticationUtils $authenticationUtils): Response
     {
-        if ($this->getUser()) {
-            return $this->redirectToRoute('process_admin');
+        if ($this->getUser() instanceof \Symfony\Component\Security\Core\User\UserInterface) {
+            return $this->redirectToRoute('cleverage_ui_process_admin');
         }
 
         // get the login error if there is one
@@ -34,11 +43,9 @@ class SecurityController extends AbstractController
         ]);
     }
 
-    #[Route('/logout', name: 'app_logout')]
+    #[Route('/logout', name: 'cleverage_ui_process_logout')]
     public function logout(): void
     {
-        throw new \LogicException(
-            'This method can be blank - it will be intercepted by the logout key on your firewall.'
-        );
+        throw new \LogicException('This method can be blank - it will be intercepted by the logout key on your firewall.');
     }
 }

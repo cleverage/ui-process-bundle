@@ -2,6 +2,15 @@
 
 declare(strict_types=1);
 
+/*
+ * This file is part of the CleverAge/UiProcessBundle package.
+ *
+ * Copyright (c) Clever-Age
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace CleverAge\ProcessUiBundle\Controller\Crud;
 
 use CleverAge\ProcessUiBundle\Entity\ProcessExecution;
@@ -18,6 +27,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\ChoiceFilter;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Contracts\Service\Attribute\Required;
 
 class ProcessExecutionCrudController extends AbstractCrudController
 {
@@ -25,25 +35,19 @@ class ProcessExecutionCrudController extends AbstractCrudController
     private string $processLogDir;
     private ProcessUiConfigurationManager $processUiConfigurationManager;
 
-    /**
-     * @required
-     */
+    #[Required]
     public function setIndexLogs(bool $indexLogs): void
     {
         $this->indexLogs = $indexLogs;
     }
 
-    /**
-     * @required
-     */
+    #[Required]
     public function setProcessLogDir(string $processLogDir): void
     {
         $this->processLogDir = $processLogDir;
     }
 
-    /**
-     * @required true
-     */
+    #[Required]
     public function setProcessUiConfigurationManager(ProcessUiConfigurationManager $processUiConfigurationManager): void
     {
         $this->processUiConfigurationManager = $processUiConfigurationManager;
@@ -59,7 +63,7 @@ class ProcessExecutionCrudController extends AbstractCrudController
         $crud->showEntityActionsInlined();
         $crud->setDefaultSort(['startDate' => SortOrder::DESC]);
         $crud->setEntityPermission('ROLE_ADMIN');
-        $crud->setSearchFields(true === $this->indexLogs ? ['processCode', 'source', 'target', 'logRecords.message'] : ['processCode', 'source', 'target']);
+        $crud->setSearchFields($this->indexLogs ? ['processCode', 'source', 'target', 'logRecords.message'] : ['processCode', 'source', 'target']);
 
         return $crud;
     }
@@ -75,13 +79,11 @@ class ProcessExecutionCrudController extends AbstractCrudController
             'target',
             'startDate',
             'endDate',
-            IntegerField::new('status')->formatValue(static function (?int $value) {
-                return match ($value) {
-                    ProcessExecution::STATUS_FAIL => '<button class="btn btn-danger btn-lm">failed</button>',
-                    ProcessExecution::STATUS_START => '<button class="btn btn-warning btn-lm">started</button>',
-                    ProcessExecution::STATUS_SUCCESS => '<button class="btn btn-success btn-lm">success</button>',
-                    default => '<button class="btn btn-info btn-lm">unknown</button>',
-                };
+            IntegerField::new('status')->formatValue(static fn (?int $value) => match ($value) {
+                ProcessExecution::STATUS_FAIL => '<button class="btn btn-danger btn-lm">failed</button>',
+                ProcessExecution::STATUS_START => '<button class="btn btn-warning btn-lm">started</button>',
+                ProcessExecution::STATUS_SUCCESS => '<button class="btn btn-success btn-lm">success</button>',
+                default => '<button class="btn btn-info btn-lm">unknown</button>',
             }),
         ];
     }
@@ -89,17 +91,17 @@ class ProcessExecutionCrudController extends AbstractCrudController
     public function configureFilters(Filters $filters): Filters
     {
         $processCodeChoices = $this->processUiConfigurationManager->getProcessChoices();
-        if (\count($processCodeChoices) > 0) {
+        if ([] !== $processCodeChoices) {
             $filters->add(ChoiceFilter::new('processCode', 'Process')->setChoices($processCodeChoices));
         }
 
         $sourceChoices = $this->processUiConfigurationManager->getSourceChoices();
-        if (\count($sourceChoices) > 0) {
+        if ([] !== $sourceChoices) {
             $filters->add(ChoiceFilter::new('source')->setChoices($sourceChoices));
         }
 
         $targetChoices = $this->processUiConfigurationManager->getTargetChoices();
-        if (\count($targetChoices) > 0) {
+        if ([] !== $targetChoices) {
             $filters->add(ChoiceFilter::new('target')->setChoices($targetChoices));
         }
         $filters->add(ChoiceFilter::new('status')->setChoices([

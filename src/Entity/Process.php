@@ -2,11 +2,19 @@
 
 declare(strict_types=1);
 
+/*
+ * This file is part of the CleverAge/UiProcessBundle package.
+ *
+ * Copyright (c) Clever-Age
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace CleverAge\ProcessUiBundle\Entity;
 
 use CleverAge\ProcessUiBundle\Repository\ProcessRepository;
-use DateTime;
-use DateTimeInterface;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -17,54 +25,47 @@ class Process
 {
     /**
      * @ORM\Id
+     *
      * @ORM\Column(type="integer")
+     *
      * @ORM\GeneratedValue()
      */
-    private ?int $id;
-
-    /**
-     * @ORM\Column(name="process_code", type="text", length=255)
-     */
-    private string $processCode;
-
-    /**
-     * @ORM\Column(name="source", type="text", length=255, nullable=true)
-     */
-    private ?string $source;
-
-    /**
-     * @ORM\Column(name="target", type="text", length=255, nullable=true)
-     */
-    private ?string $target;
-
-    /**
-     * @ORM\Column(name="last_execution_date", type="datetime", nullable=true)
-     */
-    private ?DateTimeInterface $lastExecutionDate;
+    private ?int $id = null;
 
     /**
      * @var Collection<int, ProcessExecution>
+     *
      * @ORM\OneToMany(targetEntity="CleverAge\ProcessUiBundle\Entity\ProcessExecution", mappedBy="process")
      */
-    private $executions;
-
-    /**
-     * @ORM\Column(name="last_execution_status", type="integer", nullable=true)
-     */
-    private ?int $lastExecutionStatus;
+    private Collection $executions;
 
     public function __construct(
-        string $processCode,
-        ?string $source = null,
-        ?string $target = null,
-        ?DateTime $lastExecutionDate = null,
-        ?int $lastExecutionStatus = null
+        /**
+         * @ORM\Column(name="process_code", type="text", length=255)
+         */
+        private readonly string $processCode,
+
+        /**
+         * @ORM\Column(name="source", type="text", length=255, nullable=true)
+         */
+        private readonly ?string $source = null,
+
+        /**
+         * @ORM\Column(name="target", type="text", length=255, nullable=true)
+         */
+        private readonly ?string $target = null,
+
+        /**
+         * @ORM\Column(name="last_execution_date", type="datetime", nullable=true)
+         */
+        private ?\DateTimeInterface $lastExecutionDate = null,
+
+        /**
+         * @ORM\Column(name="last_execution_status", type="integer", nullable=true)
+         */
+        private ?int $lastExecutionStatus = null,
     ) {
-        $this->processCode = $processCode;
-        $this->source = $source;
-        $this->target = $target;
-        $this->lastExecutionDate = $lastExecutionDate;
-        $this->lastExecutionStatus = $lastExecutionStatus;
+        $this->executions = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -87,7 +88,7 @@ class Process
         return $this->target;
     }
 
-    public function getLastExecutionDate(): ?DateTimeInterface
+    public function getLastExecutionDate(): ?\DateTimeInterface
     {
         return $this->lastExecutionDate;
     }
@@ -97,7 +98,15 @@ class Process
         return $this->lastExecutionStatus;
     }
 
-    public function setLastExecutionDate(DateTimeInterface $lastExecutionDate): self
+    /**
+     * @return Collection<int, ProcessExecution>
+     */
+    public function getExecutions(): Collection
+    {
+        return $this->executions;
+    }
+
+    public function setLastExecutionDate(\DateTimeInterface $lastExecutionDate): self
     {
         $this->lastExecutionDate = $lastExecutionDate;
 
