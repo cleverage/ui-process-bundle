@@ -13,45 +13,27 @@ declare(strict_types=1);
 
 namespace CleverAge\ProcessUiBundle\Entity;
 
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity
- *
- * @ORM\Table(
- *  indexes={
- *
- *      @ORM\Index(name="process_execution_log_message", columns={"message"})
- *  }
- * )
- */
+#[ORM\Entity]
+#[ORM\Index(name: 'process_execution_log_message', columns: ['message'])]
 class ProcessExecutionLogRecord
 {
-    /**
-     * @ORM\Id
-     *
-     * @ORM\Column(type="integer")
-     *
-     * @ORM\GeneratedValue()
-     */
+    #[ORM\Id]
+    #[ORM\Column(type: Types::INTEGER)]
+    #[ORM\GeneratedValue]
     private ?int $id = null;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="ProcessExecution", inversedBy="logRecords")
-     *
-     * @ORM\JoinColumn(name="process_execution_id", referencedColumnName="id", onDelete="CASCADE")
-     */
+    #[ORM\ManyToOne(targetEntity: ProcessExecution::class, inversedBy: 'logRecords')]
+    #[ORM\JoinColumn(name: 'process_execution_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
     private ?ProcessExecution $processExecution = null;
 
     public function __construct(
-        /**
-         * @ORM\Column(type="integer")
-         */
+        #[ORM\Column(type: Types::INTEGER)]
         private int $logLevel,
 
-        /**
-         * @ORM\Column(type="string")
-         */
+        #[ORM\Column(type: Types::STRING)]
         private string $message,
     ) {
     }

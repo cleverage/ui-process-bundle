@@ -29,6 +29,7 @@ return (new PhpCsFixer\Config())
         '@PHPUnit75Migration:risky' => true,
         '@Symfony' => true,
         '@Symfony:risky' => true,
+        '@DoctrineAnnotation' => true,
         'protected_to_private' => false,
         'native_constant_invocation' => ['strict' => false],
         'header_comment' => ['header' => $fileHeaderComment],
