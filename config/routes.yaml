@@ -1,4 +1,4 @@
-_process-ui:
+_cleverage_ui_process:
   prefix: '/process'
   resource: ../src/Controller/
-  type: annotation
+  type: attribute
