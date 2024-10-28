@@ -21,17 +21,15 @@ use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 use Exception;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Messenger\MessageBusInterface;
 
 class ProcessCrudController extends AbstractCrudController
 {
-    private ProcessUiConfigurationManager $processUiConfigurationManager;
-
-    /**
-     * @required
-     */
-    public function setProcessUiConfigurationManager(ProcessUiConfigurationManager $processUiConfigurationManager): void
-    {
-        $this->processUiConfigurationManager = $processUiConfigurationManager;
+    public function __construct(
+        private ProcessUiConfigurationManager $processUiConfigurationManager,
+        private AdminUrlGenerator $adminUrlGenerator,
+        private MessageBusInterface $messageBus,
+    ) {
     }
 
     public static function getEntityFqcn(): string
@@ -100,7 +98,7 @@ class ProcessCrudController extends AbstractCrudController
                 );
             } else {
                 $message = new ProcessRunMessage($process->getProcessCode());
-                $this->dispatchMessage($message);
+                $this->messageBus->dispatch($message);
                 $this->addFlash(
                     'success',
                     'Process has been added to queue. It will start as soon as possible'
@@ -110,23 +108,18 @@ class ProcessCrudController extends AbstractCrudController
             $this->addFlash('warning', 'Cannot run process.');
         }
 
-        /** @var AdminUrlGenerator $routeBuilder */
-        $routeBuilder = $this->get(AdminUrlGenerator::class);
-
         return $this->redirect(
-            $routeBuilder->setController(__CLASS__)->setAction(Action::INDEX)->generateUrl()
+            $this->adminUrlGenerator->setController(__CLASS__)->setAction(Action::INDEX)->generateUrl()
         );
     }
 
     public function viewHistoryAction(AdminContext $adminContext): RedirectResponse
     {
-        /** @var AdminUrlGenerator $routeBuilder */
-        $routeBuilder = $this->get(AdminUrlGenerator::class);
         /** @var Process $process */
         $process = $adminContext->getEntity()->getInstance();
 
         return $this->redirect(
-            $routeBuilder
+            $this->adminUrlGenerator
                 ->setController(ProcessExecutionCrudController::class)
                 ->setEntityId(null)
                 ->setAction(Action::INDEX)

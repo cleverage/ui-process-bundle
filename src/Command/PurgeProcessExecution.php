@@ -8,6 +8,7 @@ use CleverAge\ProcessUiBundle\Entity\ProcessExecution;
 use CleverAge\ProcessUiBundle\Repository\ProcessExecutionRepository;
 use DateTimeInterface;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputInterface;
@@ -16,6 +17,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 
+#[AsCommand(name: 'cleverage:process-ui:purge', description: 'Purge process_execution table.')]
 class PurgeProcessExecution extends Command
 {
     private ManagerRegistry $managerRegistry;
@@ -39,8 +41,6 @@ class PurgeProcessExecution extends Command
 
     protected function configure(): void
     {
-        $this->setName('cleverage:process-ui:purge');
-        $this->setDescription('Purge process_execution table.');
         $this->setDefinition(
             new InputDefinition([
                 new InputOption(

@@ -9,9 +9,10 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 use Dubture\Monolog\Parser\LineLogParser;
 use Monolog\Logger;
-use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
+use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
-class LogIndexerHandler implements MessageHandlerInterface
+#[AsMessageHandler]
+class LogIndexerHandler
 {
     public const INDEX_LOG_RECORD = 'index_log_record';
     private ManagerRegistry $managerRegistry;

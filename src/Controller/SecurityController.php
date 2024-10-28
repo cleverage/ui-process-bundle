@@ -15,7 +15,7 @@ class SecurityController extends AbstractController
     public function login(AuthenticationUtils $authenticationUtils): Response
     {
         if ($this->getUser()) {
-            return $this->redirectToRoute('/');
+            return $this->redirectToRoute('process_admin');
         }
 
         // get the login error if there is one
@@ -34,9 +34,7 @@ class SecurityController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/logout", name="app_logout")
-     */
+    #[Route('/logout', name: 'app_logout')]
     public function logout(): void
     {
         throw new \LogicException(

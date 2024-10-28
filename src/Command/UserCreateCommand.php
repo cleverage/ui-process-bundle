@@ -6,6 +6,7 @@ namespace CleverAge\ProcessUiBundle\Command;
 
 use CleverAge\ProcessUiBundle\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -16,9 +17,7 @@ use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-/**
- * Class UserCreateCommand.
- */
+#[AsCommand(name: 'cleverage:process-ui:user-create', description: 'Command to create a new admin into database for process ui.')]
 final class UserCreateCommand extends Command
 {
     private ValidatorInterface $validator;
@@ -34,12 +33,6 @@ final class UserCreateCommand extends Command
         $this->passwordEncoder = $passwordEncoder;
         $this->em = $em;
         parent::__construct();
-    }
-
-    protected function configure(): void
-    {
-        $this->setName('cleverage:process-ui:user-create');
-        $this->setDescription('Command to create a new admin into database for process ui.');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
