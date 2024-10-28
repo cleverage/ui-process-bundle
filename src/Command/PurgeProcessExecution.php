@@ -24,24 +24,13 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
-use Symfony\Contracts\Service\Attribute\Required;
 
 #[AsCommand(name: 'cleverage:process-ui:purge', description: 'Purge process_execution table.')]
 class PurgeProcessExecution extends Command
 {
-    private ManagerRegistry $managerRegistry;
-    private string $processLogDir;
-
-    #[Required]
-    public function setManagerRegistry(ManagerRegistry $managerRegistry): void
+    public function __construct(private readonly ManagerRegistry $managerRegistry, private readonly string $processLogDir)
     {
-        $this->managerRegistry = $managerRegistry;
-    }
-
-    #[Required]
-    public function setProcessLogDir(string $processLogDir): void
-    {
-        $this->processLogDir = $processLogDir;
+        parent::__construct();
     }
 
     protected function configure(): void

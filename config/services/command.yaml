@@ -1,0 +1,19 @@
+services:
+    cleverage_ui_process.command.purge_process_execution:
+        class: CleverAge\ProcessUiBundle\Command\PurgeProcessExecution
+        public: false
+        tags:
+            - { name: console.command }
+        arguments:
+            - '@doctrine'
+            - '%process_logs_dir%'
+
+    cleverage_ui_process.command.user_create:
+        class: CleverAge\ProcessUiBundle\Command\UserCreateCommand
+        public: false
+        tags:
+            - { name: console.command }
+        arguments:
+            - '@validator'
+            - '@security.user_password_hasher'
+            - '@doctrine.orm.entity_manager.abstract'

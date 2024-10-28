@@ -1,0 +1,2 @@
+parameters:
+  process_logs_dir: '%kernel.logs_dir%/process'

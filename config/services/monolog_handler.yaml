@@ -1,0 +1,7 @@
+services:
+    cleverage_ui_process.monolog_handler.process_log:
+        class: CleverAge\ProcessUiBundle\Monolog\Handler\ProcessLogHandler
+        public: false
+        arguments:
+            - '%process_logs_dir%'
+

@@ -1,0 +1,7 @@
+services:
+    cleverage_ui_process.manager.configuration:
+        class: CleverAge\ProcessUiBundle\Manager\ProcessUiConfigurationManager
+        public: false
+        arguments:
+            - '@cleverage_process.registry.process_configuration'
+

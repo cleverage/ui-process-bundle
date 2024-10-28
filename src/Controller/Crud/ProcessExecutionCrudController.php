@@ -27,30 +27,14 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\ChoiceFilter;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Contracts\Service\Attribute\Required;
 
 class ProcessExecutionCrudController extends AbstractCrudController
 {
-    private bool $indexLogs;
-    private string $processLogDir;
-    private ProcessUiConfigurationManager $processUiConfigurationManager;
-
-    #[Required]
-    public function setIndexLogs(bool $indexLogs): void
-    {
-        $this->indexLogs = $indexLogs;
-    }
-
-    #[Required]
-    public function setProcessLogDir(string $processLogDir): void
-    {
-        $this->processLogDir = $processLogDir;
-    }
-
-    #[Required]
-    public function setProcessUiConfigurationManager(ProcessUiConfigurationManager $processUiConfigurationManager): void
-    {
-        $this->processUiConfigurationManager = $processUiConfigurationManager;
+    public function __construct(
+        private readonly bool $indexLogs,
+        private readonly string $processLogDir,
+        private readonly ProcessUiConfigurationManager $processUiConfigurationManager,
+    ) {
     }
 
     public static function getEntityFqcn(): string

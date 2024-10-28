@@ -30,8 +30,14 @@ class ProcessEventSubscriber implements EventSubscriberInterface
 {
     private array $processExecution = [];
 
-    public function __construct(private readonly EntityManagerInterface $entityManager, private readonly ProcessLogHandler $processLogHandler, private readonly MessageBusInterface $messageBus, private readonly ProcessUiConfigurationManager $processUiConfigurationManager, private readonly string $processLogDir, private readonly bool $indexLogs)
-    {
+    public function __construct(
+        private readonly EntityManagerInterface $entityManager,
+        private readonly ProcessLogHandler $processLogHandler,
+        private readonly MessageBusInterface $messageBus,
+        private readonly ProcessUiConfigurationManager $processUiConfigurationManager,
+        private readonly string $processLogDir,
+        private readonly bool $indexLogs,
+    ) {
     }
 
     public static function getSubscribedEvents(): array

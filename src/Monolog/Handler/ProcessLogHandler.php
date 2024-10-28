@@ -18,19 +18,16 @@ use League\Flysystem\FilesystemException;
 use League\Flysystem\Local\LocalFilesystemAdapter;
 use Monolog\Handler\AbstractProcessingHandler;
 use Monolog\Logger;
-use Symfony\Contracts\Service\Attribute\Required;
 
 class ProcessLogHandler extends AbstractProcessingHandler
 {
-    private string $logDir;
     private ?array $logFilenames = [];
     private ?string $currentProcessCode = null;
     private ?Filesystem $filesystem = null;
 
-    #[Required]
-    public function setLogDir(string $processLogDir): void
+    public function __construct(private readonly string $processLogDir)
     {
-        $this->logDir = $processLogDir;
+        parent::__construct();
     }
 
     /**
@@ -50,7 +47,7 @@ class ProcessLogHandler extends AbstractProcessingHandler
 
         if (!$this->filesystem instanceof Filesystem) {
             $this->filesystem = new Filesystem(
-                new LocalFilesystemAdapter($this->logDir, null, \FILE_APPEND)
+                new LocalFilesystemAdapter($this->processLogDir, null, \FILE_APPEND)
             );
         }
         $this->filesystem->write($logFilename, $record['formatted']);
