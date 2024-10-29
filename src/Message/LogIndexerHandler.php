@@ -43,7 +43,7 @@ class LogIndexerHandler
             /** @var string $currentLine */
             $currentLine = $file->current();
             $parsedLine = $parser->parse($currentLine);
-            if (!empty($parsedLine) && true === ($parsedLine['context'][self::INDEX_LOG_RECORD] ?? false)) {
+            if ([] !== $parsedLine && true === ($parsedLine['context'][self::INDEX_LOG_RECORD] ?? false)) {
                 $parameters[] = $logIndexerMessage->getProcessExecutionId();
                 $parameters[] = Logger::toMonologLevel($parsedLine['level']);
                 $parameters[] = substr((string) $parsedLine['message'], 0, 255);

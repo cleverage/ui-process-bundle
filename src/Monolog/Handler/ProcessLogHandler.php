@@ -17,7 +17,8 @@ use League\Flysystem\Filesystem;
 use League\Flysystem\FilesystemException;
 use League\Flysystem\Local\LocalFilesystemAdapter;
 use Monolog\Handler\AbstractProcessingHandler;
-use Monolog\Logger;
+use Monolog\Level;
+use Monolog\LogRecord;
 
 class ProcessLogHandler extends AbstractProcessingHandler
 {
@@ -35,13 +36,13 @@ class ProcessLogHandler extends AbstractProcessingHandler
      *
      * @throws FilesystemException
      */
-    protected function write(array $record): void
+    protected function write(array|LogRecord $record): void
     {
         if (null === $logFilename = ($this->logFilenames[$this->currentProcessCode] ?? null)) {
             return;
         }
 
-        if ($record['level'] < Logger::INFO) {
+        if ($record['level'] < Level::Info) {
             return;
         }
 
