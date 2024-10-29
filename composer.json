@@ -83,7 +83,6 @@
     "symfony/css-selector": "^6.4|^7.1",
     "symfony/debug-bundle": "^6.4|^7.1",
     "symfony/maker-bundle": "^1.31",
-    "symfony/phpunit-bridge": "^7.1",
     "symfony/web-profiler-bundle": "^6.4|^7.1"
   },
   "config": {
