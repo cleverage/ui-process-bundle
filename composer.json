@@ -76,7 +76,7 @@
     "phpstan/phpstan": "*",
     "phpstan/phpstan-doctrine": "*",
     "phpstan/phpstan-symfony": "*",
-    "phpunit/phpunit": "*",
+    "phpunit/phpunit": "<10.0",
     "rector/rector": "*",
     "roave/security-advisories": "dev-latest",
     "symfony/browser-kit": "^6.4|^7.1",
