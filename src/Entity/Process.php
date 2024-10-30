@@ -30,7 +30,7 @@ class Process
      * @var Collection<int, ProcessExecution>
      */
     #[ORM\OneToMany(targetEntity: ProcessExecution::class, mappedBy: 'process')]
-    private readonly Collection $executions;
+    private Collection $executions;
 
     public function __construct(
         #[ORM\Column(name: 'process_code', type: Types::TEXT, length: 255)]
