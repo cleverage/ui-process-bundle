@@ -2,25 +2,32 @@
 
 declare(strict_types=1);
 
+/*
+ * This file is part of the CleverAge/UiProcessBundle package.
+ *
+ * Copyright (c) Clever-Age
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace CleverAge\ProcessUiBundle\Message;
 
 use CleverAge\ProcessBundle\Command\ExecuteProcessCommand;
-use Exception;
+use Symfony\Component\Console\Exception\ExceptionInterface;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\NullOutput;
-use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
+use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
-class ProcessRunHandler implements MessageHandlerInterface
+#[AsMessageHandler]
+class ProcessRunHandler
 {
-    private ExecuteProcessCommand $command;
-
-    public function __construct(ExecuteProcessCommand $command)
+    public function __construct(private readonly ExecuteProcessCommand $command)
     {
-        $this->command = $command;
     }
 
     /**
-     * @throws Exception
+     * @throws ExceptionInterface
      */
     public function __invoke(ProcessRunMessage $processRunMessage): void
     {

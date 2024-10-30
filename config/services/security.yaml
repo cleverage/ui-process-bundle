@@ -1,0 +1,7 @@
+services:
+    cleverage_ui_process.security.login_form_auth_authenticator:
+        class: CleverAge\ProcessUiBundle\Security\LoginFormAuthAuthenticator
+        public: false
+        arguments:
+            - '@router'
+

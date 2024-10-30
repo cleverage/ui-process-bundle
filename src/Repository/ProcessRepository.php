@@ -2,6 +2,15 @@
 
 declare(strict_types=1);
 
+/*
+ * This file is part of the CleverAge/UiProcessBundle package.
+ *
+ * Copyright (c) Clever-Age
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace CleverAge\ProcessUiBundle\Repository;
 
 use CleverAge\ProcessBundle\Registry\ProcessConfigurationRegistry;
@@ -9,6 +18,7 @@ use CleverAge\ProcessUiBundle\Entity\Process;
 use CleverAge\ProcessUiBundle\Manager\ProcessUiConfigurationManager;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Contracts\Service\Attribute\Required;
 
 /**
  * @extends ServiceEntityRepository<Process>
@@ -18,17 +28,13 @@ class ProcessRepository extends ServiceEntityRepository
     private ProcessUiConfigurationManager $processUiConfigurationManager;
     private ProcessConfigurationRegistry $processConfigurationRegistry;
 
-    /**
-     * @required
-     */
+    #[Required]
     public function setProcessUiConfigurationManager(ProcessUiConfigurationManager $processUiConfigurationManager): void
     {
         $this->processUiConfigurationManager = $processUiConfigurationManager;
     }
 
-    /**
-     * @required
-     */
+    #[Required]
     public function setProcessConfigurationRegistry(ProcessConfigurationRegistry $processConfigurationRegistry): void
     {
         $this->processConfigurationRegistry = $processConfigurationRegistry;

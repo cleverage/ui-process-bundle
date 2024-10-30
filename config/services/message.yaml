@@ -1,0 +1,13 @@
+services:
+    cleverage_ui_process.message.log_indexer_handler:
+        class: CleverAge\ProcessUiBundle\Message\LogIndexerHandler
+        public: false
+        arguments:
+            - '@doctrine'
+
+    cleverage_ui_process.message.process_run_handler:
+        class: CleverAge\ProcessUiBundle\Message\ProcessRunHandler
+        public: false
+        arguments:
+            - '@cleverage_process.command.execute_process'
+

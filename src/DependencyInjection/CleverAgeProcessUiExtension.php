@@ -2,6 +2,15 @@
 
 declare(strict_types=1);
 
+/*
+ * This file is part of the CleverAge/UiProcessBundle package.
+ *
+ * Copyright (c) Clever-Age
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace CleverAge\ProcessUiBundle\DependencyInjection;
 
 use CleverAge\ProcessUiBundle\Message\LogIndexerMessage;
@@ -11,13 +20,13 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
+use Symfony\Component\Finder\Finder;
 
 class CleverAgeProcessUiExtension extends Extension implements PrependExtensionInterface
 {
     public function load(array $configs, ContainerBuilder $container): void
     {
-        $loader = new YamlFileLoader($container, new FileLocator(__DIR__.'/../../config'));
-        $loader->load('services.yaml');
+        $this->findServices($container, __DIR__.'/../../config/services');
 
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
@@ -32,7 +41,7 @@ class CleverAgeProcessUiExtension extends Extension implements PrependExtensionI
         $container->loadFromExtension(
             'doctrine_migrations',
             [
-                'migrations_paths' => ['CleverAgeProcessUi' => \dirname(__DIR__).'/Migrations'],
+                'migrations_paths' => ['CleverAgeUiProcess' => \dirname(__DIR__).'/Migrations'],
             ]
         );
         $container->loadFromExtension(
@@ -59,5 +68,19 @@ class CleverAgeProcessUiExtension extends Extension implements PrependExtensionI
                 ],
             ]
         );
+    }
+
+    /**
+     * Recursively import config files into container.
+     */
+    protected function findServices(ContainerBuilder $container, string $path, string $extension = 'yaml'): void
+    {
+        $finder = new Finder();
+        $finder->in($path)
+            ->name('*.'.$extension)->files();
+        $loader = new YamlFileLoader($container, new FileLocator($path));
+        foreach ($finder as $file) {
+            $loader->load($file->getFilename());
+        }
     }
 }

@@ -1,0 +1,19 @@
+services:
+    cleverage_ui_process.repository.process_execution:
+        class: CleverAge\ProcessUiBundle\Repository\ProcessExecutionRepository
+        public: false
+        arguments:
+            - '@doctrine'
+
+    cleverage_ui_process.repository.process:
+        class: CleverAge\ProcessUiBundle\Repository\ProcessRepository
+        public: false
+        arguments:
+            - '@doctrine'
+
+    cleverage_ui_process.repository.user:
+        class: CleverAge\ProcessUiBundle\Repository\UserRepository
+        public: false
+        arguments:
+            - '@doctrine'
+

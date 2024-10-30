@@ -2,99 +2,77 @@
 
 declare(strict_types=1);
 
+/*
+ * This file is part of the CleverAge/UiProcessBundle package.
+ *
+ * Copyright (c) Clever-Age
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace CleverAge\ProcessUiBundle\Entity;
 
 use CleverAge\ProcessUiBundle\Repository\ProcessExecutionRepository;
-use DateTime;
-use DateTimeInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass=ProcessExecutionRepository::class)
- */
+#[ORM\Entity(repositoryClass: ProcessExecutionRepository::class)]
 class ProcessExecution
 {
     public const STATUS_START = 0;
     public const STATUS_SUCCESS = 1;
     public const STATUS_FAIL = -1;
 
-    /**
-     * @ORM\Id
-     * @ORM\Column(type="integer")
-     * @ORM\GeneratedValue()
-     */
-    private ?int $id;
+    #[ORM\Id]
+    #[ORM\Column(type: Types::INTEGER)]
+    #[ORM\GeneratedValue]
+    private ?int $id = null;
+
+    #[ORM\Column(name: 'process_code', type: Types::STRING, length: 255, nullable: true)]
+    private ?string $processCode = null;
+
+    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
+    private ?string $source = null;
+
+    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
+    private ?string $target = null;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    private \DateTimeInterface $startDate;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $endDate = null;
+
+    #[ORM\Column(type: Types::INTEGER)]
+    private int $status = self::STATUS_START;
+
+    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
+    private ?string $response = null;
+
+    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
+    private ?string $data = null;
+
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    private ?array $report = null;
+
+    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
+    private ?string $log = null;
 
     /**
-     * @ORM\Column(name="process_code", type="string", length=255, nullable=true)
-     */
-    private ?string $processCode;
-
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    private ?string $source;
-
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    private ?string $target;
-
-    /**
-     * @ORM\Column(type="datetime")
-     */
-    private DateTimeInterface $startDate;
-
-    /**
-     * @ORM\Column(type="datetime", nullable=true)
-     */
-    private ?DateTimeInterface $endDate;
-
-    /**
-     * @ORM\Column(type="integer")
-     */
-    private int $status;
-
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    private ?string $response;
-
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    private ?string $data;
-
-    /**
-     * @ORM\Column(type="json", nullable=true)
-     */
-    private ?array $report;
-
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    private ?string $log;
-
-    /**
-     * @ORM\ManyToOne(targetEntity="CleverAge\ProcessUiBundle\Entity\Process", inversedBy="executions")
-     * @ORM\JoinColumn(name="process_id", referencedColumnName="id", onDelete="SET NULL")
-     */
-    private Process $process;
-
-    /**
-     * @ORM\OneToMany(targetEntity="ProcessExecutionLogRecord", mappedBy="processExecution", cascade={"persist"})
-     *
      * @var Collection<int, ProcessExecutionLogRecord>
      */
-    private Collection $logRecords;
+    #[ORM\OneToMany(targetEntity: ProcessExecutionLogRecord::class, mappedBy: 'processExecution', cascade: ['persist'])]
+    private readonly Collection $logRecords;
 
-    public function __construct(Process $process)
-    {
-        $this->process = $process;
-        $this->status = self::STATUS_START;
-        $this->startDate = new DateTime();
+    public function __construct(
+        #[ORM\ManyToOne(targetEntity: Process::class, inversedBy: 'executions')]
+        #[ORM\JoinColumn(name: 'process_id', referencedColumnName: 'id', onDelete: 'SET NULL')]
+        private readonly Process $process,
+    ) {
+        $this->startDate = new \DateTime();
         $this->logRecords = new ArrayCollection();
     }
 
@@ -139,24 +117,24 @@ class ProcessExecution
         return $this;
     }
 
-    public function getStartDate(): DateTimeInterface
+    public function getStartDate(): \DateTimeInterface
     {
         return $this->startDate;
     }
 
-    public function setStartDate(DateTimeInterface $startDate): self
+    public function setStartDate(\DateTimeInterface $startDate): self
     {
         $this->startDate = $startDate;
 
         return $this;
     }
 
-    public function getEndDate(): ?DateTimeInterface
+    public function getEndDate(): ?\DateTimeInterface
     {
         return $this->endDate;
     }
 
-    public function setEndDate(DateTimeInterface $endDate): self
+    public function setEndDate(\DateTimeInterface $endDate): self
     {
         $this->endDate = $endDate;
 

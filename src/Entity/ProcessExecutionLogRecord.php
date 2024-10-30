@@ -2,47 +2,40 @@
 
 declare(strict_types=1);
 
+/*
+ * This file is part of the CleverAge/UiProcessBundle package.
+ *
+ * Copyright (c) Clever-Age
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace CleverAge\ProcessUiBundle\Entity;
 
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity
- * @ORM\Table(
- *  indexes={
- *      @ORM\Index(name="process_execution_log_message", columns={"message"})
- *  }
- * )
- */
+#[ORM\Entity]
+#[ORM\Index(name: 'process_execution_log_message', columns: ['message'])]
 class ProcessExecutionLogRecord
 {
-    /**
-     * @ORM\Id
-     * @ORM\Column(type="integer")
-     * @ORM\GeneratedValue()
-     */
-    private ?int $id;
+    #[ORM\Id]
+    #[ORM\Column(type: Types::INTEGER)]
+    #[ORM\GeneratedValue]
+    private ?int $id = null;
 
-    /**
-     * @ORM\Column(type="integer")
-     */
-    private int $logLevel;
+    #[ORM\ManyToOne(targetEntity: ProcessExecution::class, inversedBy: 'logRecords')]
+    #[ORM\JoinColumn(name: 'process_execution_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
+    private ?ProcessExecution $processExecution = null;
 
-    /**
-     * @ORM\Column(type="string")
-     */
-    private string $message;
+    public function __construct(
+        #[ORM\Column(type: Types::INTEGER)]
+        private int $logLevel,
 
-    /**
-     * @ORM\ManyToOne(targetEntity="ProcessExecution", inversedBy="logRecords")
-     * @ORM\JoinColumn(name="process_execution_id", referencedColumnName="id", onDelete="CASCADE")
-     */
-    private ?ProcessExecution $processExecution;
-
-    public function __construct(int $logLevel, string $message)
-    {
-        $this->logLevel = $logLevel;
-        $this->message = $message;
+        #[ORM\Column(type: Types::STRING)]
+        private string $message,
+    ) {
     }
 
     public function getId(): ?int

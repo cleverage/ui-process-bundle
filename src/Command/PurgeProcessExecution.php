@@ -2,12 +2,21 @@
 
 declare(strict_types=1);
 
+/*
+ * This file is part of the CleverAge/UiProcessBundle package.
+ *
+ * Copyright (c) Clever-Age
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace CleverAge\ProcessUiBundle\Command;
 
 use CleverAge\ProcessUiBundle\Entity\ProcessExecution;
 use CleverAge\ProcessUiBundle\Repository\ProcessExecutionRepository;
-use DateTimeInterface;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputInterface;
@@ -16,31 +25,16 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 
+#[AsCommand(name: 'cleverage:process-ui:purge', description: 'Purge process_execution table.')]
 class PurgeProcessExecution extends Command
 {
-    private ManagerRegistry $managerRegistry;
-    private string $processLogDir;
-
-    /**
-     * @required
-     */
-    public function setManagerRegistry(ManagerRegistry $managerRegistry): void
+    public function __construct(private readonly ManagerRegistry $managerRegistry, private readonly string $processLogDir)
     {
-        $this->managerRegistry = $managerRegistry;
-    }
-
-    /**
-     * @required
-     */
-    public function setProcessLogDir(string $processLogDir): void
-    {
-        $this->processLogDir = $processLogDir;
+        parent::__construct();
     }
 
     protected function configure(): void
     {
-        $this->setName('cleverage:process-ui:purge');
-        $this->setDescription('Purge process_execution table.');
         $this->setDefinition(
             new InputDefinition([
                 new InputOption(
@@ -70,7 +64,7 @@ class PurgeProcessExecution extends Command
         if ($removeFiles) {
             $finder = new Finder();
             $fs = new Filesystem();
-            $finder->in($this->processLogDir)->date('before '.$date->format(DateTimeInterface::ATOM));
+            $finder->in($this->processLogDir)->date('before '.$date->format(\DateTimeInterface::ATOM));
             $count = $finder->count();
             $fs->remove($finder);
             $output->writeln("<info>$count log files are deleted on filesystem.</info>");
@@ -80,7 +74,7 @@ class PurgeProcessExecution extends Command
         $repository->deleteBefore($date);
 
         $output->writeln(<<<EOT
-            <info>Process Execution before {$date->format(DateTimeInterface::ATOM)} are deleted into database.</info>
+            <info>Process Execution before {$date->format(\DateTimeInterface::ATOM)} are deleted into database.</info>
             EOT);
 
         return Command::SUCCESS;

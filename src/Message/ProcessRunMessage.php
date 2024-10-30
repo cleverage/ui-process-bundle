@@ -2,22 +2,24 @@
 
 declare(strict_types=1);
 
+/*
+ * This file is part of the CleverAge/UiProcessBundle package.
+ *
+ * Copyright (c) Clever-Age
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace CleverAge\ProcessUiBundle\Message;
 
 class ProcessRunMessage
 {
-    private string $processCode;
-
-    /** @var array <string, string> */
-    private array $processInput;
-
     /**
      * @param array <string, string> $processInput
      */
-    public function __construct(string $processCode, array $processInput = [])
+    public function __construct(private readonly string $processCode, private readonly array $processInput = [])
     {
-        $this->processCode = $processCode;
-        $this->processInput = $processInput;
     }
 
     public function getProcessCode(): string

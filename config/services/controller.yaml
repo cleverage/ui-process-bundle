@@ -1,0 +1,6 @@
+services:
+    CleverAge\ProcessUiBundle\Controller\:
+        resource: '../../src/Controller/'
+        autowire: true
+        autoconfigure: true
+        tags: [ 'controller.service_arguments' ]

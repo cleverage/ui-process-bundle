@@ -2,28 +2,33 @@
 
 declare(strict_types=1);
 
+/*
+ * This file is part of the CleverAge/UiProcessBundle package.
+ *
+ * Copyright (c) Clever-Age
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace CleverAge\ProcessUiBundle\Monolog\Handler;
 
 use League\Flysystem\Filesystem;
 use League\Flysystem\FilesystemException;
 use League\Flysystem\Local\LocalFilesystemAdapter;
 use Monolog\Handler\AbstractProcessingHandler;
-use Monolog\Logger;
-
+use Monolog\Level;
+use Monolog\LogRecord;
 
 class ProcessLogHandler extends AbstractProcessingHandler
 {
-    private string $logDir;
     private ?array $logFilenames = [];
     private ?string $currentProcessCode = null;
     private ?Filesystem $filesystem = null;
 
-    /**
-     * @required
-     */
-    public function setLogDir(string $processLogDir): void
+    public function __construct(private readonly string $processLogDir)
     {
-        $this->logDir = $processLogDir;
+        parent::__construct();
     }
 
     /**
@@ -31,19 +36,19 @@ class ProcessLogHandler extends AbstractProcessingHandler
      *
      * @throws FilesystemException
      */
-    protected function write(array $record): void
+    protected function write(array|LogRecord $record): void
     {
         if (null === $logFilename = ($this->logFilenames[$this->currentProcessCode] ?? null)) {
             return;
         }
 
-        if ($record['level'] < Logger::INFO) {
+        if ($record['level'] < Level::Info) {
             return;
         }
 
-        if (null === $this->filesystem) {
+        if (!$this->filesystem instanceof Filesystem) {
             $this->filesystem = new Filesystem(
-                new LocalFilesystemAdapter($this->logDir, null, \FILE_APPEND)
+                new LocalFilesystemAdapter($this->processLogDir, null, \FILE_APPEND)
             );
         }
         $this->filesystem->write($logFilename, $record['formatted']);
