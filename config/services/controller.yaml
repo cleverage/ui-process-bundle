@@ -3,4 +3,8 @@ services:
         resource: '../../src/Controller/'
         autowire: true
         autoconfigure: true
-        tags: [ 'controller.service_arguments' ]
+        bind:
+            $processLogDir: '%process_logs_dir%'
+            $indexLogs: '%clever_age_process_ui.index_logs.enabled%'
+        tags:
+            - { name: 'controller.service_arguments' }

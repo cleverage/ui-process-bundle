@@ -16,6 +16,6 @@ services:
         class: CleverAge\ProcessUiBundle\EventSubscriber\Crud\ProcessCrudListener
         public: false
         tags:
-            - { name: 'kernel.event_listener' }
+            - { name: 'kernel.event_subscriber' }
         arguments:
-            - '@doctrine.orm.event_subscriber'
+            - '@doctrine.orm.entity_manager'
