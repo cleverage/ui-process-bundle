@@ -1,5 +1,5 @@
 {
-  "name": "cleverage/process-ui-bundle",
+  "name": "cleverage/ui-process-bundle",
   "type": "symfony-bundle",
   "license": "MIT",
   "description": "UI for cleverage/process-bundle",
