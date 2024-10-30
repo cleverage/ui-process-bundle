@@ -16,33 +16,20 @@ namespace CleverAge\ProcessUiBundle\Repository;
 use CleverAge\ProcessBundle\Registry\ProcessConfigurationRegistry;
 use CleverAge\ProcessUiBundle\Entity\Process;
 use CleverAge\ProcessUiBundle\Manager\ProcessUiConfigurationManager;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\Persistence\ManagerRegistry;
-use Symfony\Contracts\Service\Attribute\Required;
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\EntityRepository;
 
 /**
- * @extends ServiceEntityRepository<Process>
+ * @extends EntityRepository<Process>
  */
-class ProcessRepository extends ServiceEntityRepository
+class ProcessRepository extends EntityRepository
 {
-    private ProcessUiConfigurationManager $processUiConfigurationManager;
-    private ProcessConfigurationRegistry $processConfigurationRegistry;
-
-    #[Required]
-    public function setProcessUiConfigurationManager(ProcessUiConfigurationManager $processUiConfigurationManager): void
-    {
-        $this->processUiConfigurationManager = $processUiConfigurationManager;
-    }
-
-    #[Required]
-    public function setProcessConfigurationRegistry(ProcessConfigurationRegistry $processConfigurationRegistry): void
-    {
-        $this->processConfigurationRegistry = $processConfigurationRegistry;
-    }
-
-    public function __construct(ManagerRegistry $registry)
-    {
-        parent::__construct($registry, Process::class);
+    public function __construct(
+        EntityManagerInterface $em,
+        private readonly ProcessUiConfigurationManager $processUiConfigurationManager,
+        private readonly ProcessConfigurationRegistry $processConfigurationRegistry,
+    ) {
+        parent::__construct($em, $em->getClassMetadata(Process::class));
     }
 
     public function sync(): void

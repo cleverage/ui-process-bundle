@@ -6,6 +6,7 @@ services:
             - { name: 'kernel.event_subscriber' }
         arguments:
             - '@doctrine.orm.entity_manager'
+            - '@cleverage_ui_process.repository.process'
             - '@cleverage_ui_process.monolog_handler.process_log'
             - '@messenger.default_bus'
             - '@cleverage_ui_process.manager.configuration'
@@ -18,4 +19,4 @@ services:
         tags:
             - { name: 'kernel.event_listener' }
         arguments:
-            - '@doctrine.orm.event_subscriber'
+            - '@cleverage_ui_process.repository.process'

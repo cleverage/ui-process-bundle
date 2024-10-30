@@ -14,17 +14,17 @@ declare(strict_types=1);
 namespace CleverAge\ProcessUiBundle\Repository;
 
 use CleverAge\ProcessUiBundle\Entity\ProcessExecution;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\EntityRepository;
 
 /**
- * @extends ServiceEntityRepository<ProcessExecution>
+ * @extends EntityRepository<ProcessExecution>
  */
-class ProcessExecutionRepository extends ServiceEntityRepository
+class ProcessExecutionRepository extends EntityRepository
 {
-    public function __construct(ManagerRegistry $registry)
+    public function __construct(EntityManagerInterface $em)
     {
-        parent::__construct($registry, ProcessExecution::class);
+        parent::__construct($em, $em->getClassMetadata(ProcessExecution::class));
     }
 
     /**

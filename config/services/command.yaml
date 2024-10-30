@@ -5,7 +5,7 @@ services:
         tags:
             - { name: console.command }
         arguments:
-            - '@doctrine'
+            - '@cleverage_ui_process.repository.process_execution'
             - '%process_logs_dir%'
 
     cleverage_ui_process.command.user_create:

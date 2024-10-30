@@ -13,13 +13,12 @@ declare(strict_types=1);
 
 namespace CleverAge\ProcessUiBundle\Entity;
 
-use CleverAge\ProcessUiBundle\Repository\ProcessExecutionRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: ProcessExecutionRepository::class)]
+#[ORM\Entity]
 class ProcessExecution
 {
     public const STATUS_START = 0;

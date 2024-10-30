@@ -13,9 +13,7 @@ declare(strict_types=1);
 
 namespace CleverAge\ProcessUiBundle\Command;
 
-use CleverAge\ProcessUiBundle\Entity\ProcessExecution;
 use CleverAge\ProcessUiBundle\Repository\ProcessExecutionRepository;
-use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputDefinition;
@@ -28,8 +26,10 @@ use Symfony\Component\Finder\Finder;
 #[AsCommand(name: 'cleverage:process-ui:purge', description: 'Purge process_execution table.')]
 class PurgeProcessExecution extends Command
 {
-    public function __construct(private readonly ManagerRegistry $managerRegistry, private readonly string $processLogDir)
-    {
+    public function __construct(
+        private readonly ProcessExecutionRepository $processExecutionRepository,
+        private readonly string $processLogDir,
+    ) {
         parent::__construct();
     }
 
@@ -69,9 +69,7 @@ class PurgeProcessExecution extends Command
             $fs->remove($finder);
             $output->writeln("<info>$count log files are deleted on filesystem.</info>");
         }
-        /** @var ProcessExecutionRepository $repository */
-        $repository = $this->managerRegistry->getRepository(ProcessExecution::class);
-        $repository->deleteBefore($date);
+        $this->processExecutionRepository->deleteBefore($date);
 
         $output->writeln(<<<EOT
             <info>Process Execution before {$date->format(\DateTimeInterface::ATOM)} are deleted into database.</info>

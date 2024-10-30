@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace CleverAge\ProcessUiBundle\EventSubscriber;
 
 use CleverAge\ProcessBundle\Event\ProcessEvent;
-use CleverAge\ProcessUiBundle\Entity\Process;
 use CleverAge\ProcessUiBundle\Entity\ProcessExecution;
 use CleverAge\ProcessUiBundle\Event\IncrementReportInfoEvent;
 use CleverAge\ProcessUiBundle\Event\SetReportInfoEvent;
@@ -32,6 +31,7 @@ class ProcessEventSubscriber implements EventSubscriberInterface
 
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
+        private readonly ProcessRepository $processRepository,
         private readonly ProcessLogHandler $processLogHandler,
         private readonly MessageBusInterface $messageBus,
         private readonly ProcessUiConfigurationManager $processUiConfigurationManager,
@@ -64,8 +64,7 @@ class ProcessEventSubscriber implements EventSubscriberInterface
 
     public function onProcessStarted(ProcessEvent $event): void
     {
-        $process = $this->entityManager->getRepository(Process::class)
-            ->findOneBy(['processCode' => $event->getProcessCode()]);
+        $process = $this->processRepository->findOneBy(['processCode' => $event->getProcessCode()]);
         if (null === $process) {
             throw new \RuntimeException('Unable to found process into database.');
         }
@@ -121,9 +120,7 @@ class ProcessEventSubscriber implements EventSubscriberInterface
 
     public function syncProcessIntoDatabase(): void
     {
-        /** @var ProcessRepository $repository */
-        $repository = $this->entityManager->getRepository(Process::class);
-        $repository->sync();
+        $this->processRepository->sync();
     }
 
     protected function dispatchLogIndexerMessage(ProcessExecution $processExecution): void
