@@ -3,9 +3,9 @@ services:
         class: CleverAge\ProcessUiBundle\EventSubscriber\ProcessEventSubscriber
         public: false
         tags:
-            - { name: 'kernel.event_listener' }
+            - { name: 'kernel.event_subscriber' }
         arguments:
-            - '@doctrine.orm.entity_manager.abstract'
+            - '@doctrine.orm.entity_manager'
             - '@cleverage_ui_process.monolog_handler.process_log'
             - '@messenger.default_bus'
             - '@cleverage_ui_process.manager.configuration'
@@ -18,4 +18,4 @@ services:
         tags:
             - { name: 'kernel.event_listener' }
         arguments:
-            - '@doctrine.orm.entity_manager.abstract'
+            - '@doctrine.orm.event_subscriber'

@@ -16,4 +16,4 @@ services:
         arguments:
             - '@validator'
             - '@security.user_password_hasher'
-            - '@doctrine.orm.entity_manager.abstract'
+            - '@doctrine.orm.entity_manager'

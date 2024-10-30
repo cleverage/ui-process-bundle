@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace CleverAge\ProcessUiBundle\DependencyInjection\Compiler;
 
-use CleverAge\ProcessUiBundle\Monolog\Handler\ProcessLogHandler;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Reference;
@@ -31,7 +30,7 @@ class RegisterLogHandlerCompilerPass implements CompilerPassInterface
             if ($container->has($logger)) {
                 $container
                     ->getDefinition($logger)
-                    ->addMethodCall('pushHandler', [new Reference(ProcessLogHandler::class)]);
+                    ->addMethodCall('pushHandler', [new Reference('cleverage_ui_process.monolog_handler.process_log')]);
             }
         }
     }
