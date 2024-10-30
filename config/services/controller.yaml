@@ -1,61 +1,6 @@
 services:
-    abstract_controller.locator:
-        class: Symfony\Component\DependencyInjection\ServiceLocator
-        arguments:
-            - router: '@router'
-              request_stack: '@request_stack'
-              http_kernel: '@http_kernel'
-              parameter_bag: '@parameter_bag'
-                # you can add more services here as you need them (e.g. the `serializer`
-                # service) and have a look at the AbstractController class to see
-                # which services are defined in the locator
-
-    cleverage_ui_process.controller.dashboard:
-        class: CleverAge\ProcessUiBundle\Controller\DashboardController
-        public: false
-        tags:
-            - { name: controller.service_arguments }
-        calls:
-            - [setContainer, ['@abstract_controller.locator']]
-
-    cleverage_ui_process.controller.security:
-        class: CleverAge\ProcessUiBundle\Controller\SecurityController
-        public: false
-        tags:
-            - { name: controller.service_arguments }
-        calls:
-            - [setContainer, ['@abstract_controller.locator']]
-
-    cleverage_ui_process.controller.crud.process:
-        class: CleverAge\ProcessUiBundle\Controller\Crud\ProcessCrudController
-        public: false
-        tags:
-            - { name: controller.service_arguments }
-        calls:
-            - [setContainer, ['@abstract_controller.locator']]
-        arguments:
-            - '@cleverage_ui_process.manager.configuration'
-            - '@EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator'
-            - '@messenger.default_bus'
-
-    cleverage_ui_process.controller.crud.process_execution:
-        class: CleverAge\ProcessUiBundle\Controller\Crud\ProcessExecutionCrudController
-        public: false
-        tags:
-            - { name: controller.service_arguments }
-        calls:
-            - [setContainer, ['@abstract_controller.locator']]
-        arguments:
-            - '%clever_age_process_ui.index_logs.enabled%'
-            - '%process_logs_dir%'
-            - '@cleverage_ui_process.manager.configuration'
-
-    cleverage_ui_process.controller.crud.user:
-        class: CleverAge\ProcessUiBundle\Controller\Crud\UserCrudController
-        public: false
-        tags:
-            - { name: controller.service_arguments }
-        calls:
-            - [setContainer, ['@abstract_controller.locator']]
-        arguments:
-            - '@security.user_password_hasher'
+    CleverAge\ProcessUiBundle\Controller\:
+        resource: '../../src/Controller/'
+        autowire: true
+        autoconfigure: true
+        tags: [ 'controller.service_arguments' ]
