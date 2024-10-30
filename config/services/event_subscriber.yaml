@@ -17,6 +17,6 @@ services:
         class: CleverAge\ProcessUiBundle\EventSubscriber\Crud\ProcessCrudListener
         public: false
         tags:
-            - { name: 'kernel.event_listener' }
+            - { name: 'kernel.event_subscriber' }
         arguments:
             - '@cleverage_ui_process.repository.process'
