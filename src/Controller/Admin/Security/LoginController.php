@@ -15,10 +15,11 @@ namespace CleverAge\ProcessUiBundle\Controller\Admin\Security;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Attribute\Route;
 
 class LoginController extends AbstractController
 {
-    #[\Symfony\Component\Routing\Attribute\Route('/process/login', name: 'process_login')]
+    #[Route('/process/login', name: 'process_login')]
     public function __invoke(): Response
     {
         return $this->render(

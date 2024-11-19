@@ -16,9 +16,10 @@ namespace CleverAge\ProcessUiBundle\Controller\Admin\Process;
 use CleverAge\ProcessUiBundle\Manager\ProcessConfigurationsManager;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-#[\Symfony\Component\Routing\Attribute\Route('/process/list', name: 'process_list')]
+#[Route('/process/list', name: 'process_list')]
 #[IsGranted('ROLE_USER')]
 class ListAction extends AbstractController
 {

@@ -29,10 +29,11 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\ValueResolver;
 use Symfony\Component\Messenger\MessageBusInterface;
+use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Uid\Uuid;
 
-#[\Symfony\Component\Routing\Attribute\Route(
+#[Route(
     '/process/launch',
     name: 'process_launch',
     requirements: ['process' => '\w+'],
@@ -44,12 +45,12 @@ class LaunchAction extends AbstractController
     public function __invoke(
         RequestStack $requestStack,
         MessageBusInterface $messageBus,
-        #[Autowire(param: 'upload_directory')] string $uploadDirectory,
+        string $uploadDirectory,
         #[ValueResolver('process')] ProcessConfiguration $processConfiguration,
-        ProcessConfigurationsManager $configurationsManager,
+        ProcessConfigurationsManager $processConfigurationsManager,
         AdminContext $context,
     ): Response {
-        $uiOptions = $configurationsManager->getUiOptions($requestStack->getMainRequest()?->get('process') ?? '');
+        $uiOptions = $processConfigurationsManager->getUiOptions($requestStack->getMainRequest()?->get('process') ?? '');
         $form = $this->createForm(
             LaunchType::class,
             null,

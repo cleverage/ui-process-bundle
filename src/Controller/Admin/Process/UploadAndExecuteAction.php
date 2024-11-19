@@ -14,20 +14,21 @@ declare(strict_types=1);
 namespace CleverAge\ProcessUiBundle\Controller\Admin\Process;
 
 use CleverAge\ProcessBundle\Configuration\ProcessConfiguration;
+use CleverAge\ProcessBundle\Configuration\TaskConfiguration;
 use CleverAge\ProcessUiBundle\Form\Type\ProcessUploadFileType;
 use CleverAge\ProcessUiBundle\Message\ProcessExecuteMessage;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\ValueResolver;
 use Symfony\Component\Messenger\MessageBusInterface;
+use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Uid\Uuid;
 
-#[\Symfony\Component\Routing\Attribute\Route(
+#[Route(
     '/process/upload-and-execute',
     name: 'process_upload_and_execute',
     requirements: ['process' => '\w+'],
@@ -39,10 +40,10 @@ class UploadAndExecuteAction extends AbstractController
     public function __invoke(
         RequestStack $requestStack,
         MessageBusInterface $messageBus,
-        #[Autowire(param: 'upload_directory')] string $uploadDirectory,
+        string $uploadDirectory,
         #[ValueResolver('process')] ProcessConfiguration $processConfiguration,
     ): Response {
-        if (!$processConfiguration->getEntryPoint() instanceof \CleverAge\ProcessBundle\Configuration\TaskConfiguration) {
+        if (!$processConfiguration->getEntryPoint() instanceof TaskConfiguration) {
             throw new \RuntimeException('You must set an entry_point.');
         }
         $form = $this->createForm(

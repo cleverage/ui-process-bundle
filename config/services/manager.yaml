@@ -1,9 +1,12 @@
 services:
-    cleverage_ui_process.manager.configuration:
-        class: CleverAge\ProcessUiBundle\Manager\ProcessUiConfigurationManager
+    cleverage_ui_process.manager.process_execution:
+        class: CleverAge\ProcessUiBundle\Manager\ProcessExecutionManager
+        public: false
+        arguments:
+            - '@cleverage_ui_process.repository.process_execution'
+
+    cleverage_ui_process.manager.process_configuration:
+        class: CleverAge\ProcessUiBundle\Manager\ProcessConfigurationsManager
         public: false
         arguments:
             - '@cleverage_process.registry.process_configuration'
-
-    CleverAge\ProcessUiBundle\Manager\ProcessUiConfigurationManager:
-        alias: 'cleverage_ui_process.manager.configuration'

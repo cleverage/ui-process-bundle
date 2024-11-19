@@ -4,7 +4,11 @@ services:
         autowire: true
         autoconfigure: true
         bind:
-            $processLogDir: '%process_logs_dir%'
-            $indexLogs: '%clever_age_process_ui.index_logs.enabled%'
+            $processConfigurationsManager: '@cleverage_ui_process.manager.process_configuration'
+            $localeSwitcher: '@translation.locale_switcher'
+            $request: '@request_stack'
+            $messageBus: '@messenger.default_bus'
+            $uploadDirectory: '%upload_directory%'
+            $context: '@EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext'
         tags:
             - { name: 'controller.service_arguments' }
