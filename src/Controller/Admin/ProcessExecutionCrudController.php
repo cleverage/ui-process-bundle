@@ -2,6 +2,15 @@
 
 declare(strict_types=1);
 
+/*
+ * This file is part of the CleverAge/UiProcessBundle package.
+ *
+ * Copyright (c) Clever-Age
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace CleverAge\ProcessUiBundle\Controller\Admin;
 
 use CleverAge\ProcessUiBundle\Admin\Field\EnumField;
@@ -96,7 +105,7 @@ class ProcessExecutionCrudController extends AbstractCrudController
                     [
                         'process' => [
                             'comparison' => '=',
-                            'value' => $this->getContext()->getEntity()->getInstance()->getId(),
+                            'value' => $this->getContext()?->getEntity()->getInstance()->getId(),
                         ],
                     ]
                 )
@@ -111,7 +120,7 @@ class ProcessExecutionCrudController extends AbstractCrudController
     ): Response {
         /** @var ProcessExecution $processExecution */
         $processExecution = $context->getEntity()->getInstance();
-        $filepath = $directory.DIRECTORY_SEPARATOR.$processExecution->code.DIRECTORY_SEPARATOR
+        $filepath = $directory.\DIRECTORY_SEPARATOR.$processExecution->code.\DIRECTORY_SEPARATOR
             .$processExecution->logFilename;
         $basename = basename($filepath);
         $content = file_get_contents($filepath);

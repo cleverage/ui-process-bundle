@@ -2,6 +2,15 @@
 
 declare(strict_types=1);
 
+/*
+ * This file is part of the CleverAge/UiProcessBundle package.
+ *
+ * Copyright (c) Clever-Age
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace CleverAge\ProcessUiBundle\Controller\Admin\Process;
 
 use CleverAge\ProcessBundle\Configuration\ProcessConfiguration;
@@ -15,11 +24,10 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\ValueResolver;
 use Symfony\Component\Messenger\MessageBusInterface;
-use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Uid\Uuid;
 
-#[Route(
+#[\Symfony\Component\Routing\Attribute\Route(
     '/process/upload-and-execute',
     name: 'process_upload_and_execute',
     requirements: ['process' => '\w+'],
@@ -32,9 +40,9 @@ class UploadAndExecuteAction extends AbstractController
         RequestStack $requestStack,
         MessageBusInterface $messageBus,
         #[Autowire(param: 'upload_directory')] string $uploadDirectory,
-        #[ValueResolver('process')] ProcessConfiguration $processConfiguration
+        #[ValueResolver('process')] ProcessConfiguration $processConfiguration,
     ): Response {
-        if (null === $processConfiguration->getEntryPoint()) {
+        if (!$processConfiguration->getEntryPoint() instanceof \CleverAge\ProcessBundle\Configuration\TaskConfiguration) {
             throw new \RuntimeException('You must set an entry_point.');
         }
         $form = $this->createForm(
@@ -46,7 +54,7 @@ class UploadAndExecuteAction extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             /** @var UploadedFile $file */
             $file = $form->getData();
-            $savedFilepath = sprintf('%s/%s.%s', $uploadDirectory, Uuid::v4(), $file->getClientOriginalExtension());
+            $savedFilepath = \sprintf('%s/%s.%s', $uploadDirectory, Uuid::v4(), $file->getClientOriginalExtension());
             (new Filesystem())->dumpFile($savedFilepath, $file->getContent());
             $messageBus->dispatch(
                 new ProcessExecuteMessage(

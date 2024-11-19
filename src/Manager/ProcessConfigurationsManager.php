@@ -2,6 +2,15 @@
 
 declare(strict_types=1);
 
+/*
+ * This file is part of the CleverAge/UiProcessBundle package.
+ *
+ * Copyright (c) Clever-Age
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace CleverAge\ProcessUiBundle\Manager;
 
 use CleverAge\ProcessBundle\Configuration\ProcessConfiguration;
@@ -66,9 +75,7 @@ final readonly class ProcessConfigurationsManager
                 'run ui option is deprecated. Use public option instead to hide a process from UI'
             );
             $uiResolver->setAllowedValues('entrypoint_type', ['text', 'file']);
-            $uiResolver->setNormalizer('constraints', function (Options $options, array $values): array {
-                return (new ConstraintLoader())->buildConstraints($values);
-            });
+            $uiResolver->setNormalizer('constraints', fn (Options $options, array $values): array => (new ConstraintLoader())->buildConstraints($values));
         });
 
         return $resolver->resolve($options);

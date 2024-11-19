@@ -2,6 +2,15 @@
 
 declare(strict_types=1);
 
+/*
+ * This file is part of the CleverAge/UiProcessBundle package.
+ *
+ * Copyright (c) Clever-Age
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace CleverAge\ProcessUiBundle\Scheduler;
 
 use CleverAge\ProcessUiBundle\Entity\ProcessScheduleType;
@@ -22,7 +31,7 @@ readonly class CronScheduler implements ScheduleProviderInterface
     public function __construct(
         private ProcessScheduleRepository $repository,
         private ValidatorInterface $validator,
-        private LoggerInterface $logger
+        private LoggerInterface $logger,
     ) {
     }
 
@@ -44,14 +53,14 @@ readonly class CronScheduler implements ScheduleProviderInterface
                 if (ProcessScheduleType::CRON === $processSchedule->getType()) {
                     $schedule->add(
                         RecurringMessage::cron(
-                            $processSchedule->getExpression(),
+                            $processSchedule->getExpression() ?? '',
                             new CronProcessMessage($processSchedule)
                         )
                     );
                 } elseif (ProcessScheduleType::EVERY === $processSchedule->getType()) {
                     $schedule->add(
                         RecurringMessage::every(
-                            $processSchedule->getExpression(),
+                            $processSchedule->getExpression() ?? '',
                             new CronProcessMessage($processSchedule)
                         )
                     );

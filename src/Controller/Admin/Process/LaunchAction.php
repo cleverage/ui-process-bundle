@@ -2,6 +2,15 @@
 
 declare(strict_types=1);
 
+/*
+ * This file is part of the CleverAge/UiProcessBundle package.
+ *
+ * Copyright (c) Clever-Age
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace CleverAge\ProcessUiBundle\Controller\Admin\Process;
 
 use CleverAge\ProcessBundle\Configuration\ProcessConfiguration;
@@ -20,11 +29,10 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\ValueResolver;
 use Symfony\Component\Messenger\MessageBusInterface;
-use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Uid\Uuid;
 
-#[Route(
+#[\Symfony\Component\Routing\Attribute\Route(
     '/process/launch',
     name: 'process_launch',
     requirements: ['process' => '\w+'],
@@ -41,17 +49,17 @@ class LaunchAction extends AbstractController
         ProcessConfigurationsManager $configurationsManager,
         AdminContext $context,
     ): Response {
-        $uiOptions = $configurationsManager->getUiOptions($requestStack->getMainRequest()->get('process'));
+        $uiOptions = $configurationsManager->getUiOptions($requestStack->getMainRequest()?->get('process') ?? '');
         $form = $this->createForm(
             LaunchType::class,
             null,
             [
-                'constraints' => $uiOptions['constraints'],
+                'constraints' => $uiOptions['constraints'] ?? [],
                 'process_code' => $requestStack->getMainRequest()?->get('process'),
             ]
         );
         if (false === $form->isSubmitted()) {
-            $default = $uiOptions['default'];
+            $default = $uiOptions['default'] ?? [];
             if (false === $form->get('input')->getConfig()->getType()->getInnerType() instanceof TextType
                 && isset($default['input'])
             ) {
@@ -61,10 +69,9 @@ class LaunchAction extends AbstractController
         }
         $form->handleRequest($requestStack->getMainRequest());
         if ($form->isSubmitted() && $form->isValid()) {
-            /** @var mixed|UploadedFile $file */
             $input = $form->get('input')->getData();
             if ($input instanceof UploadedFile) {
-                $filename = sprintf('%s/%s.%s', $uploadDirectory, Uuid::v4(), $input->getClientOriginalExtension());
+                $filename = \sprintf('%s/%s.%s', $uploadDirectory, Uuid::v4(), $input->getClientOriginalExtension());
                 (new Filesystem())->dumpFile($filename, $input->getContent());
                 $input = $filename;
             }

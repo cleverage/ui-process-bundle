@@ -2,8 +2,18 @@
 
 declare(strict_types=1);
 
+/*
+ * This file is part of the CleverAge/UiProcessBundle package.
+ *
+ * Copyright (c) Clever-Age
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace CleverAge\ProcessUiBundle\Form\Type;
 
+use CleverAge\ProcessBundle\Configuration\TaskConfiguration;
 use CleverAge\ProcessBundle\Registry\ProcessConfigurationRegistry;
 use CleverAge\ProcessUiBundle\Manager\ProcessConfigurationsManager;
 use Symfony\Component\Form\AbstractType;
@@ -30,9 +40,9 @@ class LaunchType extends AbstractType
         $uiOptions = $this->configurationsManager->getUiOptions($code);
         $builder->add(
             'input',
-            'file' === $uiOptions['entrypoint_type'] ? FileType::class : TextType::class,
+            'file' === ($uiOptions['entrypoint_type'] ?? null) ? FileType::class : TextType::class,
             [
-                'required' => !(null === $configuration->getEntryPoint()),
+                'required' => $configuration->getEntryPoint() instanceof TaskConfiguration,
             ]
         );
         $builder->add(
@@ -46,12 +56,8 @@ class LaunchType extends AbstractType
             ]
         );
         $builder->get('context')->addModelTransformer(new CallbackTransformer(
-            function ($data) {
-                return null === $data ? [] : $data;
-            },
-            function ($data) {
-                return array_column($data ?? [], 'value', 'key');
-            },
+            fn ($data) => $data ?? [],
+            fn ($data) => array_column($data ?? [], 'value', 'key'),
         ));
     }
 

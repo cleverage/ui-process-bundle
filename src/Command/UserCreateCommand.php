@@ -38,7 +38,7 @@ class UserCreateCommand extends Command
     public function __construct(
         private readonly ValidatorInterface $validator,
         private readonly UserPasswordHasherInterface $passwordEncoder,
-        private readonly EntityManagerInterface $em
+        private readonly EntityManagerInterface $em,
     ) {
         parent::__construct();
     }

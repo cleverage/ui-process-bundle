@@ -2,8 +2,18 @@
 
 declare(strict_types=1);
 
+/*
+ * This file is part of the CleverAge/UiProcessBundle package.
+ *
+ * Copyright (c) Clever-Age
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace CleverAge\ProcessUiBundle\Monolog\Handler;
 
+use CleverAge\ProcessUiBundle\Entity\ProcessExecution;
 use CleverAge\ProcessUiBundle\Manager\ProcessExecutionManager;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
@@ -46,7 +56,7 @@ class DoctrineProcessHandler extends AbstractProcessingHandler
     public function flush(): void
     {
         foreach ($this->records as $record) {
-            if ($currentProcessExecution = $this->processExecutionManager->getCurrentProcessExecution()) {
+            if (($currentProcessExecution = $this->processExecutionManager?->getCurrentProcessExecution()) instanceof ProcessExecution) {
                 $entity = new \CleverAge\ProcessUiBundle\Entity\LogRecord($record, $currentProcessExecution);
                 $this->em?->persist($entity);
             }

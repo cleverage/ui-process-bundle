@@ -2,6 +2,15 @@
 
 declare(strict_types=1);
 
+/*
+ * This file is part of the CleverAge/UiProcessBundle package.
+ *
+ * Copyright (c) Clever-Age
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace CleverAge\ProcessUiBundle\Migrations;
 
 use Doctrine\DBAL\Platforms\MariaDBPlatform;
@@ -21,7 +30,7 @@ final class Version20231006111525 extends AbstractMigration
     {
         $platform = $this->connection->getDatabasePlatform();
 
-        if ($platform instanceof MariaDBPlatform or $platform instanceof MySQLPlatform) {
+        if ($platform instanceof MariaDBPlatform || $platform instanceof MySQLPlatform) {
             if (!$schema->hasTable('log_record')) {
                 $this->addSql('CREATE TABLE log_record (id INT AUTO_INCREMENT NOT NULL, process_execution_id INT DEFAULT NULL, channel VARCHAR(64) NOT NULL, level INT NOT NULL, message VARCHAR(512) NOT NULL, context JSON NOT NULL COMMENT \'(DC2Type:json)\', created_at DATETIME NOT NULL COMMENT \'(DC2Type:datetime_immutable)\', INDEX IDX_8ECECC333DAC0075 (process_execution_id), INDEX idx_log_record_level (level), INDEX idx_log_record_created_at (created_at), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
             }

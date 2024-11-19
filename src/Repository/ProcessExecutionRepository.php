@@ -18,7 +18,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 
 /**
- * @extends ServiceEntityRepository<ProcessExecution>
+ * @extends EntityRepository<ProcessExecution>
  *
  * @method ProcessExecution|null find($id, $lockMode = null, $lockVersion = null)
  * @method ProcessExecution|null findOneBy(array $criteria, array $orderBy = null)

@@ -2,6 +2,15 @@
 
 declare(strict_types=1);
 
+/*
+ * This file is part of the CleverAge/UiProcessBundle package.
+ *
+ * Copyright (c) Clever-Age
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace CleverAge\ProcessUiBundle\Manager;
 
 use CleverAge\ProcessUiBundle\Entity\ProcessExecution;
@@ -17,7 +26,7 @@ class ProcessExecutionManager
 
     public function setCurrentProcessExecution(ProcessExecution $processExecution): self
     {
-        if (null === $this->currentProcessExecution) {
+        if (!$this->currentProcessExecution instanceof ProcessExecution) {
             $this->currentProcessExecution = $processExecution;
         }
 
@@ -40,7 +49,7 @@ class ProcessExecutionManager
 
     public function save(): self
     {
-        if (null !== $this->currentProcessExecution) {
+        if ($this->currentProcessExecution instanceof ProcessExecution) {
             $this->processExecutionRepository->save($this->currentProcessExecution);
         }
 

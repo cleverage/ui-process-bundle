@@ -2,6 +2,15 @@
 
 declare(strict_types=1);
 
+/*
+ * This file is part of the CleverAge/UiProcessBundle package.
+ *
+ * Copyright (c) Clever-Age
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace CleverAge\ProcessUiBundle\Admin\Filter;
 
 use Doctrine\ORM\QueryBuilder;
@@ -18,17 +27,16 @@ class LogProcessFilter implements FilterInterface
     use FilterTrait;
 
     public static function new(
-        $label,
+        mixed $label,
         array $choices,
-        null|string|int $executionId = null,
-    ): self
-    {
+        string|int|null $executionId = null,
+    ): self {
         if (is_numeric($executionId)) {
             $choices = [$executionId => $executionId];
         }
 
         return (new self())
-            ->setFilterFqcn(__CLASS__)
+            ->setFilterFqcn(self::class)
             ->setProperty('process')
             ->setLabel($label)
             ->setFormType(ChoiceFilterType::class)

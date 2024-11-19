@@ -25,31 +25,31 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    private ?int $id;
+    private ?int $id = null;
 
-    #[ORM\Column(type: 'string', length: 255, unique: true)]
-    private ?string $email;
+    #[ORM\Column(type: \Doctrine\DBAL\Types\Types::STRING, length: 255, unique: true)]
+    private ?string $email = null;
 
-    #[ORM\Column(type: 'string', length: 255, nullable: true)]
-    private ?string $firstname;
+    #[ORM\Column(type: \Doctrine\DBAL\Types\Types::STRING, length: 255, nullable: true)]
+    private ?string $firstname = null;
 
-    #[ORM\Column(type: 'string', length: 255, nullable: true)]
-    private ?string $lastname;
+    #[ORM\Column(type: \Doctrine\DBAL\Types\Types::STRING, length: 255, nullable: true)]
+    private ?string $lastname = null;
 
-    #[ORM\Column(type: 'json')]
+    #[ORM\Column(type: \Doctrine\DBAL\Types\Types::JSON)]
     private array $roles = [];
 
-    #[ORM\Column(type: 'string', length: 255, nullable: true)]
-    private ?string $password;
+    #[ORM\Column(type: \Doctrine\DBAL\Types\Types::STRING, length: 255, nullable: true)]
+    private ?string $password = null;
 
-    #[ORM\Column(type: 'string', length: 255, nullable: true)]
-    private ?string $timezone;
+    #[ORM\Column(type: \Doctrine\DBAL\Types\Types::STRING, length: 255, nullable: true)]
+    private ?string $timezone = null;
 
-    #[ORM\Column(type: 'string', length: 255, nullable: true)]
-    private ?string $locale;
+    #[ORM\Column(type: \Doctrine\DBAL\Types\Types::STRING, length: 255, nullable: true)]
+    private ?string $locale = null;
 
-    #[ORM\Column(type: 'string', length: 255, nullable: true)]
-    private ?string $token;
+    #[ORM\Column(type: \Doctrine\DBAL\Types\Types::STRING, length: 255, nullable: true)]
+    private ?string $token = null;
 
     public function getId(): ?int
     {

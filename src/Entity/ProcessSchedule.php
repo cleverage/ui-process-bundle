@@ -2,6 +2,15 @@
 
 declare(strict_types=1);
 
+/*
+ * This file is part of the CleverAge/UiProcessBundle package.
+ *
+ * Copyright (c) Clever-Age
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace CleverAge\ProcessUiBundle\Entity;
 
 use CleverAge\ProcessUiBundle\Repository\ProcessScheduleRepository;
@@ -40,10 +49,10 @@ class ProcessSchedule
     )]
     private ?string $expression = null;
 
-    #[ORM\Column(type: 'text', nullable: true)]
+    #[ORM\Column(type: \Doctrine\DBAL\Types\Types::TEXT, nullable: true)]
     private ?string $input = null;
 
-    #[ORM\Column(type: 'json')]
+    #[ORM\Column(type: \Doctrine\DBAL\Types\Types::JSON)]
     private string|array $context = [];
 
     public function getId(): ?int
@@ -65,7 +74,7 @@ class ProcessSchedule
 
     public function getContext(): array
     {
-        return is_array($this->context) ? $this->context : json_decode($this->context);
+        return \is_array($this->context) ? $this->context : json_decode($this->context);
     }
 
     public function setContext(array $context): void

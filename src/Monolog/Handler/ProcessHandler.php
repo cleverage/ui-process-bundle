@@ -2,6 +2,15 @@
 
 declare(strict_types=1);
 
+/*
+ * This file is part of the CleverAge/UiProcessBundle package.
+ *
+ * Copyright (c) Clever-Age
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace CleverAge\ProcessUiBundle\Monolog\Handler;
 
 use CleverAge\ProcessUiBundle\Manager\ProcessExecutionManager;
@@ -12,16 +21,13 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 class ProcessHandler extends StreamHandler
 {
-    private readonly string $directory;
-    private Level $reportIncrementLevel;
+    private Level $reportIncrementLevel = Level::Error;
 
     public function __construct(
-        #[Autowire(param: 'kernel.logs_dir')] string $directory,
-        private ProcessExecutionManager $processExecutionManager
+        #[Autowire(param: 'kernel.logs_dir')] private readonly string $directory,
+        private readonly ProcessExecutionManager $processExecutionManager,
     ) {
-        $this->directory = $directory;
-        $this->reportIncrementLevel = Level::Error;
-        parent::__construct($directory);
+        parent::__construct($this->directory);
     }
 
     public function hasFilename(): bool
@@ -31,7 +37,7 @@ class ProcessHandler extends StreamHandler
 
     public function setFilename(string $filename): void
     {
-        $this->url = sprintf('%s/%s', $this->directory, $filename);
+        $this->url = \sprintf('%s/%s', $this->directory, $filename);
     }
 
     public function close(): void
@@ -53,6 +59,9 @@ class ProcessHandler extends StreamHandler
         }
     }
 
+    /**
+     * @param 'ALERT'|'Alert'|'alert'|'CRITICAL'|'Critical'|'critical'|'DEBUG'|'Debug'|'debug'|'EMERGENCY'|'Emergency'|'emergency'|'ERROR'|'Error'|'error'|'INFO'|'Info'|'info'|'NOTICE'|'Notice'|'notice'|'WARNING'|'Warning'|'warning' $level
+     */
     public function setReportIncrementLevel(string $level): void
     {
         $this->reportIncrementLevel = Level::fromName($level);

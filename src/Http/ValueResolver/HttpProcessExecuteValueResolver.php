@@ -2,6 +2,15 @@
 
 declare(strict_types=1);
 
+/*
+ * This file is part of the CleverAge/UiProcessBundle package.
+ *
+ * Copyright (c) Clever-Age
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace CleverAge\ProcessUiBundle\Http\ValueResolver;
 
 use CleverAge\ProcessUiBundle\Http\Model\HttpProcessExecution;
@@ -24,7 +33,7 @@ readonly class HttpProcessExecuteValueResolver implements ValueResolverInterface
     {
         $input = $request->get('input', $request->files->get('input'));
         if ($input instanceof UploadedFile) {
-            $uploadFileName = $this->storageDir.DIRECTORY_SEPARATOR.date('YmdHis').'_'.uniqid().'_'.$input->getClientOriginalName();
+            $uploadFileName = $this->storageDir.\DIRECTORY_SEPARATOR.date('YmdHis').'_'.uniqid().'_'.$input->getClientOriginalName();
             (new Filesystem())->dumpFile($uploadFileName, $input->getContent());
             $input = $uploadFileName;
         }

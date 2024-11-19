@@ -48,23 +48,23 @@ final class CleverAgeProcessUiExtension extends Extension implements PrependExte
      */
     public function prepend(ContainerBuilder $container): void
     {
-        $env = $container->getParameter("kernel.environment");
+        $env = $container->getParameter('kernel.environment');
         $container->loadFromExtension(
             'monolog',
             [
                 'handlers' => [
                     'pb_ui_file' => [
                         'type' => 'service',
-                        'id' => ProcessHandler::class
+                        'id' => ProcessHandler::class,
                     ],
                     'pb_ui_orm' => [
                         'type' => 'service',
-                        'id' => DoctrineProcessHandler::class
-                    ]
-                ]
+                        'id' => DoctrineProcessHandler::class,
+                    ],
+                ],
             ]
         );
-        if ("dev" === $env) {
+        if ('dev' === $env) {
             $container->loadFromExtension(
                 'monolog',
                 [
@@ -73,15 +73,15 @@ final class CleverAgeProcessUiExtension extends Extension implements PrependExte
                             'type' => 'filter',
                             'min_level' => Level::Debug->name,
                             'handler' => 'pb_ui_file',
-                            'channels' => ['cleverage_process', 'cleverage_process_task']
+                            'channels' => ['cleverage_process', 'cleverage_process_task'],
                         ],
                         'pb_ui_orm_filter' => [
                             'type' => 'filter',
                             'min_level' => Level::Debug->name,
                             'handler' => 'pb_ui_orm',
-                            'channels' => ["cleverage_process", "cleverage_process_task"]
+                            'channels' => ['cleverage_process', 'cleverage_process_task'],
                         ],
-                    ]
+                    ],
                 ]
             );
         } else {
@@ -93,15 +93,15 @@ final class CleverAgeProcessUiExtension extends Extension implements PrependExte
                             'type' => 'filter',
                             'min_level' => Level::Info->name,
                             'handler' => 'pb_ui_file',
-                            'channels' => ['cleverage_process', 'cleverage_process_task']
+                            'channels' => ['cleverage_process', 'cleverage_process_task'],
                         ],
                         'pb_ui_orm_filter' => [
                             'type' => 'filter',
                             'min_level' => Level::Info->name,
                             'handler' => 'pb_ui_orm',
-                            'channels' => ["cleverage_process", "cleverage_process_task"]
+                            'channels' => ['cleverage_process', 'cleverage_process_task'],
                         ],
-                    ]
+                    ],
                 ]
             );
         }

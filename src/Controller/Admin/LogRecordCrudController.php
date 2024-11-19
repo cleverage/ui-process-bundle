@@ -2,6 +2,15 @@
 
 declare(strict_types=1);
 
+/*
+ * This file is part of the CleverAge/UiProcessBundle package.
+ *
+ * Copyright (c) Clever-Age
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace CleverAge\ProcessUiBundle\Controller\Admin;
 
 use CleverAge\ProcessBundle\Configuration\ProcessConfiguration;
@@ -28,7 +37,7 @@ class LogRecordCrudController extends AbstractCrudController
 {
     public function __construct(
         private readonly ProcessConfigurationsManager $processConfigurationsManager,
-        private readonly RequestStack $request
+        private readonly RequestStack $request,
     ) {
     }
 
@@ -74,7 +83,7 @@ class LogRecordCrudController extends AbstractCrudController
 
     public function configureFilters(Filters $filters): Filters
     {
-        $id = $this->request->getMainRequest()->query->all('filters')['process']['value'] ?? null;
+        $id = $this->request->getMainRequest()?->query->all('filters')['process']['value'] ?? null;
         $processList = $this->processConfigurationsManager->getPublicProcesses();
         $processList = array_map(fn (ProcessConfiguration $cfg) => $cfg->getCode(), $processList);
 

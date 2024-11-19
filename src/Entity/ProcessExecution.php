@@ -21,7 +21,7 @@ use Symfony\Component\String\UnicodeString;
 #[ORM\Entity]
 #[ORM\Index(columns: ['code'], name: 'idx_process_execution_code')]
 #[ORM\Index(columns: ['start_date'], name: 'idx_process_execution_start_date')]
-class ProcessExecution
+class ProcessExecution implements \Stringable
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -31,9 +31,6 @@ class ProcessExecution
     #[ORM\Column(type: Types::STRING, length: 255)]
     public readonly string $code;
 
-    #[ORM\Column(type: Types::STRING, length: 255)]
-    public readonly string $logFilename;
-
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     public readonly \DateTimeImmutable $startDate;
 
@@ -41,7 +38,7 @@ class ProcessExecution
     public ?\DateTimeImmutable $endDate = null;
 
     #[ORM\Column(type: Types::STRING, enumType: ProcessExecutionStatus::class)]
-    public ProcessExecutionStatus $status;
+    public ProcessExecutionStatus $status = ProcessExecutionStatus::Started;
 
     #[ORM\Column(type: Types::JSON)]
     private array $report = [];
@@ -54,12 +51,11 @@ class ProcessExecution
         return $this->id;
     }
 
-    public function __construct(string $code, string $logFilename, ?array $context = [])
+    public function __construct(string $code, #[ORM\Column(type: Types::STRING, length: 255)]
+        public readonly string $logFilename, ?array $context = [])
     {
         $this->code = (string) (new UnicodeString($code))->truncate(255);
-        $this->logFilename = $logFilename;
         $this->startDate = \DateTimeImmutable::createFromMutable(new \DateTime());
-        $this->status = ProcessExecutionStatus::Started;
         $this->context = $context ?? [];
     }
 
@@ -75,7 +71,7 @@ class ProcessExecution
 
     public function __toString(): string
     {
-        return sprintf('%s (%s)', $this->id, $this->code);
+        return \sprintf('%s (%s)', $this->id, $this->code);
     }
 
     public function addReport(string $key, mixed $value): void
@@ -94,7 +90,7 @@ class ProcessExecution
 
     public function duration(string $format = '%H hour(s) %I min(s) %S s'): ?string
     {
-        if (null === $this->endDate) {
+        if (!$this->endDate instanceof \DateTimeImmutable) {
             return null;
         }
         $diff = $this->endDate->diff($this->startDate);
@@ -107,7 +103,7 @@ class ProcessExecution
         return $this->code;
     }
 
-    public function getContext(): array
+    public function getContext(): ?array
     {
         return $this->context;
     }

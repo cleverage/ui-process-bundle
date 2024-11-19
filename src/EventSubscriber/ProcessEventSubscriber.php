@@ -27,19 +27,19 @@ final readonly class ProcessEventSubscriber implements EventSubscriberInterface
     public function __construct(
         private ProcessHandler $processHandler,
         private DoctrineProcessHandler $doctrineProcessHandler,
-        private ProcessExecutionManager $processExecutionManager
+        private ProcessExecutionManager $processExecutionManager,
     ) {
     }
 
     public function onProcessStart(ProcessEvent $event): void
     {
         if (false === $this->processHandler->hasFilename()) {
-            $this->processHandler->setFilename(sprintf('%s/%s.log', $event->getProcessCode(), Uuid::v4()));
+            $this->processHandler->setFilename(\sprintf('%s/%s.log', $event->getProcessCode(), Uuid::v4()));
         }
-        if (null === $this->processExecutionManager->getCurrentProcessExecution()) {
+        if (!$this->processExecutionManager->getCurrentProcessExecution() instanceof ProcessExecution) {
             $processExecution = new ProcessExecution(
                 $event->getProcessCode(),
-                basename($this->processHandler->getFilename()),
+                basename((string) $this->processHandler->getFilename()),
                 $event->getProcessContext()
             );
             $this->processExecutionManager->setCurrentProcessExecution($processExecution)->save();
@@ -48,9 +48,9 @@ final readonly class ProcessEventSubscriber implements EventSubscriberInterface
 
     public function success(ProcessEvent $event): void
     {
-        if ($event->getProcessCode() === $this->processExecutionManager?->getCurrentProcessExecution()?->getCode()) {
-            $this->processExecutionManager->getCurrentProcessExecution()?->setStatus(ProcessExecutionStatus::Finish);
-            $this->processExecutionManager->getCurrentProcessExecution()?->end();
+        if ($event->getProcessCode() === $this->processExecutionManager->getCurrentProcessExecution()?->getCode()) {
+            $this->processExecutionManager->getCurrentProcessExecution()->setStatus(ProcessExecutionStatus::Finish);
+            $this->processExecutionManager->getCurrentProcessExecution()->end();
             $this->processExecutionManager->save()->unsetProcessExecution($event->getProcessCode());
             $this->processHandler->close();
         }
@@ -58,9 +58,9 @@ final readonly class ProcessEventSubscriber implements EventSubscriberInterface
 
     public function fail(ProcessEvent $event): void
     {
-        if ($event->getProcessCode() === $this->processExecutionManager?->getCurrentProcessExecution()?->getCode()) {
-            $this->processExecutionManager->getCurrentProcessExecution()?->setStatus(ProcessExecutionStatus::Failed);
-            $this->processExecutionManager->getCurrentProcessExecution()?->end();
+        if ($event->getProcessCode() === $this->processExecutionManager->getCurrentProcessExecution()?->getCode()) {
+            $this->processExecutionManager->getCurrentProcessExecution()->setStatus(ProcessExecutionStatus::Failed);
+            $this->processExecutionManager->getCurrentProcessExecution()->end();
             $this->processExecutionManager->save()->unsetProcessExecution($event->getProcessCode());
             $this->processHandler->close();
         }

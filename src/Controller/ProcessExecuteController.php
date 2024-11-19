@@ -2,6 +2,15 @@
 
 declare(strict_types=1);
 
+/*
+ * This file is part of the CleverAge/UiProcessBundle package.
+ *
+ * Copyright (c) Clever-Age
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace CleverAge\ProcessUiBundle\Controller;
 
 use CleverAge\ProcessUiBundle\Http\Model\HttpProcessExecution;
@@ -20,7 +29,7 @@ class ProcessExecuteController extends AbstractController
     public function __invoke(
         #[ValueResolver('http_process_execution')] HttpProcessExecution $httpProcessExecution,
         ValidatorInterface $validator,
-        MessageBusInterface $bus
+        MessageBusInterface $bus,
     ): JsonResponse {
         $violations = $validator->validate($httpProcessExecution);
         if ($violations->count() > 0) {
@@ -32,7 +41,7 @@ class ProcessExecuteController extends AbstractController
         }
         $bus->dispatch(
             new ProcessExecuteMessage(
-                $httpProcessExecution->code,
+                $httpProcessExecution->code ?? '',
                 $httpProcessExecution->input,
                 $httpProcessExecution->context
             )

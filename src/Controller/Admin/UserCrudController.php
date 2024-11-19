@@ -2,6 +2,15 @@
 
 declare(strict_types=1);
 
+/*
+ * This file is part of the CleverAge/UiProcessBundle package.
+ *
+ * Copyright (c) Clever-Age
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace CleverAge\ProcessUiBundle\Controller\Admin;
 
 use CleverAge\ProcessUiBundle\Entity\User;
@@ -27,7 +36,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class UserCrudController extends AbstractCrudController
 {
     /** @param array<string, string> $roles */
-    public function __construct(private array $roles)
+    public function __construct(private readonly array $roles)
     {
     }
 
@@ -79,22 +88,14 @@ class UserCrudController extends AbstractCrudController
     public function configureActions(Actions $actions): Actions
     {
         return $actions
-            ->update(Crud::PAGE_INDEX, Action::NEW, function (Action $action) {
-                return $action->setIcon('fa fa-plus')
-                    ->setLabel(false)
-                    ->addCssClass('');
-            })->update(Crud::PAGE_INDEX, Action::EDIT, function (Action $action) {
-                return $action->setIcon('fa fa-edit')
-                    ->setLabel(false)
-                    ->addCssClass('text-warning');
-            })->update(Crud::PAGE_INDEX, Action::DELETE, function (Action $action) {
-                return $action->setIcon('fa fa-trash-o')
-                    ->setLabel(false)
-                    ->addCssClass('');
-            })->update(Crud::PAGE_INDEX, Action::BATCH_DELETE, function (Action $action) {
-                return $action->setLabel('Delete')
-                    ->addCssClass('');
-            })->add(Crud::PAGE_EDIT, Action::new('generateToken')->linkToCrudAction('generateToken'));
+            ->update(Crud::PAGE_INDEX, Action::NEW, fn (Action $action) => $action->setIcon('fa fa-plus')
+                ->setLabel(false)
+                ->addCssClass(''))->update(Crud::PAGE_INDEX, Action::EDIT, fn (Action $action) => $action->setIcon('fa fa-edit')
+                ->setLabel(false)
+                ->addCssClass('text-warning'))->update(Crud::PAGE_INDEX, Action::DELETE, fn (Action $action) => $action->setIcon('fa fa-trash-o')
+                ->setLabel(false)
+                ->addCssClass(''))->update(Crud::PAGE_INDEX, Action::BATCH_DELETE, fn (Action $action) => $action->setLabel('Delete')
+                ->addCssClass(''))->add(Crud::PAGE_EDIT, Action::new('generateToken')->linkToCrudAction('generateToken'));
     }
 
     public function generateToken(AdminContext $adminContext, AdminUrlGenerator $adminUrlGenerator): Response
@@ -111,7 +112,7 @@ class UserCrudController extends AbstractCrudController
 
         return $this->redirect(
             $adminUrlGenerator
-                ->setController(UserCrudController::class)
+                ->setController(self::class)
                 ->setAction(Action::EDIT)
                 ->setEntityId($user->getId())
                 ->generateUrl()
