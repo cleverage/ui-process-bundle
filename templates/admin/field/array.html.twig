@@ -1,0 +1,16 @@
+{# @var ea \EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext #}
+{# @var field \EasyCorp\Bundle\EasyAdminBundle\Dto\FieldDto #}
+{# @var entity \EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto #}
+<ul>
+    {{ _self.render(field.value) }}
+</ul>
+
+{% macro render(value) %}
+    {% for key, item in value %}
+        {% if item is iterable %}
+            <li>{{ key }}</li><ul>{{ _self.render(item) }}</ul>
+        {% else %}
+            <li>{{ key }} : {{ item }}</li>
+        {% endif %}
+    {% endfor %}
+{% endmacro %}

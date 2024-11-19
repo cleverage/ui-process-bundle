@@ -1,2 +1,2 @@
 parameters:
-  process_logs_dir: '%kernel.logs_dir%/process'
+  upload_directory: '%kernel.project_dir%/var/storage/uploads'
