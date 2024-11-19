@@ -14,7 +14,7 @@ final class Version20241007152613 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return 'Add context to process execution';
+        return 'Add process_execution.context';
     }
 
     public function up(Schema $schema): void

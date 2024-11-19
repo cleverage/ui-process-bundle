@@ -14,7 +14,7 @@ final class Version20240730090403 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return '';
+        return 'Add process_user.token';
     }
 
     public function up(Schema $schema): void

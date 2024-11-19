@@ -1,8 +1,18 @@
 {
-  "name": "cleverage/process-bundle-ui",
+  "name": "cleverage/ui-process-bundle",
+  "description": "UI for cleverage/process-bundle",
+  "keywords": [
+    "process",
+    "task",
+    "etl",
+    "transformation",
+    "import",
+    "export",
+    "ui"
+  ],
+  "homepage": "https://github.com/cleverage/ui-process-bundle",
   "type": "symfony-bundle",
   "license": "MIT",
-  "description": "UI for cleverage/process-bundle",
   "authors": [
     {
       "name": "Grégory Tonon",
@@ -15,38 +25,6 @@
       "role": "Developer"
     }
   ],
-  "require": {
-    "php": ">=8.2",
-    "ext-ctype": "*",
-    "ext-iconv": "*",
-    "ext-pcntl": "*",
-    "cleverage/process-bundle": "dev-v4-dev",
-    "symfony/flex": "^2",
-    "symfony/orm-pack": "^v2.4",
-    "symfony/dotenv": "^6.4",
-    "symfony/uid": "^6.4",
-    "symfony/string": "^6.4",
-    "symfony/messenger": "^6.4",
-    "symfony/runtime": "^6.4",
-    "symfony/doctrine-messenger": "^6.4",
-    "easycorp/easyadmin-bundle": "^4.8"
-  },
-  "require-dev": {
-    "vincentlanglet/twig-cs-fixer": "1.4.0"
-  },
-  "config": {
-    "optimize-autoloader": true,
-    "preferred-install": {
-      "*": "dist"
-    },
-    "sort-packages": true,
-    "allow-plugins": {
-      "composer/package-versions-deprecated": true,
-      "symfony/flex": true,
-      "symfony/runtime": true,
-      "phpstan/extension-installer": true
-    }
-  },
   "autoload": {
     "psr-4": {
       "CleverAge\\ProcessUiBundle\\": "src/"
@@ -57,16 +35,47 @@
       "CleverAge\\ProcessUiBundle\\Tests\\": "tests/"
     }
   },
-  "scripts": {
-    "auto-scripts": {
-      "cache:clear": "symfony-cmd",
-      "assets:install %PUBLIC_DIR%": "symfony-cmd"
+  "require": {
+    "php": ">=8.2",
+    "ext-ctype": "*",
+    "ext-iconv": "*",
+    "ext-pcntl": "*",
+    "cleverage/process-bundle": "dev-prepare-release",
+    "doctrine/common": "^3.0",
+    "doctrine/dbal": "^2.9 || ^3.0",
+    "doctrine/doctrine-bundle": "^2.5",
+    "doctrine/doctrine-migrations-bundle": "^3.2",
+    "doctrine/orm": "^2.9 || ^3.0",
+    "symfony/dotenv": "^6.4|^7.1",
+    "symfony/uid": "^6.4|^7.1",
+    "symfony/string": "^6.4|^7.1",
+    "symfony/messenger": "^6.4|^7.1",
+    "symfony/runtime": "^6.4|^7.1",
+    "symfony/doctrine-messenger": "^6.4|^7.1",
+    "easycorp/easyadmin-bundle": "^4.8"
+  },
+  "require-dev": {
+    "doctrine/doctrine-fixtures-bundle": "^3.4",
+    "friendsofphp/php-cs-fixer": "*",
+    "phpstan/extension-installer": "*",
+    "phpstan/phpstan": "*",
+    "phpstan/phpstan-doctrine": "*",
+    "phpstan/phpstan-symfony": "*",
+    "phpunit/phpunit": "<10.0",
+    "rector/rector": "*",
+    "roave/security-advisories": "dev-latest",
+    "symfony/browser-kit": "^6.4|^7.1",
+    "symfony/css-selector": "^6.4|^7.1",
+    "symfony/debug-bundle": "^6.4|^7.1",
+    "symfony/maker-bundle": "^1.31",
+    "symfony/web-profiler-bundle": "^6.4|^7.1"
+  },
+  "config": {
+    "allow-plugins": {
+      "phpstan/extension-installer": true,
+      "symfony/flex": true,
+      "symfony/runtime": true
     },
-    "post-install-cmd": [
-      "@auto-scripts"
-    ],
-    "post-update-cmd": [
-      "@auto-scripts"
-    ]
+    "sort-packages": true
   }
 }

@@ -11,7 +11,7 @@ final class Version20241009075733 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return 'Add locale to user';
+        return 'Add process_user.locale';
     }
 
     public function up(Schema $schema): void

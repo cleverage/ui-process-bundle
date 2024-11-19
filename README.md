@@ -5,9 +5,8 @@ A simple UX for cleverage/processbundle using EasyAdmin
 **Installation**
 * Import routes
 ```yaml  
-#config/routes.yaml  
-processui:  
- resource: '@CleverAgeProcessUiBundle/src/Controller' type: attribute  
+processui:
+  resource: '@CleverAgeProcessUiBundle/src/Controller' type: attribute  
 ```  
 * Run doctrine migration
 * Create an user using cleverage:process-ui:user-create console.

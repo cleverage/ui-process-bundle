@@ -14,7 +14,7 @@ use Symfony\Contracts\Service\Attribute\Required;
 
 class DoctrineProcessHandler extends AbstractProcessingHandler
 {
-    /** @psalm-var ArrayCollection<int, LogRecord> */
+    /** @var ArrayCollection<int, LogRecord> */
     private ArrayCollection $records;
     private ?ProcessExecutionManager $processExecutionManager;
     private ?EntityManagerInterface $em = null;

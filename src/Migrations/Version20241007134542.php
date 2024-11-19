@@ -14,7 +14,7 @@ final class Version20241007134542 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return 'Add timezone field to user.';
+        return 'Add process_user.timezone';
     }
 
     public function up(Schema $schema): void
