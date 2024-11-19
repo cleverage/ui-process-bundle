@@ -1,13 +1,4 @@
 services:
-    cleverage_ui_process.command.purge_process_execution:
-        class: CleverAge\ProcessUiBundle\Command\PurgeProcessExecution
-        public: false
-        tags:
-            - { name: console.command }
-        arguments:
-            - '@cleverage_ui_process.repository.process_execution'
-            - '%process_logs_dir%'
-
     cleverage_ui_process.command.user_create:
         class: CleverAge\ProcessUiBundle\Command\UserCreateCommand
         public: false
