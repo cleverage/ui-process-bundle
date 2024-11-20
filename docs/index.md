@@ -22,8 +22,9 @@ CleverAge\UiProcessBundle\CleverAgeUiProcessBundle::class => ['all' => true],
 ## Import routes
 
 ```yaml
-processui:
-  resource: '@CleverAgeProcessUiBundle/src/Controller' type: attribute  
+ui-process-bundle:
+  resource: '@CleverAgeProcessUiBundle/src/Controller'
+  type: attribute
 ```
 * Run doctrine migration
 * Create an user using cleverage:ui-process:user-create console.
