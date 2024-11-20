@@ -5,16 +5,8 @@ services:
         arguments:
             - '@doctrine.orm.entity_manager'
 
-    cleverage_ui_process.repository.process:
-        class: CleverAge\ProcessUiBundle\Repository\ProcessRepository
-        public: false
-        arguments:
-            - '@doctrine.orm.entity_manager'
-            - '@cleverage_ui_process.manager.configuration'
-            - '@cleverage_process.registry.process_configuration'
-
-    cleverage_ui_process.repository.user:
-        class: CleverAge\ProcessUiBundle\Repository\UserRepository
+    cleverage_ui_process.repository.process_schedule:
+        class: CleverAge\ProcessUiBundle\Repository\ProcessScheduleRepository
         public: false
         arguments:
             - '@doctrine.orm.entity_manager'

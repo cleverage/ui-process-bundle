@@ -1,13 +1,14 @@
 services:
-    cleverage_ui_process.message.log_indexer_handler:
-        class: CleverAge\ProcessUiBundle\Message\LogIndexerHandler
+    cleverage_ui_process.message.cron_process_message_handler:
+        class: CleverAge\ProcessUiBundle\Message\CronProcessMessageHandler
         public: false
         arguments:
-            - '@doctrine'
+            - '@messenger.default_bus'
 
-    cleverage_ui_process.message.process_run_handler:
-        class: CleverAge\ProcessUiBundle\Message\ProcessRunHandler
+    cleverage_ui_process.message.process_execute_handler:
+        class: CleverAge\ProcessUiBundle\Message\ProcessExecuteHandler
         public: false
         arguments:
-            - '@cleverage_process.command.execute_process'
+            - '@cleverage_process.manager.process'
+            - '@cleverage_ui_process.monolog_handler.process'
 
