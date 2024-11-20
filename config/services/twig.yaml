@@ -17,6 +17,18 @@ services:
         tags:
             - { name: 'twig.extension' }
 
+    cleverage_ui_process.twig.log_level_extension_runtime:
+        class: CleverAge\UiProcessBundle\Twig\Runtime\LogLevelExtensionRuntime
+        public: false
+        tags:
+            - { name: 'twig.runtime' }
+
+    cleverage_ui_process.twig.md5_extension_runtime:
+        class: CleverAge\UiProcessBundle\Twig\Runtime\MD5ExtensionRuntime
+        public: false
+        tags:
+            - { name: 'twig.runtime' }
+
     cleverage_ui_process.twig.process_execution_extension_runtime:
         class: CleverAge\UiProcessBundle\Twig\Runtime\ProcessExecutionExtensionRuntime
         public: false
