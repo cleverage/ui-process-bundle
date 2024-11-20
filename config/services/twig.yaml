@@ -20,6 +20,8 @@ services:
     cleverage_ui_process.twig.process_execution_extension_runtime:
         class: CleverAge\UiProcessBundle\Twig\Runtime\ProcessExecutionExtensionRuntime
         public: false
+        tags:
+            - { name: 'twig.runtime' }
         arguments:
             - '@cleverage_ui_process.repository.process_execution'
             - '@cleverage_ui_process.manager.process_configuration'
