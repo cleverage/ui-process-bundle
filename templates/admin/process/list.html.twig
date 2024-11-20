@@ -32,7 +32,7 @@
                     <td>{% if process.options.ui.source is defined %}{{ process.options.ui.source }}{% endif %}</td>
                     <td>{% if process.options.ui.target is defined %}{{ process.options.ui.target }}{% endif %}</td>
                     <td class="text-center">
-                        <a class="px-1" data-toggle="tooltip" data-placement="top" title="{{ 'Launch'|trans }}" href="{{ url('process', {'routeName': 'process_launch', 'process': process.code}) }}">
+                        <a class="px-1" data-toggle="tooltip" data-placement="top" title="{{ 'Launch'|trans }}" href="{{ url('process', {routeName: 'process_launch', process: process.code}) }}">
                             <i class="fas fa-rocket"></i>
                         </a>
                         <a
@@ -43,15 +43,15 @@
                             href="{{ url(
                                 'process',
                                 {
-                                    'crudAction': 'index',
-                                    'crudControllerFqcn': 'CleverAge\\ProcessUiBundle\\Controller\\Admin\\ProcessExecutionCrudController',
-                                    'filters': {
-                                        'code': {
-                                            'comparison': '=',
-                                            'value': process.code
-                                        }
-                                    }
-                                }
+                                    crudAction: 'index',
+                                    crudControllerFqcn: 'CleverAge\\ProcessUiBundle\\Controller\\Admin\\ProcessExecutionCrudController',
+                                    filters: {
+                                        code: {
+                                            comparison: '=',
+                                            value: process.code,
+                                        },
+                                    },
+                                },
                             ) }}"
                         >
                             <i class="fas fa-eye"></i>
