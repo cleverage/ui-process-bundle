@@ -9,7 +9,7 @@ services:
             $request: '@request_stack'
             $messageBus: '@messenger.default_bus'
             $uploadDirectory: '%upload_directory%'
-            $context: '@EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext'
+            $context: '@EasyCorp\Bundle\EasyAdminBundle\Factory\AdminContextFactory'
             $logDirectory: '%kernel.logs_dir%'
         tags:
             - { name: 'controller.service_arguments' }
