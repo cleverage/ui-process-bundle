@@ -1,7 +1,7 @@
 services:
-    cleverage_ui_process.security.login_form_auth_authenticator:
-        class: CleverAge\ProcessUiBundle\Security\LoginFormAuthAuthenticator
+    cleverage_ui_process.security.http_process_execution_authenticator:
+        class: CleverAge\ProcessUiBundle\Security\HttpProcessExecutionAuthenticator
         public: false
         arguments:
-            - '@router'
+            - '@doctrine.orm.entity_manager'
 

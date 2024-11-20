@@ -13,221 +13,103 @@ declare(strict_types=1);
 
 namespace CleverAge\ProcessUiBundle\Entity;
 
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
+use CleverAge\ProcessUiBundle\Entity\Enum\ProcessExecutionStatus;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\String\UnicodeString;
 
 #[ORM\Entity]
-class ProcessExecution
+#[ORM\Index(columns: ['code'], name: 'idx_process_execution_code')]
+#[ORM\Index(columns: ['start_date'], name: 'idx_process_execution_start_date')]
+class ProcessExecution implements \Stringable
 {
-    public const STATUS_START = 0;
-    public const STATUS_SUCCESS = 1;
-    public const STATUS_FAIL = -1;
-
     #[ORM\Id]
-    #[ORM\Column(type: Types::INTEGER)]
     #[ORM\GeneratedValue]
+    #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(name: 'process_code', type: Types::STRING, length: 255, nullable: true)]
-    private ?string $processCode = null;
+    #[ORM\Column(type: Types::STRING, length: 255)]
+    public readonly string $code;
 
-    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
-    private ?string $source = null;
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
+    public readonly \DateTimeImmutable $startDate;
 
-    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
-    private ?string $target = null;
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    public ?\DateTimeImmutable $endDate = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    private \DateTimeInterface $startDate;
+    #[ORM\Column(type: Types::STRING, enumType: ProcessExecutionStatus::class)]
+    public ProcessExecutionStatus $status = ProcessExecutionStatus::Started;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $endDate = null;
-
-    #[ORM\Column(type: Types::INTEGER)]
-    private int $status = self::STATUS_START;
-
-    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
-    private ?string $response = null;
-
-    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
-    private ?string $data = null;
+    #[ORM\Column(type: Types::JSON)]
+    private array $report = [];
 
     #[ORM\Column(type: Types::JSON, nullable: true)]
-    private ?array $report = null;
-
-    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
-    private ?string $log = null;
-
-    /**
-     * @var Collection<int, ProcessExecutionLogRecord>
-     */
-    #[ORM\OneToMany(targetEntity: ProcessExecutionLogRecord::class, mappedBy: 'processExecution', cascade: ['persist'])]
-    private readonly Collection $logRecords;
-
-    public function __construct(
-        #[ORM\ManyToOne(targetEntity: Process::class, inversedBy: 'executions')]
-        #[ORM\JoinColumn(name: 'process_id', referencedColumnName: 'id', onDelete: 'SET NULL')]
-        private readonly Process $process,
-    ) {
-        $this->startDate = new \DateTime();
-        $this->logRecords = new ArrayCollection();
-    }
+    private ?array $context = [];
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getProcessCode(): ?string
+    public function __construct(string $code, #[ORM\Column(type: Types::STRING, length: 255)]
+        public readonly string $logFilename, ?array $context = [])
     {
-        return $this->processCode;
+        $this->code = (string) (new UnicodeString($code))->truncate(255);
+        $this->startDate = \DateTimeImmutable::createFromMutable(new \DateTime());
+        $this->context = $context ?? [];
     }
 
-    public function setProcessCode(?string $processCode): self
-    {
-        $this->processCode = $processCode;
-
-        return $this;
-    }
-
-    public function getSource(): ?string
-    {
-        return $this->source;
-    }
-
-    public function setSource(?string $source): self
-    {
-        $this->source = $source;
-
-        return $this;
-    }
-
-    public function getTarget(): ?string
-    {
-        return $this->target;
-    }
-
-    public function setTarget(?string $target): self
-    {
-        $this->target = $target;
-
-        return $this;
-    }
-
-    public function getStartDate(): \DateTimeInterface
-    {
-        return $this->startDate;
-    }
-
-    public function setStartDate(\DateTimeInterface $startDate): self
-    {
-        $this->startDate = $startDate;
-
-        return $this;
-    }
-
-    public function getEndDate(): ?\DateTimeInterface
-    {
-        return $this->endDate;
-    }
-
-    public function setEndDate(\DateTimeInterface $endDate): self
-    {
-        $this->endDate = $endDate;
-
-        return $this;
-    }
-
-    public function getStatus(): ?int
-    {
-        return $this->status;
-    }
-
-    public function setStatus(int $status): self
+    public function setStatus(ProcessExecutionStatus $status): void
     {
         $this->status = $status;
-
-        return $this;
     }
 
-    public function getResponse(): ?string
+    public function end(): void
     {
-        return $this->response;
+        $this->endDate = \DateTimeImmutable::createFromMutable(new \DateTime());
     }
 
-    public function setResponse(?string $response): self
+    public function __toString(): string
     {
-        $this->response = $response;
-
-        return $this;
+        return \sprintf('%s (%s)', $this->id, $this->code);
     }
 
-    public function getData(): ?string
+    public function addReport(string $key, mixed $value): void
     {
-        return $this->data;
+        $this->report[$key] = $value;
     }
 
-    public function setData(?string $data): self
+    public function getReport(?string $key = null, mixed $default = null): mixed
     {
-        $this->data = $data;
-
-        return $this;
-    }
-
-    public function getLog(): ?string
-    {
-        return $this->log;
-    }
-
-    public function setLog(string $log): self
-    {
-        $this->log = $log;
-
-        return $this;
-    }
-
-    public function addLogRecord(ProcessExecutionLogRecord $processExecutionLogRecord): void
-    {
-        $processExecutionLogRecord->setProcessExecution($this);
-        $this->logRecords->add($processExecutionLogRecord);
-    }
-
-    /**
-     * @return Collection<int, ProcessExecutionLogRecord>
-     */
-    public function getLogRecords(): Collection
-    {
-        return $this->logRecords;
-    }
-
-    /**
-     * @param Collection<int, ProcessExecutionLogRecord> $logRecords
-     */
-    public function setLogRecords(Collection $logRecords): self
-    {
-        foreach ($logRecords as $logRecord) {
-            $this->addLogRecord($logRecord);
+        if (null === $key) {
+            return $this->report;
         }
 
-        return $this;
+        return $this->report[$key] ?? $default;
     }
 
-    public function getProcess(): Process
+    public function duration(string $format = '%H hour(s) %I min(s) %S s'): ?string
     {
-        return $this->process;
+        if (!$this->endDate instanceof \DateTimeImmutable) {
+            return null;
+        }
+        $diff = $this->endDate->diff($this->startDate);
+
+        return $diff->format($format);
     }
 
-    public function getReport(): array
+    public function getCode(): string
     {
-        return $this->report ?? [];
+        return $this->code;
     }
 
-    public function setReport(?array $report): self
+    public function getContext(): ?array
     {
-        $this->report = $report;
+        return $this->context;
+    }
 
-        return $this;
+    public function setContext(array $context): void
+    {
+        $this->context = $context;
     }
 }

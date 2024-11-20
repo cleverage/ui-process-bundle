@@ -22,62 +22,104 @@ CleverAge\UiProcessBundle\CleverAgeUiProcessBundle::class => ['all' => true],
 ## Import routes
 
 ```yaml
-#config/routes.yaml
-ui-process:
-  resource: '@CleverAgeUiProcessBundle/Resources/config/routes.yaml'
+ui-process-bundle:
+  resource: '@CleverAgeProcessUiBundle/src/Controller'
+  type: attribute
 ```
 * Run doctrine migration
 * Create an user using cleverage:ui-process:user-create console.
 
 Now you can access Process UI via http://your-domain.com/process
 
-## Indexing logs
+## Features
 
-You can index logs line into database to perform search on ****Process > History**** page.
-See configuration section.
+### Launch process via http request
+You can launch a process via http post request
+First you need to generate a token via UI User edit form. The ProcessUi generate for you a auth token (keep it in secured area, it will display once).
 
-When indexation is enabled you can perform it async.
+It' all, now you can launch a process via http post request
 
-```yaml
-#config/messenger.yaml
-framework:
-  messenger:
-    transports:
-      log_index: 'doctrine://default'
+***Curl sample***
+```bash
+make bash
+curl --location 'http://localhost/http/process/execute?code=demo.die' \
+--header 'Authorization: Bearer 3da8409b5f5b640fb0c43d68e8ac8d23' \
+--form 'input=@"/file.csv"' \
+--form 'context[context_1]="FOO"' \
+--form 'context[context_2]="BAR"'
+```
+* Query string code parameter must be a valid process code
+* Header Autorization: Bearer is the previously generated token
+* input could be string or file representation
+* context you can pass multiple context values
 
-    routing:
-      CleverAge\UiProcessBundle\Message\LogIndexerMessage: log_index
+
+### Scheduler
+You can schedule process execution via UI using cron expression (*/5 * * * *) or periodical triggers (5 seconds)
+For more details about cron expression and periodical triggers visit 
+https://symfony.com/doc/6.4/scheduler.html#cron-expression-triggers and https://symfony.com/doc/6.4/scheduler.html#periodical-triggers
+
+In order to make scheduler process working be sure the following command is running
+```bash
+bin/console messenger:consume scheduler_cron
+```
+See more details about ***messenger:consume*** command in consume message section
+
+## Consume Messages
+Symfony messenger is used in order to run process via UI or schedule process
+
+*To consume process launched via UI make sure the following command is running*
+```bash
+bin/console messenger:consume execute_process
 ```
 
-Then you have to consume messages by running (use a supervisor to keep consumer alive)
+*To consume scheduled process make sure the following command is running*
+```bash
+bin/console messenger:consume scheduler_cron
 ```
-bin/console messenger:consume log_index --memory-limit=64M
+You can pass some options to messenger:consume command
 ```
-
-See official `symfony/messenger` component documentations for more informations https://symfony.com/doc/current/messenger.html
-
-## Manual EasyAdmin integration
-
-### Integrate CrudController
-
-Of course, you can integrate UiProcess CRUD into your own easy admin Dashboard
-```php
-    public function configureMenuItems(): iterable
-    {
-        /* ... your configuration */
-        yield MenuItem::linkToCrud('History', null, ProcessExecution::class);
-    }
+Options:
+  -l, --limit=LIMIT                  Limit the number of received messages
+  -f, --failure-limit=FAILURE-LIMIT  The number of failed messages the worker can consume
+  -m, --memory-limit=MEMORY-LIMIT    The memory limit the worker can consume
+  -t, --time-limit=TIME-LIMIT        The time limit in seconds the worker can handle new messages
+      --sleep=SLEEP                  Seconds to sleep before asking for new messages after no messages were found [default: 1]
+  -b, --bus=BUS                      Name of the bus to which received messages should be dispatched (if not passed, bus is determined automatically)
+      --queues=QUEUES                Limit receivers to only consume from the specified queues (multiple values allowed)
+      --no-reset                     Do not reset container services after each message
 ```
 
-### Configuration
+It's recommended to use supervisor app or equivalent to keep command alive
 
-```yaml
-#config/cleverage_process_ui.yaml
-cleverage_ui_process:
-  index_logs:
-  enabled: false
-  level: ERROR #Minimum log level to index. Allowed values are DEBUG, INFO, NOTICE, WARNING, ERROR, CRITICAL, ALERT, EMERGENCY
+***Sample supervisor configuration***
 ```
+[program:scheduler]
+command=php /var/www/html/bin/console messenger:consume scheduler_cron
+autostart=false
+autorestart=true
+startretries=1
+startsecs=1
+redirect_stderr=true
+stderr_logfile=/var/log/supervisor.scheduler-err.log
+stdout_logfile=/var/log/supervisor.scheduler-out.log
+user=www-data
+killasgroup=true
+stopasgroup=true
+
+[program:process]
+command=php /var/www/html/bin/console messenger:consume execute_process
+autostart=false
+autorestart=true
+startretries=1
+startsecs=1
+redirect_stderr=true
+stderr_logfile=/var/log/supervisor.process-err.log
+stdout_logfile=/var/log/supervisor.process-out.log
+user=www-data
+killasgroup=true
+stopasgroup=true
+``` 
 
 ## Reference
 

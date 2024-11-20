@@ -1,0 +1,21 @@
+services:
+    cleverage_ui_process.validator.cron_expression_validator:
+        class: CleverAge\ProcessUiBundle\Validator\CronExpressionValidator
+        public: false
+        tags:
+            - { name: 'validator.constraint_validator' }
+
+    cleverage_ui_process.validator.every_expression_validator:
+        class: CleverAge\ProcessUiBundle\Validator\EveryExpressionValidator
+        public: false
+        tags:
+            - { name: 'validator.constraint_validator' }
+
+    cleverage_ui_process.validator.is_valid_process_code:
+        class: CleverAge\ProcessUiBundle\Validator\IsValidProcessCodeValidator
+        public: false
+        tags:
+            - { name: 'validator.constraint_validator' }
+        arguments:
+            - '@cleverage_process.registry.process_configuration'
+

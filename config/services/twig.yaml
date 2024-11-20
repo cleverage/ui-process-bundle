@@ -1,0 +1,25 @@
+services:
+    cleverage_ui_process.twig.log_level_extension:
+        class: CleverAge\ProcessUiBundle\Twig\Extension\LogLevelExtension
+        public: false
+        tags:
+            - { name: 'twig.extension' }
+
+    cleverage_ui_process.twig.md5_extension:
+        class: CleverAge\ProcessUiBundle\Twig\Extension\MD5Extension
+        public: false
+        tags:
+            - { name: 'twig.extension' }
+
+    cleverage_ui_process.twig.process_execution_extension:
+        class: CleverAge\ProcessUiBundle\Twig\Extension\ProcessExecutionExtension
+        public: false
+        tags:
+            - { name: 'twig.extension' }
+
+    cleverage_ui_process.twig.process_execution_extension_runtime:
+        class: CleverAge\ProcessUiBundle\Twig\Runtime\ProcessExecutionExtensionRuntime
+        public: false
+        arguments:
+            - '@cleverage_ui_process.repository.process_execution'
+            - '@cleverage_ui_process.manager.process_configuration'

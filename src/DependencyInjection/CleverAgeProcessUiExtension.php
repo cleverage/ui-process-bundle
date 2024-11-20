@@ -13,8 +13,11 @@ declare(strict_types=1);
 
 namespace CleverAge\ProcessUiBundle\DependencyInjection;
 
-use CleverAge\ProcessUiBundle\Message\LogIndexerMessage;
-use CleverAge\ProcessUiBundle\Message\ProcessRunMessage;
+use CleverAge\ProcessUiBundle\Controller\Admin\ProcessDashboardController;
+use CleverAge\ProcessUiBundle\Controller\Admin\UserCrudController;
+use CleverAge\ProcessUiBundle\Entity\User;
+use CleverAge\ProcessUiBundle\Message\ProcessExecuteMessage;
+use Monolog\Level;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\Extension;
@@ -22,7 +25,7 @@ use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\Finder\Finder;
 
-class CleverAgeProcessUiExtension extends Extension implements PrependExtensionInterface
+final class CleverAgeProcessUiExtension extends Extension implements PrependExtensionInterface
 {
     public function load(array $configs, ContainerBuilder $container): void
     {
@@ -30,7 +33,12 @@ class CleverAgeProcessUiExtension extends Extension implements PrependExtensionI
 
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
-        $container->setParameter('clever_age_process_ui.index_logs.enabled', $config['index_logs']['enabled']);
+        $container->getDefinition(UserCrudController::class)
+            ->setArgument('$roles', array_combine($config['security']['roles'], $config['security']['roles']));
+        $container->getDefinition('cleverage_ui_process.monolog_handler.process')
+            ->addMethodCall('setReportIncrementLevel', [$config['logs']['report_increment_level']]);
+        $container->getDefinition(ProcessDashboardController::class)
+            ->setArgument('$logoPath', $config['design']['logo_path']);
     }
 
     /**
@@ -38,6 +46,63 @@ class CleverAgeProcessUiExtension extends Extension implements PrependExtensionI
      */
     public function prepend(ContainerBuilder $container): void
     {
+        $env = $container->getParameter('kernel.environment');
+        $container->loadFromExtension(
+            'monolog',
+            [
+                'handlers' => [
+                    'pb_ui_file' => [
+                        'type' => 'service',
+                        'id' => 'cleverage_ui_process.monolog_handler.process',
+                    ],
+                    'pb_ui_orm' => [
+                        'type' => 'service',
+                        'id' => 'cleverage_ui_process.monolog_handler.doctrine_process',
+                    ],
+                ],
+            ]
+        );
+        if ('dev' === $env) {
+            $container->loadFromExtension(
+                'monolog',
+                [
+                    'handlers' => [
+                        'pb_ui_file_filter' => [
+                            'type' => 'filter',
+                            'min_level' => Level::Debug->name,
+                            'handler' => 'pb_ui_file',
+                            'channels' => ['cleverage_process', 'cleverage_process_task'],
+                        ],
+                        'pb_ui_orm_filter' => [
+                            'type' => 'filter',
+                            'min_level' => Level::Debug->name,
+                            'handler' => 'pb_ui_orm',
+                            'channels' => ['cleverage_process', 'cleverage_process_task'],
+                        ],
+                    ],
+                ]
+            );
+        } else {
+            $container->loadFromExtension(
+                'monolog',
+                [
+                    'handlers' => [
+                        'pb_ui_file_filter' => [
+                            'type' => 'filter',
+                            'min_level' => Level::Info->name,
+                            'handler' => 'pb_ui_file',
+                            'channels' => ['cleverage_process', 'cleverage_process_task'],
+                        ],
+                        'pb_ui_orm_filter' => [
+                            'type' => 'filter',
+                            'min_level' => Level::Info->name,
+                            'handler' => 'pb_ui_orm',
+                            'channels' => ['cleverage_process', 'cleverage_process_task'],
+                        ],
+                    ],
+                ]
+            );
+        }
         $container->loadFromExtension(
             'doctrine_migrations',
             [
@@ -47,23 +112,43 @@ class CleverAgeProcessUiExtension extends Extension implements PrependExtensionI
         $container->loadFromExtension(
             'framework',
             [
-                'assets' => ['json_manifest_path' => null],
                 'messenger' => [
                     'transport' => [
                         [
-                            'name' => 'run_process',
-                            'dsn' => 'doctrine://default',
-                            'retry_strategy' => ['max_retries' => 0],
-                        ],
-                        [
-                            'name' => 'index_logs',
+                            'name' => 'execute_process',
                             'dsn' => 'doctrine://default',
                             'retry_strategy' => ['max_retries' => 0],
                         ],
                     ],
                     'routing' => [
-                        ProcessRunMessage::class => 'run_process',
-                        LogIndexerMessage::class => 'index_logs',
+                        ProcessExecuteMessage::class => 'execute_process',
+                    ],
+                ],
+            ]
+        );
+        $container->loadFromExtension(
+            'security',
+            [
+                'providers' => [
+                    'process_user_provider' => [
+                        'entity' => [
+                            'class' => User::class,
+                            'property' => 'email',
+                        ],
+                    ],
+                ],
+                'firewalls' => [
+                    'main' => [
+                        'provider' => 'process_user_provider',
+                        'form_login' => [
+                            'login_path' => 'process_login',
+                            'check_path' => 'process_login',
+                        ],
+                        'logout' => [
+                            'path' => 'process_logout',
+                            'target' => 'process_login',
+                            'clear_site_data' => '*',
+                        ],
                     ],
                 ],
             ]

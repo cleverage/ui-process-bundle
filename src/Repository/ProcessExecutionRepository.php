@@ -19,6 +19,11 @@ use Doctrine\ORM\EntityRepository;
 
 /**
  * @extends EntityRepository<ProcessExecution>
+ *
+ * @method ProcessExecution|null find($id, $lockMode = null, $lockVersion = null)
+ * @method ProcessExecution|null findOneBy(array $criteria, array $orderBy = null)
+ * @method ProcessExecution[]    findAll()
+ * @method ProcessExecution[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
 class ProcessExecutionRepository extends EntityRepository
 {
@@ -27,61 +32,21 @@ class ProcessExecutionRepository extends EntityRepository
         parent::__construct($em, $em->getClassMetadata(ProcessExecution::class));
     }
 
-    /**
-     * @return array <string, string>
-     */
-    public function getProcessCodeChoices(): array
+    public function save(ProcessExecution $processExecution): void
     {
-        $choices = [];
-        $qb = $this->createQueryBuilder('pe');
-        $qb->distinct(true);
-        $qb->select('pe.processCode');
-        foreach ($qb->getQuery()->getArrayResult() as $result) {
-            $choices[(string) $result['processCode']] = (string) $result['processCode'];
-        }
-
-        return $choices;
+        $this->getEntityManager()->persist($processExecution);
+        $this->getEntityManager()->flush();
     }
 
-    /**
-     * @return array <string, string>
-     */
-    public function getSourceChoices(): array
-    {
-        $choices = [];
-        $qb = $this->createQueryBuilder('pe');
-        $qb->distinct(true);
-        $qb->select('pe.source');
-        foreach ($qb->getQuery()->getArrayResult() as $result) {
-            $choices[(string) $result['source']] = (string) $result['source'];
-        }
-
-        return $choices;
-    }
-
-    /**
-     * @return array <string, string>
-     */
-    public function getTargetChoices(): array
-    {
-        $choices = [];
-        $qb = $this->createQueryBuilder('pe');
-        $qb->distinct(true);
-        $qb->select('pe.target');
-        foreach ($qb->getQuery()->getArrayResult() as $result) {
-            $choices[(string) $result['target']] = (string) $result['target'];
-        }
-
-        return $choices;
-    }
-
-    public function deleteBefore(\DateTime $dateTime): void
+    public function getLastProcessExecution(string $code): ?ProcessExecution
     {
         $qb = $this->createQueryBuilder('pe');
-        $qb->delete();
-        $qb->where('pe.startDate < :date');
-        $qb->setParameter('date', $dateTime);
 
-        $qb->getQuery()->execute();
+        return $qb->select('pe')
+            ->where($qb->expr()->eq('pe.code', $qb->expr()->literal($code)))
+            ->orderBy('pe.startDate', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
     }
 }
