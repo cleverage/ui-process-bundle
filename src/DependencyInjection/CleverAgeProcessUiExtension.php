@@ -17,8 +17,6 @@ use CleverAge\ProcessUiBundle\Controller\Admin\ProcessDashboardController;
 use CleverAge\ProcessUiBundle\Controller\Admin\UserCrudController;
 use CleverAge\ProcessUiBundle\Entity\User;
 use CleverAge\ProcessUiBundle\Message\ProcessExecuteMessage;
-use CleverAge\ProcessUiBundle\Monolog\Handler\DoctrineProcessHandler;
-use CleverAge\ProcessUiBundle\Monolog\Handler\ProcessHandler;
 use Monolog\Level;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -37,7 +35,7 @@ final class CleverAgeProcessUiExtension extends Extension implements PrependExte
         $config = $this->processConfiguration($configuration, $configs);
         $container->getDefinition(UserCrudController::class)
             ->setArgument('$roles', array_combine($config['security']['roles'], $config['security']['roles']));
-        $container->getDefinition(ProcessHandler::class)
+        $container->getDefinition('cleverage_ui_process.monolog_handler.process')
             ->addMethodCall('setReportIncrementLevel', [$config['logs']['report_increment_level']]);
         $container->getDefinition(ProcessDashboardController::class)
             ->setArgument('$logoPath', $config['design']['logo_path']);
@@ -55,11 +53,11 @@ final class CleverAgeProcessUiExtension extends Extension implements PrependExte
                 'handlers' => [
                     'pb_ui_file' => [
                         'type' => 'service',
-                        'id' => ProcessHandler::class,
+                        'id' => 'cleverage_ui_process.monolog_handler.process',
                     ],
                     'pb_ui_orm' => [
                         'type' => 'service',
-                        'id' => DoctrineProcessHandler::class,
+                        'id' => 'cleverage_ui_process.monolog_handler.doctrine_process',
                     ],
                 ],
             ]

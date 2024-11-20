@@ -10,5 +10,6 @@ services:
             $messageBus: '@messenger.default_bus'
             $uploadDirectory: '%upload_directory%'
             $context: '@EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext'
+            $logDirectory: '%kernel.logs_dir%'
         tags:
             - { name: 'controller.service_arguments' }

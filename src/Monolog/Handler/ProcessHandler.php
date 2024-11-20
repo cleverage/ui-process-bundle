@@ -29,6 +29,14 @@ class ProcessHandler extends StreamHandler
         parent::__construct($this->directory);
     }
 
+    /**
+     * @param 'ALERT'|'Alert'|'alert'|'CRITICAL'|'Critical'|'critical'|'DEBUG'|'Debug'|'debug'|'EMERGENCY'|'Emergency'|'emergency'|'ERROR'|'Error'|'error'|'INFO'|'Info'|'info'|'NOTICE'|'Notice'|'notice'|'WARNING'|'Warning'|'warning' $level
+     */
+    public function setReportIncrementLevel(string $level): void
+    {
+        $this->reportIncrementLevel = Level::fromName($level);
+    }
+
     public function hasFilename(): bool
     {
         return $this->directory !== $this->url;
@@ -56,13 +64,5 @@ class ProcessHandler extends StreamHandler
         if ($record->level->value >= $this->reportIncrementLevel->value) {
             $this->processExecutionManager->increment($record->level->name);
         }
-    }
-
-    /**
-     * @param 'ALERT'|'Alert'|'alert'|'CRITICAL'|'Critical'|'critical'|'DEBUG'|'Debug'|'debug'|'EMERGENCY'|'Emergency'|'emergency'|'ERROR'|'Error'|'error'|'INFO'|'Info'|'info'|'NOTICE'|'Notice'|'notice'|'WARNING'|'Warning'|'warning' $level
-     */
-    public function setReportIncrementLevel(string $level): void
-    {
-        $this->reportIncrementLevel = Level::fromName($level);
     }
 }

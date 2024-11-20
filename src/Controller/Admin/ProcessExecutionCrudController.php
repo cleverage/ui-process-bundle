@@ -25,7 +25,6 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\ArrayField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -116,11 +115,11 @@ class ProcessExecutionCrudController extends AbstractCrudController
 
     public function downloadLogFile(
         AdminContext $context,
-        #[Autowire(param: 'kernel.logs_dir')] string $directory,
+        string $logDirectory,
     ): Response {
         /** @var ProcessExecution $processExecution */
         $processExecution = $context->getEntity()->getInstance();
-        $filepath = $directory.\DIRECTORY_SEPARATOR.$processExecution->code.\DIRECTORY_SEPARATOR
+        $filepath = $logDirectory.\DIRECTORY_SEPARATOR.$processExecution->code.\DIRECTORY_SEPARATOR
             .$processExecution->logFilename;
         $basename = basename($filepath);
         $content = file_get_contents($filepath);

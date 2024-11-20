@@ -25,7 +25,7 @@ class DoctrineProcessHandler extends AbstractProcessingHandler
 {
     /** @var ArrayCollection<int, LogRecord> */
     private ArrayCollection $records;
-    private ?ProcessExecutionManager $processExecutionManager;
+    private ?ProcessExecutionManager $processExecutionManager = null;
     private ?EntityManagerInterface $em = null;
 
     public function __construct(int|string|Level $level = Level::Debug, bool $bubble = true)
