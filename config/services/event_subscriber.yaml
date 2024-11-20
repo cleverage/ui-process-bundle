@@ -5,18 +5,6 @@ services:
         tags:
             - { name: 'kernel.event_subscriber' }
         arguments:
-            - '@doctrine.orm.entity_manager'
-            - '@cleverage_ui_process.repository.process'
-            - '@cleverage_ui_process.monolog_handler.process_log'
-            - '@messenger.default_bus'
-            - '@cleverage_ui_process.manager.configuration'
-            - '%process_logs_dir%'
-            - '%clever_age_process_ui.index_logs.enabled%'
-
-    cleverage_ui_process.event_subscriber.crud.process:
-        class: CleverAge\ProcessUiBundle\EventSubscriber\Crud\ProcessCrudListener
-        public: false
-        tags:
-            - { name: 'kernel.event_subscriber' }
-        arguments:
-            - '@cleverage_ui_process.repository.process'
+            - '@cleverage_ui_process.monolog_handler.process'
+            - '@cleverage_ui_process.monolog_handler.doctrine_process'
+            - '@cleverage_ui_process.manager.process_execution'

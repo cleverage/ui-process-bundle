@@ -17,14 +17,13 @@ use CleverAge\ProcessUiBundle\Manager\ProcessExecutionManager;
 use Monolog\Handler\StreamHandler;
 use Monolog\Level;
 use Monolog\LogRecord;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 class ProcessHandler extends StreamHandler
 {
     private Level $reportIncrementLevel = Level::Error;
 
     public function __construct(
-        #[Autowire(param: 'kernel.logs_dir')] private readonly string $directory,
+        private readonly string $directory,
         private readonly ProcessExecutionManager $processExecutionManager,
     ) {
         parent::__construct($this->directory);

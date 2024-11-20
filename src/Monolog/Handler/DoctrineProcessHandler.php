@@ -20,7 +20,6 @@ use Doctrine\ORM\EntityManagerInterface;
 use Monolog\Handler\AbstractProcessingHandler;
 use Monolog\Level;
 use Monolog\LogRecord;
-use Symfony\Contracts\Service\Attribute\Required;
 
 class DoctrineProcessHandler extends AbstractProcessingHandler
 {
@@ -35,13 +34,11 @@ class DoctrineProcessHandler extends AbstractProcessingHandler
         $this->records = new ArrayCollection();
     }
 
-    #[Required]
     public function setEntityManager(EntityManagerInterface $em): void
     {
         $this->em = $em;
     }
 
-    #[Required]
     public function setProcessExecutionManager(ProcessExecutionManager $processExecutionManager): void
     {
         $this->processExecutionManager = $processExecutionManager;
