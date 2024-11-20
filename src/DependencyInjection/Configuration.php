@@ -22,7 +22,7 @@ class Configuration implements ConfigurationInterface
 {
     public function getConfigTreeBuilder(): TreeBuilder
     {
-        $tb = new TreeBuilder('cleverage_ui_process');
+        $tb = new TreeBuilder('clever_age_ui_process');
         /** @var ArrayNodeDefinition $rootNode */
         $rootNode = $tb->getRootNode();
         $rootNode
