@@ -70,7 +70,7 @@ final readonly class ProcessConfigurationsManager
             );
             $uiResolver->setDeprecated(
                 'run',
-                'cleverage/process-ui-bundle',
+                'cleverage/ui-process-bundle',
                 '2',
                 'run ui option is deprecated. Use public option instead to hide a process from UI'
             );

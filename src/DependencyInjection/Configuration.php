@@ -22,7 +22,7 @@ class Configuration implements ConfigurationInterface
 {
     public function getConfigTreeBuilder(): TreeBuilder
     {
-        $tb = new TreeBuilder('clever_age_process_ui');
+        $tb = new TreeBuilder('cleverage_ui_process');
         /** @var ArrayNodeDefinition $rootNode */
         $rootNode = $tb->getRootNode();
         $rootNode
@@ -45,7 +45,7 @@ class Configuration implements ConfigurationInterface
                 ->arrayNode('design')
                     ->addDefaultsIfNotSet()
                         ->children()
-                        ->scalarNode('logo_path')->defaultValue('bundles/cleverageprocessui/logo.jpg')->end()
+                        ->scalarNode('logo_path')->defaultValue('bundles/cleverageuiprocess/logo.jpg')->end()
             ->end();
 
         return $tb;
