@@ -1,0 +1,12 @@
+services:
+    cleverage_ui_process.http_value_resolver.http_process_execute:
+        class: CleverAge\ProcessUiBundle\Http\ValueResolver\HttpProcessExecuteValueResolver
+        public: false
+        arguments:
+            - '%upload_directory%'
+
+    cleverage_ui_process.http_value_resolver.process_configuration:
+        class: CleverAge\ProcessUiBundle\Http\ValueResolver\ProcessConfigurationValueResolver
+        public: false
+        arguments:
+            - '@cleverage_process.registry.process_configuration'
