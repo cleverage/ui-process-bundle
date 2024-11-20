@@ -68,7 +68,8 @@
     "symfony/css-selector": "^6.4|^7.1",
     "symfony/debug-bundle": "^6.4|^7.1",
     "symfony/maker-bundle": "^1.31",
-    "symfony/web-profiler-bundle": "^6.4|^7.1"
+    "symfony/web-profiler-bundle": "^6.4|^7.1",
+    "vincentlanglet/twig-cs-fixer": "^3.3"
   },
   "config": {
     "allow-plugins": {
