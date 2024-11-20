@@ -45,7 +45,6 @@ class LaunchAction extends AbstractController
         RequestStack $requestStack,
         MessageBusInterface $messageBus,
         string $uploadDirectory,
-        #[ValueResolver('process')] ProcessConfiguration $processConfiguration,
         ProcessConfigurationsManager $processConfigurationsManager,
         AdminContext $context,
     ): Response {

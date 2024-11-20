@@ -37,7 +37,7 @@ class LogRecordCrudController extends AbstractCrudController
 {
     public function __construct(
         private readonly ProcessConfigurationsManager $processConfigurationsManager,
-        private readonly RequestStack $request,
+        private readonly RequestStack $requestStack,
     ) {
     }
 

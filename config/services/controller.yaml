@@ -6,7 +6,7 @@ services:
         bind:
             $processConfigurationsManager: '@cleverage_ui_process.manager.process_configuration'
             $localeSwitcher: '@translation.locale_switcher'
-            $request: '@request_stack'
+            $requestStack: '@request_stack'
             $messageBus: '@messenger.default_bus'
             $uploadDirectory: '%upload_directory%'
             $context: '@EasyCorp\Bundle\EasyAdminBundle\Factory\AdminContextFactory'
