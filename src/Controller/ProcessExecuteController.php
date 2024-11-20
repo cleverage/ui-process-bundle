@@ -11,10 +11,10 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace CleverAge\ProcessUiBundle\Controller;
+namespace CleverAge\UiProcessBundle\Controller;
 
-use CleverAge\ProcessUiBundle\Http\Model\HttpProcessExecution;
-use CleverAge\ProcessUiBundle\Message\ProcessExecuteMessage;
+use CleverAge\UiProcessBundle\Http\Model\HttpProcessExecution;
+use CleverAge\UiProcessBundle\Message\ProcessExecuteMessage;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\ValueResolver;

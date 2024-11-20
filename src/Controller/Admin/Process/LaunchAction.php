@@ -11,13 +11,13 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace CleverAge\ProcessUiBundle\Controller\Admin\Process;
+namespace CleverAge\UiProcessBundle\Controller\Admin\Process;
 
 use CleverAge\ProcessBundle\Configuration\ProcessConfiguration;
-use CleverAge\ProcessUiBundle\Entity\User;
-use CleverAge\ProcessUiBundle\Form\Type\LaunchType;
-use CleverAge\ProcessUiBundle\Manager\ProcessConfigurationsManager;
-use CleverAge\ProcessUiBundle\Message\ProcessExecuteMessage;
+use CleverAge\UiProcessBundle\Entity\User;
+use CleverAge\UiProcessBundle\Form\Type\LaunchType;
+use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
+use CleverAge\UiProcessBundle\Message\ProcessExecuteMessage;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Asset;
 use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -95,7 +95,7 @@ class LaunchAction extends AbstractController
         $context->getAssets()->addJsAsset(Asset::fromEasyAdminAssetPackage('field-collection.js')->getAsDto());
 
         return $this->render(
-            '@CleverAgeProcessUi/admin/process/launch.html.twig',
+            '@CleverAgeUiProcess/admin/process/launch.html.twig',
             [
                 'form' => $form->createView(),
             ]

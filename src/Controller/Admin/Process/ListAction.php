@@ -11,9 +11,9 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace CleverAge\ProcessUiBundle\Controller\Admin\Process;
+namespace CleverAge\UiProcessBundle\Controller\Admin\Process;
 
-use CleverAge\ProcessUiBundle\Manager\ProcessConfigurationsManager;
+use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -26,7 +26,7 @@ class ListAction extends AbstractController
     public function __invoke(ProcessConfigurationsManager $processConfigurationsManager): Response
     {
         return $this->render(
-            '@CleverAgeProcessUi/admin/process/list.html.twig',
+            '@CleverAgeUiProcess/admin/process/list.html.twig',
             [
                 'processes' => $processConfigurationsManager->getPublicProcesses(),
             ]

@@ -1,13 +1,13 @@
 services:
     cleverage_ui_process.monolog_handler.doctrine_process:
-        class: CleverAge\ProcessUiBundle\Monolog\Handler\DoctrineProcessHandler
+        class: CleverAge\UiProcessBundle\Monolog\Handler\DoctrineProcessHandler
         public: false
         calls:
             - [ setEntityManager, [ '@doctrine.orm.entity_manager' ] ]
             - [ setProcessExecutionManager, [ '@cleverage_ui_process.manager.process_execution' ] ]
 
     cleverage_ui_process.monolog_handler.process:
-        class: CleverAge\ProcessUiBundle\Monolog\Handler\ProcessHandler
+        class: CleverAge\UiProcessBundle\Monolog\Handler\ProcessHandler
         public: false
         arguments:
             - '%kernel.logs_dir%'

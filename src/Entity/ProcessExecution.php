@@ -11,9 +11,9 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace CleverAge\ProcessUiBundle\Entity;
+namespace CleverAge\UiProcessBundle\Entity;
 
-use CleverAge\ProcessUiBundle\Entity\Enum\ProcessExecutionStatus;
+use CleverAge\UiProcessBundle\Entity\Enum\ProcessExecutionStatus;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\String\UnicodeString;

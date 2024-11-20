@@ -11,9 +11,9 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace CleverAge\ProcessUiBundle\Security;
+namespace CleverAge\UiProcessBundle\Security;
 
-use CleverAge\ProcessUiBundle\Entity\User;
+use CleverAge\UiProcessBundle\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;

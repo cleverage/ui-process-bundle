@@ -1,6 +1,6 @@
 services:
     cleverage_ui_process.scheduler.cron:
-        class: CleverAge\ProcessUiBundle\Scheduler\CronScheduler
+        class: CleverAge\UiProcessBundle\Scheduler\CronScheduler
         public: false
         arguments:
             - '@cleverage_ui_process.repository.process_schedule'

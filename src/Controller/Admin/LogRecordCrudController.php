@@ -11,13 +11,13 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace CleverAge\ProcessUiBundle\Controller\Admin;
+namespace CleverAge\UiProcessBundle\Controller\Admin;
 
 use CleverAge\ProcessBundle\Configuration\ProcessConfiguration;
-use CleverAge\ProcessUiBundle\Admin\Field\LogLevelField;
-use CleverAge\ProcessUiBundle\Admin\Filter\LogProcessFilter;
-use CleverAge\ProcessUiBundle\Entity\LogRecord;
-use CleverAge\ProcessUiBundle\Manager\ProcessConfigurationsManager;
+use CleverAge\UiProcessBundle\Admin\Field\LogLevelField;
+use CleverAge\UiProcessBundle\Admin\Filter\LogProcessFilter;
+use CleverAge\UiProcessBundle\Entity\LogRecord;
+use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
@@ -53,7 +53,7 @@ class LogRecordCrudController extends AbstractCrudController
             TextField::new('message')->setMaxLength(512),
             DateTimeField::new('createdAt')->setFormat('Y/M/dd H:mm:ss'),
             ArrayField::new('context')
-                ->setTemplatePath('@CleverAgeProcessUi/admin/field/array.html.twig')
+                ->setTemplatePath('@CleverAgeUiProcess/admin/field/array.html.twig')
                 ->onlyOnDetail(),
             BooleanField::new('contextIsEmpty', 'Has context info ?')
                 ->onlyOnIndex()

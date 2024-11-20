@@ -11,10 +11,10 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace CleverAge\ProcessUiBundle\Controller\Admin;
+namespace CleverAge\UiProcessBundle\Controller\Admin;
 
-use CleverAge\ProcessUiBundle\Admin\Field\EnumField;
-use CleverAge\ProcessUiBundle\Entity\ProcessExecution;
+use CleverAge\UiProcessBundle\Admin\Field\EnumField;
+use CleverAge\UiProcessBundle\Entity\ProcessExecution;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
@@ -45,13 +45,13 @@ class ProcessExecutionCrudController extends AbstractCrudController
             EnumField::new('status'),
             DateTimeField::new('startDate')->setFormat('Y/M/dd H:mm:ss'),
             DateTimeField::new('endDate')->setFormat('Y/M/dd H:mm:ss'),
-            TextField::new('source')->setTemplatePath('@CleverAgeProcessUi/admin/field/process_source.html.twig'),
-            TextField::new('target')->setTemplatePath('@CleverAgeProcessUi/admin/field/process_target.html.twig'),
+            TextField::new('source')->setTemplatePath('@CleverAgeUiProcess/admin/field/process_source.html.twig'),
+            TextField::new('target')->setTemplatePath('@CleverAgeUiProcess/admin/field/process_target.html.twig'),
             TextField::new('duration')->formatValue(function ($value, ProcessExecution $entity) {
                 return $entity->duration(); // returned format can be changed here
             }),
-            ArrayField::new('report')->setTemplatePath('@CleverAgeProcessUi/admin/field/report.html.twig'),
-            ArrayField::new('context')->setTemplatePath('@CleverAgeProcessUi/admin/field/report.html.twig'),
+            ArrayField::new('report')->setTemplatePath('@CleverAgeUiProcess/admin/field/report.html.twig'),
+            ArrayField::new('context')->setTemplatePath('@CleverAgeUiProcess/admin/field/report.html.twig'),
         ];
     }
 

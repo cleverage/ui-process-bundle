@@ -11,9 +11,9 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace CleverAge\ProcessUiBundle\Command;
+namespace CleverAge\UiProcessBundle\Command;
 
-use CleverAge\ProcessUiBundle\Entity\User;
+use CleverAge\UiProcessBundle\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -31,7 +31,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[AsCommand(
     name: 'cleverage:ui-process:user-create',
-    description: 'Command to create a new admin into database for process ui.'
+    description: 'Command to create a new admin into database for ui process.'
 )]
 class UserCreateCommand extends Command
 {

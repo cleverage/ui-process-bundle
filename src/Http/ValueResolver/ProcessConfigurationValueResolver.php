@@ -11,7 +11,7 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace CleverAge\ProcessUiBundle\Http\ValueResolver;
+namespace CleverAge\UiProcessBundle\Http\ValueResolver;
 
 use CleverAge\ProcessBundle\Registry\ProcessConfigurationRegistry;
 use Symfony\Component\HttpFoundation\Request;

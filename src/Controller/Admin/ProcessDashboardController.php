@@ -11,12 +11,12 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace CleverAge\ProcessUiBundle\Controller\Admin;
+namespace CleverAge\UiProcessBundle\Controller\Admin;
 
-use CleverAge\ProcessUiBundle\Entity\LogRecord;
-use CleverAge\ProcessUiBundle\Entity\ProcessExecution;
-use CleverAge\ProcessUiBundle\Entity\ProcessSchedule;
-use CleverAge\ProcessUiBundle\Entity\User;
+use CleverAge\UiProcessBundle\Entity\LogRecord;
+use CleverAge\UiProcessBundle\Entity\ProcessExecution;
+use CleverAge\UiProcessBundle\Entity\ProcessSchedule;
+use CleverAge\UiProcessBundle\Entity\User;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Dashboard;
 use EasyCorp\Bundle\EasyAdminBundle\Config\MenuItem;

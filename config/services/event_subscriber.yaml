@@ -1,6 +1,6 @@
 services:
     cleverage_ui_process.event_subscriber.process:
-        class: CleverAge\ProcessUiBundle\EventSubscriber\ProcessEventSubscriber
+        class: CleverAge\UiProcessBundle\EventSubscriber\ProcessEventSubscriber
         public: false
         tags:
             - { name: 'kernel.event_subscriber' }

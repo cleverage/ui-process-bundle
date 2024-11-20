@@ -11,9 +11,9 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace CleverAge\ProcessUiBundle\Http\Model;
+namespace CleverAge\UiProcessBundle\Http\Model;
 
-use CleverAge\ProcessUiBundle\Validator\IsValidProcessCode;
+use CleverAge\UiProcessBundle\Validator\IsValidProcessCode;
 use Symfony\Component\Validator\Constraints\NotNull;
 use Symfony\Component\Validator\Constraints\Sequentially;
 

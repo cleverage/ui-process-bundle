@@ -27,12 +27,12 @@
   ],
   "autoload": {
     "psr-4": {
-      "CleverAge\\ProcessUiBundle\\": "src/"
+      "CleverAge\\UiProcessBundle\\": "src/"
     }
   },
   "autoload-dev": {
     "psr-4": {
-      "CleverAge\\ProcessUiBundle\\Tests\\": "tests/"
+      "CleverAge\\UiProcessBundle\\Tests\\": "tests/"
     }
   },
   "require": {

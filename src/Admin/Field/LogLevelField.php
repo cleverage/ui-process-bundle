@@ -11,7 +11,7 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace CleverAge\ProcessUiBundle\Admin\Field;
+namespace CleverAge\UiProcessBundle\Admin\Field;
 
 use EasyCorp\Bundle\EasyAdminBundle\Contracts\Field\FieldInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Field\FieldTrait;
@@ -25,6 +25,6 @@ class LogLevelField implements FieldInterface
         return (new self())
             ->setProperty($propertyName)
             ->setLabel($label)
-            ->setTemplatePath('@CleverAgeProcessUi/admin/field/log_level.html.twig');
+            ->setTemplatePath('@CleverAgeUiProcess/admin/field/log_level.html.twig');
     }
 }

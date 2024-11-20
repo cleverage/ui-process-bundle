@@ -1,6 +1,6 @@
 services:
     cleverage_ui_process.command.user_create:
-        class: CleverAge\ProcessUiBundle\Command\UserCreateCommand
+        class: CleverAge\UiProcessBundle\Command\UserCreateCommand
         public: false
         tags:
             - { name: console.command }

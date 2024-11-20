@@ -5,11 +5,12 @@ v2.0
 
 * [#4](https://github.com/cleverage/ui-process-bundle/issues/4) Update composer : "doctrine/*" using same versions of doctrine-process-bundle. 
   Remove "sensio/framework-extra-bundle" & "symfony/flex". Update require-dev using "process-bundle" standard. Reinstall "symfony/debug-pack". 
-  "symfony/*" from ^5.4 to ^6.4|^7.1 => Update changes on code. "league/flysystem-bundle" from ^2.2 to ^3.0" (same as flysystem-process-bundle).
-  "twig/extra-bundle" and "twig/intl-extra" to ^3.8
+  "symfony/*" from ^5.4 to ^6.4|^7.1 => Update changes on code.
 * [#2](https://github.com/cleverage/ui-process-bundle/issues/2) Routes must be prefixed with the bundle alias  => `cleverage_ui_process`
 * [#2](https://github.com/cleverage/ui-process-bundle/issues/2) Update services according to Symfony best practices. Services should not use autowiring or autoconfiguration. Instead, all services should be defined explicitly.
   Services must be prefixed with the bundle alias instead of using fully qualified class names => `cleverage_ui_process`
+* [#3](https://github.com/cleverage/ui-process-bundle/issues/3) Rename process-ui-bundle to ui-process-bundle, 
+  cleverage:process-ui:xxx to cleverage:ui-process:xxx, clever_age_process_ui to cleverage_ui_process and ProcessUi*** to UiProcess***
 
 ### Changes
 

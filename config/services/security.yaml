@@ -1,6 +1,6 @@
 services:
     cleverage_ui_process.security.http_process_execution_authenticator:
-        class: CleverAge\ProcessUiBundle\Security\HttpProcessExecutionAuthenticator
+        class: CleverAge\UiProcessBundle\Security\HttpProcessExecutionAuthenticator
         public: false
         arguments:
             - '@doctrine.orm.entity_manager'

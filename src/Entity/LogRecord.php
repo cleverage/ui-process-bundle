@@ -11,7 +11,7 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace CleverAge\ProcessUiBundle\Entity;
+namespace CleverAge\UiProcessBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\String\UnicodeString;

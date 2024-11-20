@@ -11,7 +11,7 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace CleverAge\ProcessUiBundle\DependencyInjection;
+namespace CleverAge\UiProcessBundle\DependencyInjection;
 
 use Monolog\Level;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;

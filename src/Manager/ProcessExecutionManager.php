@@ -11,10 +11,10 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace CleverAge\ProcessUiBundle\Manager;
+namespace CleverAge\UiProcessBundle\Manager;
 
-use CleverAge\ProcessUiBundle\Entity\ProcessExecution;
-use CleverAge\ProcessUiBundle\Repository\ProcessExecutionRepository;
+use CleverAge\UiProcessBundle\Entity\ProcessExecution;
+use CleverAge\UiProcessBundle\Repository\ProcessExecutionRepository;
 
 class ProcessExecutionManager
 {

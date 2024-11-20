@@ -11,12 +11,12 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace CleverAge\ProcessUiBundle\DependencyInjection;
+namespace CleverAge\UiProcessBundle\DependencyInjection;
 
-use CleverAge\ProcessUiBundle\Controller\Admin\ProcessDashboardController;
-use CleverAge\ProcessUiBundle\Controller\Admin\UserCrudController;
-use CleverAge\ProcessUiBundle\Entity\User;
-use CleverAge\ProcessUiBundle\Message\ProcessExecuteMessage;
+use CleverAge\UiProcessBundle\Controller\Admin\ProcessDashboardController;
+use CleverAge\UiProcessBundle\Controller\Admin\UserCrudController;
+use CleverAge\UiProcessBundle\Entity\User;
+use CleverAge\UiProcessBundle\Message\ProcessExecuteMessage;
 use Monolog\Level;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -25,7 +25,7 @@ use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\Finder\Finder;
 
-final class CleverAgeProcessUiExtension extends Extension implements PrependExtensionInterface
+final class CleverAgeUiProcessExtension extends Extension implements PrependExtensionInterface
 {
     public function load(array $configs, ContainerBuilder $container): void
     {
@@ -106,7 +106,7 @@ final class CleverAgeProcessUiExtension extends Extension implements PrependExte
         $container->loadFromExtension(
             'doctrine_migrations',
             [
-                'migrations_paths' => ['CleverAge\ProcessUiBundle\Migrations' => \dirname(__DIR__).'/Migrations'],
+                'migrations_paths' => ['CleverAge\UiProcessBundle\Migrations' => \dirname(__DIR__).'/Migrations'],
             ]
         );
         $container->loadFromExtension(

@@ -1,18 +1,18 @@
 services:
     cleverage_ui_process.validator.cron_expression_validator:
-        class: CleverAge\ProcessUiBundle\Validator\CronExpressionValidator
+        class: CleverAge\UiProcessBundle\Validator\CronExpressionValidator
         public: false
         tags:
             - { name: 'validator.constraint_validator' }
 
     cleverage_ui_process.validator.every_expression_validator:
-        class: CleverAge\ProcessUiBundle\Validator\EveryExpressionValidator
+        class: CleverAge\UiProcessBundle\Validator\EveryExpressionValidator
         public: false
         tags:
             - { name: 'validator.constraint_validator' }
 
     cleverage_ui_process.validator.is_valid_process_code:
-        class: CleverAge\ProcessUiBundle\Validator\IsValidProcessCodeValidator
+        class: CleverAge\UiProcessBundle\Validator\IsValidProcessCodeValidator
         public: false
         tags:
             - { name: 'validator.constraint_validator' }

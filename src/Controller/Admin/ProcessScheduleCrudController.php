@@ -11,14 +11,14 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace CleverAge\ProcessUiBundle\Controller\Admin;
+namespace CleverAge\UiProcessBundle\Controller\Admin;
 
 use CleverAge\ProcessBundle\Configuration\ProcessConfiguration;
-use CleverAge\ProcessUiBundle\Admin\Field\EnumField;
-use CleverAge\ProcessUiBundle\Entity\ProcessSchedule;
-use CleverAge\ProcessUiBundle\Entity\ProcessScheduleType;
-use CleverAge\ProcessUiBundle\Form\Type\ProcessContextType;
-use CleverAge\ProcessUiBundle\Manager\ProcessConfigurationsManager;
+use CleverAge\UiProcessBundle\Admin\Field\EnumField;
+use CleverAge\UiProcessBundle\Entity\ProcessSchedule;
+use CleverAge\UiProcessBundle\Entity\ProcessScheduleType;
+use CleverAge\UiProcessBundle\Form\Type\ProcessContextType;
+use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;

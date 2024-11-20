@@ -11,10 +11,10 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace CleverAge\ProcessUiBundle\Message;
+namespace CleverAge\UiProcessBundle\Message;
 
 use CleverAge\ProcessBundle\Manager\ProcessManager;
-use CleverAge\ProcessUiBundle\Monolog\Handler\ProcessHandler;
+use CleverAge\UiProcessBundle\Monolog\Handler\ProcessHandler;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler]

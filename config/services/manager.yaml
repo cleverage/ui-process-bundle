@@ -1,12 +1,12 @@
 services:
     cleverage_ui_process.manager.process_execution:
-        class: CleverAge\ProcessUiBundle\Manager\ProcessExecutionManager
+        class: CleverAge\UiProcessBundle\Manager\ProcessExecutionManager
         public: false
         arguments:
             - '@cleverage_ui_process.repository.process_execution'
 
     cleverage_ui_process.manager.process_configuration:
-        class: CleverAge\ProcessUiBundle\Manager\ProcessConfigurationsManager
+        class: CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager
         public: false
         arguments:
             - '@cleverage_process.registry.process_configuration'

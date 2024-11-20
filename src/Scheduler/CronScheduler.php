@@ -11,11 +11,11 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace CleverAge\ProcessUiBundle\Scheduler;
+namespace CleverAge\UiProcessBundle\Scheduler;
 
-use CleverAge\ProcessUiBundle\Entity\ProcessScheduleType;
-use CleverAge\ProcessUiBundle\Message\CronProcessMessage;
-use CleverAge\ProcessUiBundle\Repository\ProcessScheduleRepository;
+use CleverAge\UiProcessBundle\Entity\ProcessScheduleType;
+use CleverAge\UiProcessBundle\Message\CronProcessMessage;
+use CleverAge\UiProcessBundle\Repository\ProcessScheduleRepository;
 use Monolog\Attribute\WithMonologChannel;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Scheduler\Attribute\AsSchedule;

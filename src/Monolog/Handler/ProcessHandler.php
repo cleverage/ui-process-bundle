@@ -11,9 +11,9 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace CleverAge\ProcessUiBundle\Monolog\Handler;
+namespace CleverAge\UiProcessBundle\Monolog\Handler;
 
-use CleverAge\ProcessUiBundle\Manager\ProcessExecutionManager;
+use CleverAge\UiProcessBundle\Manager\ProcessExecutionManager;
 use Monolog\Handler\StreamHandler;
 use Monolog\Level;
 use Monolog\LogRecord;

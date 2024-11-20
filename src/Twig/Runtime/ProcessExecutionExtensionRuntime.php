@@ -11,11 +11,11 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace CleverAge\ProcessUiBundle\Twig\Runtime;
+namespace CleverAge\UiProcessBundle\Twig\Runtime;
 
-use CleverAge\ProcessUiBundle\Entity\ProcessExecution;
-use CleverAge\ProcessUiBundle\Manager\ProcessConfigurationsManager;
-use CleverAge\ProcessUiBundle\Repository\ProcessExecutionRepository;
+use CleverAge\UiProcessBundle\Entity\ProcessExecution;
+use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
+use CleverAge\UiProcessBundle\Repository\ProcessExecutionRepository;
 use Twig\Extension\RuntimeExtensionInterface;
 
 readonly class ProcessExecutionExtensionRuntime implements RuntimeExtensionInterface

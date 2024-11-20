@@ -11,9 +11,9 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace CleverAge\ProcessUiBundle\Repository;
+namespace CleverAge\UiProcessBundle\Repository;
 
-use CleverAge\ProcessUiBundle\Entity\ProcessSchedule;
+use CleverAge\UiProcessBundle\Entity\ProcessSchedule;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 

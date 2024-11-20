@@ -23,19 +23,19 @@ CleverAge\UiProcessBundle\CleverAgeUiProcessBundle::class => ['all' => true],
 
 ```yaml
 ui-process-bundle:
-  resource: '@CleverAgeProcessUiBundle/src/Controller'
+  resource: '@CleverAgeUiProcessBundle/src/Controller'
   type: attribute
 ```
 * Run doctrine migration
 * Create a user using `cleverage:ui-process:user-create` console.
 
-Now you can access Process UI via http://your-domain.com/process
+Now you can access UI Process via http://your-domain.com/process
 
 ## Features
 
 ### Launch process via http request
 You can launch a process via http post request
-First you need to generate a token via UI User edit form. The ProcessUi generate for you a auth token (keep it in secured area, it will display once).
+First you need to generate a token via UI User edit form. The UiProcess generate for you a auth token (keep it in secured area, it will display once).
 
 That's all, now you can launch a process via http post request
 

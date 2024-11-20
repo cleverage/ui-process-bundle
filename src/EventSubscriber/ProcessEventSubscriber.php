@@ -11,14 +11,14 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace CleverAge\ProcessUiBundle\EventSubscriber;
+namespace CleverAge\UiProcessBundle\EventSubscriber;
 
 use CleverAge\ProcessBundle\Event\ProcessEvent;
-use CleverAge\ProcessUiBundle\Entity\Enum\ProcessExecutionStatus;
-use CleverAge\ProcessUiBundle\Entity\ProcessExecution;
-use CleverAge\ProcessUiBundle\Manager\ProcessExecutionManager;
-use CleverAge\ProcessUiBundle\Monolog\Handler\DoctrineProcessHandler;
-use CleverAge\ProcessUiBundle\Monolog\Handler\ProcessHandler;
+use CleverAge\UiProcessBundle\Entity\Enum\ProcessExecutionStatus;
+use CleverAge\UiProcessBundle\Entity\ProcessExecution;
+use CleverAge\UiProcessBundle\Manager\ProcessExecutionManager;
+use CleverAge\UiProcessBundle\Monolog\Handler\DoctrineProcessHandler;
+use CleverAge\UiProcessBundle\Monolog\Handler\ProcessHandler;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Uid\Uuid;
 

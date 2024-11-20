@@ -11,9 +11,9 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace CleverAge\ProcessUiBundle\Twig\Extension;
+namespace CleverAge\UiProcessBundle\Twig\Extension;
 
-use CleverAge\ProcessUiBundle\Twig\Runtime\LogLevelExtensionRuntime;
+use CleverAge\UiProcessBundle\Twig\Runtime\LogLevelExtensionRuntime;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFunction;
 

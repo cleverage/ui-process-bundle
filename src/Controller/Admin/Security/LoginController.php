@@ -11,7 +11,7 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace CleverAge\ProcessUiBundle\Controller\Admin\Security;
+namespace CleverAge\UiProcessBundle\Controller\Admin\Security;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -23,7 +23,7 @@ class LoginController extends AbstractController
     public function __invoke(): Response
     {
         return $this->render(
-            '@CleverAgeProcessUi/admin/login.html.twig',
+            '@CleverAgeUiProcess/admin/login.html.twig',
             [
                 'page_title' => 'Login',
                 'target_path' => '/process',

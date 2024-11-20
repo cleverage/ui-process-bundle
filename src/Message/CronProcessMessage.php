@@ -11,9 +11,9 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace CleverAge\ProcessUiBundle\Message;
+namespace CleverAge\UiProcessBundle\Message;
 
-use CleverAge\ProcessUiBundle\Entity\ProcessSchedule;
+use CleverAge\UiProcessBundle\Entity\ProcessSchedule;
 
 final readonly class CronProcessMessage
 {

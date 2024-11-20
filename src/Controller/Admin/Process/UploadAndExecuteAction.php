@@ -11,12 +11,12 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace CleverAge\ProcessUiBundle\Controller\Admin\Process;
+namespace CleverAge\UiProcessBundle\Controller\Admin\Process;
 
 use CleverAge\ProcessBundle\Configuration\ProcessConfiguration;
 use CleverAge\ProcessBundle\Configuration\TaskConfiguration;
-use CleverAge\ProcessUiBundle\Form\Type\ProcessUploadFileType;
-use CleverAge\ProcessUiBundle\Message\ProcessExecuteMessage;
+use CleverAge\UiProcessBundle\Form\Type\ProcessUploadFileType;
+use CleverAge\UiProcessBundle\Message\ProcessExecuteMessage;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -72,7 +72,7 @@ class UploadAndExecuteAction extends AbstractController
         }
 
         return $this->render(
-            '@CleverAgeProcessUi/admin/process/upload_and_execute.html.twig',
+            '@CleverAgeUiProcess/admin/process/upload_and_execute.html.twig',
             [
                 'form' => $form->createView(),
             ]

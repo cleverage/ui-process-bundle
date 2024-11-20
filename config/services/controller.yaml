@@ -1,5 +1,5 @@
 services:
-    CleverAge\ProcessUiBundle\Controller\:
+    CleverAge\UiProcessBundle\Controller\:
         resource: '../../src/Controller/'
         autowire: true
         autoconfigure: true

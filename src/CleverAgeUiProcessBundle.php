@@ -11,11 +11,11 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace CleverAge\ProcessUiBundle;
+namespace CleverAge\UiProcessBundle;
 
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 
-class CleverAgeProcessUiBundle extends Bundle
+class CleverAgeUiProcessBundle extends Bundle
 {
     public function getPath(): string
     {

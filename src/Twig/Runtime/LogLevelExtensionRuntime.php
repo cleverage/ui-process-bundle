@@ -11,7 +11,7 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace CleverAge\ProcessUiBundle\Twig\Runtime;
+namespace CleverAge\UiProcessBundle\Twig\Runtime;
 
 use Monolog\Level;
 use Twig\Extension\RuntimeExtensionInterface;

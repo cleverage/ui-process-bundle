@@ -11,10 +11,10 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace CleverAge\ProcessUiBundle\Monolog\Handler;
+namespace CleverAge\UiProcessBundle\Monolog\Handler;
 
-use CleverAge\ProcessUiBundle\Entity\ProcessExecution;
-use CleverAge\ProcessUiBundle\Manager\ProcessExecutionManager;
+use CleverAge\UiProcessBundle\Entity\ProcessExecution;
+use CleverAge\UiProcessBundle\Manager\ProcessExecutionManager;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
 use Monolog\Handler\AbstractProcessingHandler;
@@ -54,7 +54,7 @@ class DoctrineProcessHandler extends AbstractProcessingHandler
     {
         foreach ($this->records as $record) {
             if (($currentProcessExecution = $this->processExecutionManager?->getCurrentProcessExecution()) instanceof ProcessExecution) {
-                $entity = new \CleverAge\ProcessUiBundle\Entity\LogRecord($record, $currentProcessExecution);
+                $entity = new \CleverAge\UiProcessBundle\Entity\LogRecord($record, $currentProcessExecution);
                 $this->em?->persist($entity);
             }
         }

@@ -11,12 +11,12 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace CleverAge\ProcessUiBundle\Entity;
+namespace CleverAge\UiProcessBundle\Entity;
 
-use CleverAge\ProcessUiBundle\Repository\ProcessScheduleRepository;
-use CleverAge\ProcessUiBundle\Validator\CronExpression;
-use CleverAge\ProcessUiBundle\Validator\EveryExpression;
-use CleverAge\ProcessUiBundle\Validator\IsValidProcessCode;
+use CleverAge\UiProcessBundle\Repository\ProcessScheduleRepository;
+use CleverAge\UiProcessBundle\Validator\CronExpression;
+use CleverAge\UiProcessBundle\Validator\EveryExpression;
+use CleverAge\UiProcessBundle\Validator\IsValidProcessCode;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 

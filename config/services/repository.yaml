@@ -1,12 +1,12 @@
 services:
     cleverage_ui_process.repository.process_execution:
-        class: CleverAge\ProcessUiBundle\Repository\ProcessExecutionRepository
+        class: CleverAge\UiProcessBundle\Repository\ProcessExecutionRepository
         public: false
         arguments:
             - '@doctrine.orm.entity_manager'
 
     cleverage_ui_process.repository.process_schedule:
-        class: CleverAge\ProcessUiBundle\Repository\ProcessScheduleRepository
+        class: CleverAge\UiProcessBundle\Repository\ProcessScheduleRepository
         public: false
         arguments:
             - '@doctrine.orm.entity_manager'
