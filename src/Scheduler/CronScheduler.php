@@ -16,16 +16,12 @@ namespace CleverAge\UiProcessBundle\Scheduler;
 use CleverAge\UiProcessBundle\Entity\ProcessScheduleType;
 use CleverAge\UiProcessBundle\Message\CronProcessMessage;
 use CleverAge\UiProcessBundle\Repository\ProcessScheduleRepository;
-use Monolog\Attribute\WithMonologChannel;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\Scheduler\Attribute\AsSchedule;
 use Symfony\Component\Scheduler\RecurringMessage;
 use Symfony\Component\Scheduler\Schedule;
 use Symfony\Component\Scheduler\ScheduleProviderInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-#[AsSchedule('cron')]
-#[WithMonologChannel('scheduler')]
 readonly class CronScheduler implements ScheduleProviderInterface
 {
     public function __construct(
