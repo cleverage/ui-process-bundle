@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace CleverAge\UiProcessBundle\Repository;
 
+use CleverAge\UiProcessBundle\Entity\LogRecord;
 use CleverAge\UiProcessBundle\Entity\ProcessExecution;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
@@ -48,5 +49,17 @@ class ProcessExecutionRepository extends EntityRepository
             ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
+    }
+
+    public function hasLogs(ProcessExecution $processExecution): bool
+    {
+        $qb = $this->createQueryBuilder('pe')
+            ->select('count(lr.id)')
+            ->join(LogRecord::class, 'lr', 'WITH', 'lr.processExecution = pe')
+            ->where('pe.id = :id')
+            ->setParameter('id', $processExecution->getId()
+            );
+
+        return (int) $qb->getQuery()->getSingleScalarResult() > 0;
     }
 }

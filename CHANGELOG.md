@@ -16,6 +16,8 @@ v2.0
 
 * [#1](https://github.com/cleverage/ui-process-bundle/issues/1) Add Makefile & .docker for local standalone usage
 * [#1](https://github.com/cleverage/ui-process-bundle/issues/1) Add rector, phpstan & php-cs-fixer configurations & apply it. Remove phpcs configuration.
+* [#11](https://github.com/cleverage/ui-process-bundle/issues/11) Restrict "Download log file" and "Show logs stored in database" buttons visibility
+
 
 v1.0.6
 ------
