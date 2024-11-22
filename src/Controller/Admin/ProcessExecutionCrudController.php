@@ -15,6 +15,7 @@ namespace CleverAge\UiProcessBundle\Controller\Admin;
 
 use CleverAge\UiProcessBundle\Admin\Field\EnumField;
 use CleverAge\UiProcessBundle\Entity\ProcessExecution;
+use CleverAge\UiProcessBundle\Repository\ProcessExecutionRepository;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
@@ -33,6 +34,12 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_USER')]
 class ProcessExecutionCrudController extends AbstractCrudController
 {
+    public function __construct(
+        private readonly ProcessExecutionRepository $processExecutionRepository,
+        private readonly string $logDirectory,
+    ) {
+    }
+
     public static function getEntityFqcn(): string
     {
         return ProcessExecution::class;
@@ -77,6 +84,7 @@ class ProcessExecutionCrudController extends AbstractCrudController
                         ]
                     )
                     ->linkToCrudAction('showLogs')
+                    ->displayIf(fn (ProcessExecution $entity) => $this->processExecutionRepository->hasLogs($entity))
             )->add(
                 Crud::PAGE_INDEX,
                 Action::new('downloadLogfile', false, 'fas fa-download')
@@ -88,6 +96,7 @@ class ProcessExecutionCrudController extends AbstractCrudController
                         ]
                     )
                     ->linkToCrudAction('downloadLogFile')
+                    ->displayIf(fn (ProcessExecution $entity) => file_exists($this->getLogFilePath($entity)))
             );
     }
 
@@ -115,12 +124,10 @@ class ProcessExecutionCrudController extends AbstractCrudController
 
     public function downloadLogFile(
         AdminContext $context,
-        string $logDirectory,
     ): Response {
         /** @var ProcessExecution $processExecution */
         $processExecution = $context->getEntity()->getInstance();
-        $filepath = $logDirectory.\DIRECTORY_SEPARATOR.$processExecution->code.\DIRECTORY_SEPARATOR
-            .$processExecution->logFilename;
+        $filepath = $this->getLogFilePath($processExecution);
         $basename = basename($filepath);
         $content = file_get_contents($filepath);
         if (false === $content) {
@@ -136,5 +143,13 @@ class ProcessExecutionCrudController extends AbstractCrudController
     public function configureFilters(Filters $filters): Filters
     {
         return $filters->add('code')->add('startDate');
+    }
+
+    private function getLogFilePath(ProcessExecution $processExecution): string
+    {
+        return $this->logDirectory.
+            \DIRECTORY_SEPARATOR.$processExecution->code.
+            \DIRECTORY_SEPARATOR.$processExecution->logFilename
+        ;
     }
 }
