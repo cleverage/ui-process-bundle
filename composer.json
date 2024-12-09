@@ -71,6 +71,10 @@
     "symfony/web-profiler-bundle": "^6.4|^7.1",
     "vincentlanglet/twig-cs-fixer": "^3.3"
   },
+  "conflict": {
+    "symfony/twig-bridge": "7.2.0",
+    "twig/twig": "v3.15.0|v3.16.0"
+  },
   "config": {
     "allow-plugins": {
       "phpstan/extension-installer": true,
