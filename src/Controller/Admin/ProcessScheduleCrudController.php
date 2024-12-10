@@ -15,8 +15,8 @@ namespace CleverAge\UiProcessBundle\Controller\Admin;
 
 use CleverAge\ProcessBundle\Configuration\ProcessConfiguration;
 use CleverAge\UiProcessBundle\Admin\Field\EnumField;
+use CleverAge\UiProcessBundle\Entity\Enum\ProcessScheduleType;
 use CleverAge\UiProcessBundle\Entity\ProcessSchedule;
-use CleverAge\UiProcessBundle\Entity\ProcessScheduleType;
 use CleverAge\UiProcessBundle\Form\Type\ProcessContextType;
 use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;

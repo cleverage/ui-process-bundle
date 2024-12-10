@@ -19,8 +19,8 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\String\UnicodeString;
 
 #[ORM\Entity]
-#[ORM\Index(columns: ['code'], name: 'idx_process_execution_code')]
-#[ORM\Index(columns: ['start_date'], name: 'idx_process_execution_start_date')]
+#[ORM\Index(name: 'idx_process_execution_code', columns: ['code'])]
+#[ORM\Index(name: 'idx_process_execution_start_date', columns: ['start_date'])]
 class ProcessExecution implements \Stringable
 {
     #[ORM\Id]
@@ -51,12 +51,18 @@ class ProcessExecution implements \Stringable
         return $this->id;
     }
 
-    public function __construct(string $code, #[ORM\Column(type: Types::STRING, length: 255)]
-        public readonly string $logFilename, ?array $context = [])
-    {
+    public function __construct(
+        string $code,
+        #[ORM\Column(type: Types::STRING, length: 255)] public readonly string $logFilename, ?array $context = [],
+    ) {
         $this->code = (string) (new UnicodeString($code))->truncate(255);
         $this->startDate = \DateTimeImmutable::createFromMutable(new \DateTime());
         $this->context = $context ?? [];
+    }
+
+    public function __toString(): string
+    {
+        return \sprintf('%s (%s)', $this->id, $this->code);
     }
 
     public function setStatus(ProcessExecutionStatus $status): void
@@ -67,11 +73,6 @@ class ProcessExecution implements \Stringable
     public function end(): void
     {
         $this->endDate = \DateTimeImmutable::createFromMutable(new \DateTime());
-    }
-
-    public function __toString(): string
-    {
-        return \sprintf('%s (%s)', $this->id, $this->code);
     }
 
     public function addReport(string $key, mixed $value): void

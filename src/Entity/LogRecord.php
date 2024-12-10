@@ -13,12 +13,13 @@ declare(strict_types=1);
 
 namespace CleverAge\UiProcessBundle\Entity;
 
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\String\UnicodeString;
 
 #[ORM\Entity]
-#[ORM\Index(columns: ['level'], name: 'idx_log_record_level')]
-#[ORM\Index(columns: ['created_at'], name: 'idx_log_record_created_at')]
+#[ORM\Index(name: 'idx_log_record_level', columns: ['level'])]
+#[ORM\Index(name: 'idx_log_record_created_at', columns: ['created_at'])]
 class LogRecord
 {
     #[ORM\Id]
@@ -26,20 +27,20 @@ class LogRecord
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(type: \Doctrine\DBAL\Types\Types::STRING, length: 64)]
+    #[ORM\Column(type: Types::STRING, length: 64)]
     public readonly string $channel;
 
-    #[ORM\Column(type: \Doctrine\DBAL\Types\Types::INTEGER)]
+    #[ORM\Column(type: Types::INTEGER)]
     public readonly int $level;
 
-    #[ORM\Column(type: \Doctrine\DBAL\Types\Types::STRING, length: 512)]
+    #[ORM\Column(type: Types::STRING, length: 512)]
     public readonly string $message;
 
-    #[ORM\Column(type: \Doctrine\DBAL\Types\Types::JSON)]
-    /** @var array<string, mixed> */
+    /** @var array<string, mixed> $context */
+    #[ORM\Column(type: Types::JSON)]
     public readonly array $context;
 
-    #[ORM\Column(type: \Doctrine\DBAL\Types\Types::DATETIME_IMMUTABLE)]
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     public readonly \DateTimeImmutable $createdAt;
 
     public function getId(): ?int
@@ -47,10 +48,12 @@ class LogRecord
         return $this->id;
     }
 
-    public function __construct(\Monolog\LogRecord $record, #[ORM\ManyToOne(targetEntity: ProcessExecution::class, cascade: ['all'])]
+    public function __construct(
+        \Monolog\LogRecord $record,
+        #[ORM\ManyToOne(targetEntity: ProcessExecution::class, cascade: ['all'])]
         #[ORM\JoinColumn(name: 'process_execution_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
-        private readonly ProcessExecution $processExecution)
-    {
+        private readonly ProcessExecution $processExecution,
+    ) {
         $this->channel = (string) (new UnicodeString($record->channel))->truncate(64);
         $this->level = $record->level->value;
         $this->message = (string) (new UnicodeString($record->message))->truncate(512);

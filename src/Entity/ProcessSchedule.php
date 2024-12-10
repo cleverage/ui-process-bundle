@@ -13,18 +13,14 @@ declare(strict_types=1);
 
 namespace CleverAge\UiProcessBundle\Entity;
 
+use CleverAge\UiProcessBundle\Entity\Enum\ProcessScheduleType;
 use CleverAge\UiProcessBundle\Repository\ProcessScheduleRepository;
 use CleverAge\UiProcessBundle\Validator\CronExpression;
 use CleverAge\UiProcessBundle\Validator\EveryExpression;
 use CleverAge\UiProcessBundle\Validator\IsValidProcessCode;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
-
-enum ProcessScheduleType: string
-{
-    case CRON = 'cron';
-    case EVERY = 'every';
-}
 
 #[ORM\Entity(repositoryClass: ProcessScheduleRepository::class)]
 class ProcessSchedule
@@ -49,10 +45,10 @@ class ProcessSchedule
     )]
     private ?string $expression = null;
 
-    #[ORM\Column(type: \Doctrine\DBAL\Types\Types::TEXT, nullable: true)]
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $input = null;
 
-    #[ORM\Column(type: \Doctrine\DBAL\Types\Types::JSON)]
+    #[ORM\Column(type: Types::JSON)]
     private string|array $context = [];
 
     public function getId(): ?int

@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace CleverAge\UiProcessBundle\Scheduler;
 
-use CleverAge\UiProcessBundle\Entity\ProcessScheduleType;
+use CleverAge\UiProcessBundle\Entity\Enum\ProcessScheduleType;
 use CleverAge\UiProcessBundle\Message\CronProcessMessage;
 use CleverAge\UiProcessBundle\Repository\ProcessScheduleRepository;
 use Psr\Log\LoggerInterface;
