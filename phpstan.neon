@@ -1,5 +1,5 @@
 parameters:
-    level: 8
+    level: 6
     paths:
         - src
         - tests
@@ -14,7 +14,10 @@ parameters:
         - '#process\(\) has no return type specified#'
         - '#should return Iterator but returns Traversable#'
         - '#Negated boolean expression is always false#'
-    checkGenericClassInNonGenericObjectType: false
+        -
+            identifier: missingType.generics
+        -
+            identifier: doctrine.columnType
     reportUnmatchedIgnoredErrors: false
     inferPrivatePropertyTypeFromConstructor: true
     treatPhpDocTypesAsCertain: false

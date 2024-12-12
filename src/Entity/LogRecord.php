@@ -51,7 +51,7 @@ class LogRecord
     public function __construct(
         \Monolog\LogRecord $record,
         #[ORM\ManyToOne(targetEntity: ProcessExecution::class, cascade: ['all'])]
-        #[ORM\JoinColumn(name: 'process_execution_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
+        #[ORM\JoinColumn(name: 'process_execution_id', referencedColumnName: 'id', onDelete: 'CASCADE',nullable: false)]
         private readonly ProcessExecution $processExecution,
     ) {
         $this->channel = (string) (new UnicodeString($record->channel))->truncate(64);

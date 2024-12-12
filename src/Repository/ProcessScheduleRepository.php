@@ -21,9 +21,9 @@ use Doctrine\Persistence\ManagerRegistry;
  * @extends ServiceEntityRepository<ProcessSchedule>
  *
  * @method ProcessSchedule|null find($id, $lockMode = null, $lockVersion = null)
- * @method ProcessSchedule|null findOneBy(array $criteria, array $orderBy = null)
+ * @method ProcessSchedule|null findOneBy(mixed[] $criteria, string[] $orderBy = null)
  * @method ProcessSchedule[]    findAll()
- * @method ProcessSchedule[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ * @method ProcessSchedule[]    findBy(mixed[] $criteria, string[] $orderBy = null, $limit = null, $offset = null)
  */
 class ProcessScheduleRepository extends ServiceEntityRepository
 {

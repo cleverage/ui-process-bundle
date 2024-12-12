@@ -22,9 +22,9 @@ use Doctrine\ORM\EntityRepository;
  * @extends EntityRepository<ProcessExecution>
  *
  * @method ProcessExecution|null find($id, $lockMode = null, $lockVersion = null)
- * @method ProcessExecution|null findOneBy(array $criteria, array $orderBy = null)
+ * @method ProcessExecution|null findOneBy(mixed[] $criteria, string[] $orderBy = null)
  * @method ProcessExecution[]    findAll()
- * @method ProcessExecution[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ * @method ProcessExecution[]    findBy(mixed[] $criteria, string[] $orderBy = null, $limit = null, $offset = null)
  */
 class ProcessExecutionRepository extends EntityRepository
 {
