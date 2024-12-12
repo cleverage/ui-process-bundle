@@ -21,6 +21,7 @@
             {# @var process \CleverAge\ProcessBundle\Configuration\ProcessConfiguration #}
             {% for process in processes %}
                 {% set lastExecution = get_last_execution_date(process.code) %}
+                {% set uiOptions = resolve_ui_options(process.code) %}
                 {% set statusClass = '' %}
                 {% if lastExecution is not null %}
                     {% set statusClass = lastExecution.status.value == 'failed' ? 'danger' : 'success' %}
@@ -32,9 +33,15 @@
                     <td>{% if process.options.ui.source is defined %}{{ process.options.ui.source }}{% endif %}</td>
                     <td>{% if process.options.ui.target is defined %}{{ process.options.ui.target }}{% endif %}</td>
                     <td class="text-center">
-                        <a class="px-1" data-toggle="tooltip" data-placement="top" title="{{ 'Launch'|trans }}" href="{{ url('process', {routeName: 'process_launch', process: process.code}) }}">
-                            <i class="fas fa-rocket"></i>
-                        </a>
+                        {% if (false == uiOptions.input_context_launcher_form and true ==  uiOptions.run_confirmation_modal) %}
+                            <a class="px-1" data-toggle="tooltip" data-placement="top" title="{{ 'Launch'|trans }}" data-bs-toggle="modal" data-bs-target="#{{ process.code }}">
+                                <i class="fas fa-rocket"></i>
+                            </a>
+                        {% else %}
+                            <a class="px-1" data-toggle="tooltip" data-placement="top" title="{{ 'Launch'|trans }}" href="{{ url('process', {routeName: 'process_launch', process: process.code}) }}">
+                                <i class="fas fa-rocket"></i>
+                            </a>
+                        {% endif %}
                         <a
                             class="px-1"
                             data-toggle="tooltip"
@@ -58,6 +65,12 @@
                         </a>
                     </td>
                 </tr>
+                <twig:ui:BootstrapModal
+                        id="{{ process.code }}"
+                        title="{{ 'Run process'|trans }} {{ process.code }}"
+                        message="{{ 'Do you really want to run process %process% in background'|trans({'%process%': process.code}) }} ?"
+                        confirmUrl="{{ url('process', {routeName: 'process_launch', process: process.code}) }}"
+                />
             {% endfor %}
         {% endblock %}
         </tbody>

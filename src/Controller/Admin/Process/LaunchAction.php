@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace CleverAge\UiProcessBundle\Controller\Admin\Process;
 
+use CleverAge\ProcessBundle\Exception\MissingProcessException;
 use CleverAge\UiProcessBundle\Entity\User;
 use CleverAge\UiProcessBundle\Form\Type\LaunchType;
 use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
@@ -39,20 +40,36 @@ use Symfony\Component\Uid\Uuid;
 #[IsGranted('ROLE_USER')]
 class LaunchAction extends AbstractController
 {
+    public function __construct(private readonly MessageBusInterface $messageBus)
+    {
+    }
+
     public function __invoke(
         RequestStack $requestStack,
-        MessageBusInterface $messageBus,
         string $uploadDirectory,
         ProcessConfigurationsManager $processConfigurationsManager,
         AdminContext $context,
     ): Response {
-        $uiOptions = $processConfigurationsManager->getUiOptions($requestStack->getMainRequest()?->get('process') ?? '');
+        $processCode = $requestStack->getMainRequest()?->get('process');
+        if (null === $processCode) {
+            throw new MissingProcessException();
+        }
+        $uiOptions = $processConfigurationsManager->getUiOptions($processCode);
+        if (false === $uiOptions['input_context_launcher_form']) {
+            $this->dispatch($processCode);
+            $this->addFlash(
+                'success',
+                'Process has been added to queue. It will start as soon as possible'
+            );
+
+            return $this->redirectToRoute('process', ['routeName' => 'process_list']);
+        }
         $form = $this->createForm(
             LaunchType::class,
             null,
             [
                 'constraints' => $uiOptions['constraints'] ?? [],
-                'process_code' => $requestStack->getMainRequest()?->get('process'),
+                'process_code' => $processCode,
             ]
         );
         if (false === $form->isSubmitted()) {
@@ -72,16 +89,11 @@ class LaunchAction extends AbstractController
                 (new Filesystem())->dumpFile($filename, $input->getContent());
                 $input = $filename;
             }
-
-            $message = new ProcessExecuteMessage(
+            $this->dispatch(
                 $form->getConfig()->getOption('process_code'),
                 $input,
-                array_merge(
-                    ['execution_user' => $this->getUser()?->getEmail()],
-                    $form->get('context')->getData()
-                )
+                $form->get('context')->getData()
             );
-            $messageBus->dispatch($message);
             $this->addFlash(
                 'success',
                 'Process has been added to queue. It will start as soon as possible'
@@ -97,6 +109,19 @@ class LaunchAction extends AbstractController
                 'form' => $form->createView(),
             ]
         );
+    }
+
+    protected function dispatch(string $processCode, mixed $input = null, array $context = []): void
+    {
+        $message = new ProcessExecuteMessage(
+            $processCode,
+            $input,
+            array_merge(
+                ['execution_user' => $this->getUser()?->getEmail()],
+                $context
+            )
+        );
+        $this->messageBus->dispatch($message);
     }
 
     protected function getUser(): ?User

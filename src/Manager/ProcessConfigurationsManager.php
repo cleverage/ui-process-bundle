@@ -57,6 +57,8 @@ final readonly class ProcessConfigurationsManager
                     'source' => null,
                     'target' => null,
                     'entrypoint_type' => 'text',
+                    'input_context_launcher_form' => false,
+                    'run_confirmation_modal' => false,
                     'constraints' => [],
                     'run' => null,
                     'default' => function (OptionsResolver $defaultResolver) {
@@ -76,6 +78,8 @@ final readonly class ProcessConfigurationsManager
             );
             $uiResolver->setAllowedValues('entrypoint_type', ['text', 'file']);
             $uiResolver->setNormalizer('constraints', fn (Options $options, array $values): array => (new ConstraintLoader())->buildConstraints($values));
+            $uiResolver->setAllowedTypes('input_context_launcher_form', ['bool']);
+            $uiResolver->setAllowedTypes('run_confirmation_modal', ['bool']);
         });
 
         return $resolver->resolve($options);
