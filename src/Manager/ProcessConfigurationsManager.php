@@ -20,17 +20,6 @@ use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraint;
 
-/**
- * @template UiOptions of array{
- *      'source': ?string,
- *      'target': ?string,
- *      'entrypoint_type': 'text|file',
- *      'constraints': Constraint[],
- *      'run': 'null|bool',
- *      'default': array{'input': mixed, 'context': array{array{'key': 'int|text', 'value':'int|text'}}}
- *  }
- *  @template UiOptionList of array {'ui': UiOptions}
- */
 final readonly class ProcessConfigurationsManager
 {
     public function __construct(private ProcessConfigurationRegistry $registry)
@@ -50,7 +39,14 @@ final readonly class ProcessConfigurationsManager
     }
 
     /**
-     * @return null|UiOptions
+     * @return null|array{
+     *       'source': ?string,
+     *       'target': ?string,
+     *       'entrypoint_type': 'text|file',
+     *       'constraints': Constraint[],
+     *       'run': 'null|bool',
+     *       'default': array{'input': mixed, 'context': array{array{'key': 'int|text', 'value':'int|text'}}}
+     * }
      */
     public function getUiOptions(string $processCode): ?array
     {
@@ -66,7 +62,16 @@ final readonly class ProcessConfigurationsManager
     /**
      * @param array<int|string, mixed> $options
      *
-     * @return UiOptionList
+     * @return array{
+     *     'ui': array{
+     *        'source': ?string,
+     *        'target': ?string,
+     *        'entrypoint_type': 'text|file',
+     *        'constraints': Constraint[],
+     *        'run': 'null|bool',
+     *        'default': array{'input': mixed, 'context': array{array{'key': 'int|text', 'value':'int|text'}}}
+     *      }
+     * }
      */
     private function resolveUiOptions(array $options): array
     {
