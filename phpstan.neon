@@ -7,8 +7,6 @@ parameters:
         - src/DependencyInjection/Configuration.php
     ignoreErrors:
         -
-            identifier: missingType.generics
-        -
             identifier: doctrine.columnType
     reportUnmatchedIgnoredErrors: false
     inferPrivatePropertyTypeFromConstructor: true
