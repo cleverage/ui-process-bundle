@@ -42,7 +42,7 @@ final readonly class ProcessConfigurationsManager
      * @return null|array{
      *       'source': ?string,
      *       'target': ?string,
-     *       'entrypoint_type': 'text|file',
+     *       'entrypoint_type': string,
      *       'constraints': Constraint[],
      *       'run': 'null|bool',
      *       'default': array{'input': mixed, 'context': array{array{'key': 'int|text', 'value':'int|text'}}}
@@ -66,7 +66,7 @@ final readonly class ProcessConfigurationsManager
      *     'ui': array{
      *        'source': ?string,
      *        'target': ?string,
-     *        'entrypoint_type': 'text|file',
+     *        'entrypoint_type': string,
      *        'constraints': Constraint[],
      *        'run': 'null|bool',
      *        'default': array{'input': mixed, 'context': array{array{'key': 'int|text', 'value':'int|text'}}}
