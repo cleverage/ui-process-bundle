@@ -29,7 +29,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?int $id = null;
 
     #[ORM\Column(type: Types::STRING, length: 255, unique: true)]
-    private ?string $email = null;
+    private string $email;
 
     #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
     private ?string $firstname = null;
@@ -98,7 +98,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getUserIdentifier(): string
     {
-        if (null === $this->email || '' === $this->email || '0' === $this->email) {
+        if ('' === $this->email) {
             throw new \LogicException('The User class must have an email.');
         }
 

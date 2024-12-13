@@ -1,13 +1,5 @@
 parameters:
-    level: 7
+    level: 8
     paths:
         - src
         - tests
-    excludePaths:
-        - src/DependencyInjection/Configuration.php
-    ignoreErrors:
-        -
-            identifier: doctrine.columnType
-    reportUnmatchedIgnoredErrors: false
-    inferPrivatePropertyTypeFromConstructor: true
-    treatPhpDocTypesAsCertain: false
