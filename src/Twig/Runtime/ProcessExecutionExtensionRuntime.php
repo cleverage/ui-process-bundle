@@ -16,7 +16,6 @@ namespace CleverAge\UiProcessBundle\Twig\Runtime;
 use CleverAge\UiProcessBundle\Entity\ProcessExecution;
 use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
 use CleverAge\UiProcessBundle\Repository\ProcessExecutionRepository;
-use Symfony\Component\Form\AbstractType;
 use Twig\Extension\RuntimeExtensionInterface;
 
 readonly class ProcessExecutionExtensionRuntime implements RuntimeExtensionInterface
