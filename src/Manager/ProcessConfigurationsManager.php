@@ -102,8 +102,21 @@ final readonly class ProcessConfigurationsManager
             $uiResolver->setAllowedValues('entrypoint_type', ['text', 'file']);
             $uiResolver->setNormalizer('constraints', fn (Options $options, array $values): array => (new ConstraintLoader())->buildConstraints($values));
         });
+        /**
+         * @var array{
+         *      'ui': array{
+         *         'source': ?string,
+         *         'target': ?string,
+         *         'entrypoint_type': 'text|file',
+         *         'constraints': Constraint[],
+         *         'run': 'null|bool',
+         *         'default': array{'input': mixed, 'context': array{array{'key': 'int|text', 'value':'int|text'}}}
+         *       }
+         *  } $options
+         */
+        $options = $resolver->resolve($options);
 
-        return $resolver->resolve($options);
+        return $options;
     }
 
     /** @return ProcessConfiguration[] */
