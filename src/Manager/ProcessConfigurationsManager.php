@@ -18,7 +18,19 @@ use CleverAge\ProcessBundle\Registry\ProcessConfigurationRegistry;
 use CleverAge\ProcessBundle\Validator\ConstraintLoader;
 use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraint;
 
+/**
+ * @template UiOptions of array{
+ *      'source': ?string,
+ *      'target': ?string,
+ *      'entrypoint_type': 'text|file',
+ *      'constraints': Constraint[],
+ *      'run': 'null|bool',
+ *      'default': array{'input': mixed, 'context': array{array{'key': 'int|text', 'value':'int|text'}}}
+ *  }
+ *  @template UiOptionList of array {'ui': UiOptions}
+ */
 final readonly class ProcessConfigurationsManager
 {
     public function __construct(private ProcessConfigurationRegistry $registry)
@@ -37,6 +49,9 @@ final readonly class ProcessConfigurationsManager
         return array_filter($this->getConfigurations(), fn (ProcessConfiguration $cfg) => !$cfg->isPublic());
     }
 
+    /**
+     * @return null|UiOptions
+     */
     public function getUiOptions(string $processCode): ?array
     {
         if (false === $this->registry->hasProcessConfiguration($processCode)) {
@@ -48,6 +63,11 @@ final readonly class ProcessConfigurationsManager
         return $this->resolveUiOptions($configuration->getOptions())['ui'];
     }
 
+    /**
+     * @param array<int|string, mixed> $options
+     *
+     * @return UiOptionList
+     */
     private function resolveUiOptions(array $options): array
     {
         $resolver = new OptionsResolver();
