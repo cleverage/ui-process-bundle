@@ -106,8 +106,21 @@ final readonly class ProcessConfigurationsManager
             $uiResolver->setAllowedTypes('input_context_launcher_form', ['bool']);
             $uiResolver->setAllowedTypes('run_confirmation_modal', ['bool']);
         });
+        /**
+         * @var array{
+         *      'ui': array{
+         *         'source': ?string,
+         *         'target': ?string,
+         *         'entrypoint_type': 'text|file',
+         *         'constraints': Constraint[],
+         *         'run': 'null|bool',
+         *         'default': array{'input': mixed, 'context': array{array{'key': 'int|text', 'value':'int|text'}}}
+         *       }
+         *  } $options
+         */
+        $options = $resolver->resolve($options);
 
-        return $resolver->resolve($options);
+        return $options;
     }
 
     /** @return ProcessConfiguration[] */
