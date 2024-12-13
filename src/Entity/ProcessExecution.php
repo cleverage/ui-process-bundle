@@ -40,9 +40,15 @@ class ProcessExecution implements \Stringable
     #[ORM\Column(type: Types::STRING, enumType: ProcessExecutionStatus::class)]
     public ProcessExecutionStatus $status = ProcessExecutionStatus::Started;
 
+    /**
+     * @var array<string, mixed>
+     */
     #[ORM\Column(type: Types::JSON)]
     private array $report = [];
 
+    /**
+     * @var array<string|int, mixed>
+     */
     #[ORM\Column(type: Types::JSON, nullable: true)]
     private ?array $context = [];
 
@@ -51,9 +57,13 @@ class ProcessExecution implements \Stringable
         return $this->id;
     }
 
+    /**
+     * @param array<string|int, mixed> $context
+     */
     public function __construct(
         string $code,
-        #[ORM\Column(type: Types::STRING, length: 255)] public readonly string $logFilename, ?array $context = [],
+        #[ORM\Column(type: Types::STRING, length: 255)] public readonly string $logFilename,
+        ?array $context = [],
     ) {
         $this->code = (string) (new UnicodeString($code))->truncate(255);
         $this->startDate = \DateTimeImmutable::createFromMutable(new \DateTime());
@@ -104,11 +114,17 @@ class ProcessExecution implements \Stringable
         return $this->code;
     }
 
+    /**
+     * @return array<string|int, mixed>
+     */
     public function getContext(): ?array
     {
         return $this->context;
     }
 
+    /**
+     * @param array<string|int, mixed> $context
+     */
     public function setContext(array $context): void
     {
         $this->context = $context;

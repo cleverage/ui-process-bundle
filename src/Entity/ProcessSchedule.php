@@ -48,6 +48,9 @@ class ProcessSchedule
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $input = null;
 
+    /**
+     * @var string|array<string|int, mixed>
+     */
     #[ORM\Column(type: Types::JSON)]
     private string|array $context = [];
 
@@ -68,11 +71,17 @@ class ProcessSchedule
         return $this;
     }
 
+    /**
+     * @return array<string|int, mixed>
+     */
     public function getContext(): array
     {
         return \is_array($this->context) ? $this->context : json_decode($this->context);
     }
 
+    /**
+     * @param  array<string|int, mixed> $context
+     */
     public function setContext(array $context): void
     {
         $this->context = $context;

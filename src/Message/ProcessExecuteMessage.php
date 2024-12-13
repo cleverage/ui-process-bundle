@@ -15,6 +15,9 @@ namespace CleverAge\UiProcessBundle\Message;
 
 readonly class ProcessExecuteMessage
 {
+    /**
+     * @param mixed[] $context
+     */
     public function __construct(public string $code, public mixed $input, public array $context = [])
     {
     }
