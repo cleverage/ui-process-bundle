@@ -80,7 +80,7 @@ class ProcessSchedule
     }
 
     /**
-     * @param  array<string|int, mixed> $context
+     * @param array<string|int, mixed> $context
      */
     public function setContext(array $context): void
     {
