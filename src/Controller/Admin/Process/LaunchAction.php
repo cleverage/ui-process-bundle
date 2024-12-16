@@ -30,7 +30,6 @@ use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Uid\Uuid;
-use Symfony\Component\Validator\Exception\MissingOptionsException;
 
 #[Route(
     '/process/launch',
@@ -57,7 +56,7 @@ class LaunchAction extends AbstractController
         }
         $uiOptions = $processConfigurationsManager->getUiOptions($processCode);
         if (null === $uiOptions) {
-            throw new \InvalidArgumentException("Missing UI Options");
+            throw new \InvalidArgumentException('Missing UI Options');
         }
         if (false === $uiOptions['input_context_launcher_form']) {
             $this->dispatch($processCode);
