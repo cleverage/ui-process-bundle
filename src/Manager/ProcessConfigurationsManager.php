@@ -49,7 +49,7 @@ final readonly class ProcessConfigurationsManager
     }
 
     /**
-     * @return null|UiOptions
+     * @return UiOptions|null
      */
     public function getUiOptions(string $processCode): ?array
     {
