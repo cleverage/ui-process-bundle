@@ -20,6 +20,16 @@ use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraint;
 
+/**
+ * @phpstan-type UiOptions array{
+ *      'source': ?string,
+ *      'target': ?string,
+ *      'entrypoint_type': string,
+ *      'constraints': Constraint[],
+ *      'run': 'null|bool',
+ *      'default': array{'input': mixed, 'context': array{array{'key': 'int|text', 'value':'int|text'}}}
+ *  }
+ */
 final readonly class ProcessConfigurationsManager
 {
     public function __construct(private ProcessConfigurationRegistry $registry)
@@ -39,14 +49,7 @@ final readonly class ProcessConfigurationsManager
     }
 
     /**
-     * @return null|array{
-     *       'source': ?string,
-     *       'target': ?string,
-     *       'entrypoint_type': string,
-     *       'constraints': Constraint[],
-     *       'run': 'null|bool',
-     *       'default': array{'input': mixed, 'context': array{array{'key': 'int|text', 'value':'int|text'}}}
-     * }
+     * @return null|UiOptions
      */
     public function getUiOptions(string $processCode): ?array
     {
@@ -62,16 +65,7 @@ final readonly class ProcessConfigurationsManager
     /**
      * @param array<int|string, mixed> $options
      *
-     * @return array{
-     *     'ui': array{
-     *        'source': ?string,
-     *        'target': ?string,
-     *        'entrypoint_type': string,
-     *        'constraints': Constraint[],
-     *        'run': 'null|bool',
-     *        'default': array{'input': mixed, 'context': array{array{'key': 'int|text', 'value':'int|text'}}}
-     *      }
-     * }
+     * @return array{'ui': UiOptions}
      */
     private function resolveUiOptions(array $options): array
     {
@@ -107,16 +101,7 @@ final readonly class ProcessConfigurationsManager
             $uiResolver->setAllowedTypes('run_confirmation_modal', ['bool']);
         });
         /**
-         * @var array{
-         *      'ui': array{
-         *         'source': ?string,
-         *         'target': ?string,
-         *         'entrypoint_type': 'text|file',
-         *         'constraints': Constraint[],
-         *         'run': 'null|bool',
-         *         'default': array{'input': mixed, 'context': array{array{'key': 'int|text', 'value':'int|text'}}}
-         *       }
-         *  } $options
+         * @var array{'ui': UiOptions} $options
          */
         $options = $resolver->resolve($options);
 
