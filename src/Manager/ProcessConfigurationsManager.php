@@ -18,7 +18,18 @@ use CleverAge\ProcessBundle\Registry\ProcessConfigurationRegistry;
 use CleverAge\ProcessBundle\Validator\ConstraintLoader;
 use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraint;
 
+/**
+ * @phpstan-type UiOptions array{
+ *      'source': ?string,
+ *      'target': ?string,
+ *      'entrypoint_type': string,
+ *      'constraints': Constraint[],
+ *      'run': 'null|bool',
+ *      'default': array{'input': mixed, 'context': array{array{'key': 'int|text', 'value':'int|text'}}}
+ *  }
+ */
 final readonly class ProcessConfigurationsManager
 {
     public function __construct(private ProcessConfigurationRegistry $registry)
@@ -37,6 +48,9 @@ final readonly class ProcessConfigurationsManager
         return array_filter($this->getConfigurations(), fn (ProcessConfiguration $cfg) => !$cfg->isPublic());
     }
 
+    /**
+     * @return UiOptions|null
+     */
     public function getUiOptions(string $processCode): ?array
     {
         if (false === $this->registry->hasProcessConfiguration($processCode)) {
@@ -48,6 +62,11 @@ final readonly class ProcessConfigurationsManager
         return $this->resolveUiOptions($configuration->getOptions())['ui'];
     }
 
+    /**
+     * @param array<int|string, mixed> $options
+     *
+     * @return array{'ui': UiOptions}
+     */
     private function resolveUiOptions(array $options): array
     {
         $resolver = new OptionsResolver();
@@ -77,8 +96,12 @@ final readonly class ProcessConfigurationsManager
             $uiResolver->setAllowedValues('entrypoint_type', ['text', 'file']);
             $uiResolver->setNormalizer('constraints', fn (Options $options, array $values): array => (new ConstraintLoader())->buildConstraints($values));
         });
+        /**
+         * @var array{'ui': UiOptions} $options
+         */
+        $options = $resolver->resolve($options);
 
-        return $resolver->resolve($options);
+        return $options;
     }
 
     /** @return ProcessConfiguration[] */

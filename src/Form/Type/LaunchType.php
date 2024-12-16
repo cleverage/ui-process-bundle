@@ -25,6 +25,7 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
+/** @template-extends AbstractType<array<string, mixed>> */
 class LaunchType extends AbstractType
 {
     public function __construct(
@@ -38,13 +39,15 @@ class LaunchType extends AbstractType
         $code = $options['process_code'];
         $configuration = $this->registry->getProcessConfiguration($code);
         $uiOptions = $this->configurationsManager->getUiOptions($code);
-        $builder->add(
-            'input',
-            'file' === ($uiOptions['entrypoint_type'] ?? null) ? FileType::class : TextType::class,
-            [
-                'required' => $configuration->getEntryPoint() instanceof TaskConfiguration,
-            ]
-        );
+        if (isset($uiOptions['entrypoint_type'])) {
+            $builder->add(
+                'input',
+                'file' === $uiOptions['entrypoint_type'] ? FileType::class : TextType::class,
+                [
+                    'required' => $configuration->getEntryPoint() instanceof TaskConfiguration,
+                ]
+            );
+        }
         $builder->add(
             'context',
             CollectionType::class,

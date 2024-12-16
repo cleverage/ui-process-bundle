@@ -32,7 +32,7 @@ class ProcessSchedule
 
     #[ORM\Column(length: 255)]
     #[IsValidProcessCode]
-    private ?string $process = null;
+    private string $process;
 
     #[ORM\Column(length: 6)]
     private ProcessScheduleType $type;
@@ -43,11 +43,14 @@ class ProcessSchedule
     #[Assert\When(
         expression: 'this.getType().value == "every"', constraints: [new EveryExpression()]
     )]
-    private ?string $expression = null;
+    private string $expression;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $input = null;
 
+    /**
+     * @var string|array<string|int, mixed>
+     */
     #[ORM\Column(type: Types::JSON)]
     private string|array $context = [];
 
@@ -68,11 +71,17 @@ class ProcessSchedule
         return $this;
     }
 
+    /**
+     * @return array<string|int, mixed>
+     */
     public function getContext(): array
     {
         return \is_array($this->context) ? $this->context : json_decode($this->context);
     }
 
+    /**
+     * @param array<string|int, mixed> $context
+     */
     public function setContext(array $context): void
     {
         $this->context = $context;
@@ -100,7 +109,7 @@ class ProcessSchedule
         return $this->expression;
     }
 
-    public function setExpression(?string $expression): self
+    public function setExpression(string $expression): self
     {
         $this->expression = $expression;
 

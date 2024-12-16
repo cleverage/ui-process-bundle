@@ -19,6 +19,9 @@ use Symfony\Component\Validator\Constraints\Sequentially;
 
 final readonly class HttpProcessExecution
 {
+    /**
+     * @param array<string|int, mixed> $context
+     */
     public function __construct(
         #[Sequentially(constraints: [new NotNull(message: 'Process code is required.'), new IsValidProcessCode()])]
         public ?string $code = null,

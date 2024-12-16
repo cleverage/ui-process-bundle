@@ -26,6 +26,9 @@ class LogProcessFilter implements FilterInterface
 {
     use FilterTrait;
 
+    /**
+     * @param string[] $choices
+     */
     public static function new(
         mixed $label,
         array $choices,

@@ -28,6 +28,9 @@ readonly class HttpProcessExecuteValueResolver implements ValueResolverInterface
     {
     }
 
+    /**
+     * @return iterable<HttpProcessExecution>
+     */
     public function resolve(Request $request, ArgumentMetadata $argument): iterable
     {
         $input = $request->get('input', $request->files->get('input'));

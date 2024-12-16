@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace CleverAge\UiProcessBundle\Http\ValueResolver;
 
+use CleverAge\ProcessBundle\Configuration\ProcessConfiguration;
 use CleverAge\ProcessBundle\Registry\ProcessConfigurationRegistry;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Attribute\AsTargetedValueResolver;
@@ -26,6 +27,9 @@ readonly class ProcessConfigurationValueResolver implements ValueResolverInterfa
     {
     }
 
+    /**
+     * @return iterable<ProcessConfiguration>
+     */
     public function resolve(Request $request, ArgumentMetadata $argument): iterable
     {
         return [$this->registry->getProcessConfiguration($request->get('process'))];
