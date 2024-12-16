@@ -33,7 +33,7 @@
                     <td>{% if process.options.ui.source is defined %}{{ process.options.ui.source }}{% endif %}</td>
                     <td>{% if process.options.ui.target is defined %}{{ process.options.ui.target }}{% endif %}</td>
                     <td class="text-center">
-                        {% if (false == uiOptions.input_context_launcher_form and true ==  uiOptions.run_confirmation_modal) %}
+                        {% if (false == uiOptions.input_context_launcher_form and true == uiOptions.run_confirmation_modal) %}
                             <a class="px-1" data-toggle="tooltip" data-placement="top" title="{{ 'Launch'|trans }}" data-bs-toggle="modal" data-bs-target="#{{ process.code }}">
                                 <i class="fas fa-rocket"></i>
                             </a>
