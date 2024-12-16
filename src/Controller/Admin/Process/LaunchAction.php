@@ -30,6 +30,7 @@ use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Uid\Uuid;
+use Symfony\Component\Validator\Exception\MissingOptionsException;
 
 #[Route(
     '/process/launch',
@@ -55,6 +56,9 @@ class LaunchAction extends AbstractController
             throw new MissingProcessException();
         }
         $uiOptions = $processConfigurationsManager->getUiOptions($processCode);
+        if (null === $uiOptions) {
+            throw new \InvalidArgumentException("Missing UI Options");
+        }
         if (false === $uiOptions['input_context_launcher_form']) {
             $this->dispatch($processCode);
             $this->addFlash(
@@ -68,12 +72,12 @@ class LaunchAction extends AbstractController
             LaunchType::class,
             null,
             [
-                'constraints' => $uiOptions['constraints'] ?? [],
+                'constraints' => $uiOptions['constraints'],
                 'process_code' => $processCode,
             ]
         );
         if (false === $form->isSubmitted()) {
-            $default = $uiOptions['default'] ?? [];
+            $default = $uiOptions['default'];
             if (false === $form->get('input')->getConfig()->getType()->getInnerType() instanceof TextType
                 && isset($default['input'])
             ) {
@@ -111,6 +115,9 @@ class LaunchAction extends AbstractController
         );
     }
 
+    /**
+     * @param mixed[] $context
+     */
     protected function dispatch(string $processCode, mixed $input = null, array $context = []): void
     {
         $message = new ProcessExecuteMessage(

@@ -24,6 +24,8 @@ use Symfony\Component\Validator\Constraint;
  * @phpstan-type UiOptions array{
  *      'source': ?string,
  *      'target': ?string,
+ *      'input_context_launcher_form': bool,
+ *      'run_confirmation_modal': bool,
  *      'entrypoint_type': string,
  *      'constraints': Constraint[],
  *      'run': 'null|bool',
