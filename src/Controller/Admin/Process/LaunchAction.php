@@ -58,7 +58,7 @@ class LaunchAction extends AbstractController
         if (null === $uiOptions) {
             throw new \InvalidArgumentException('Missing UI Options');
         }
-        if (false === $uiOptions['input_context_launcher_form']) {
+        if (null === $uiOptions['ui_launch_mode'] || 'modal' === $uiOptions['ui_launch_mode']) {
             $this->dispatch($processCode);
             $this->addFlash(
                 'success',

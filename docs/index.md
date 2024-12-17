@@ -35,13 +35,13 @@ Now you can access UI Process via http://your-domain.com/process
 
 ### Launch process via UI
 From UI "Process List" menu entry you can run a process by clicking on "Rocket" action.
-You can manage this behaviour by setting some ui options on process configuration ui option.
+You can manage this behaviour by setting some ui option `ui_launch_mode`
 
-| Options                          | Values         | UI behaviour |
-|----------------------------------|----------------|:---------:|
-| input_context_launcher_form<br>run_confirmation_modal | false<br>false | Run process without any confirmation
-| input_context_launcher_form<br>run_confirmation_modal | true<br>false  | On click, open a form to set input and context execution
-| input_context_launcher_form<br>run_confirmation_modal | false<br>true  | On click, open confirmation model to confirm process execution
+|      Value      |                          UI behaviour                          |
+|:---------------:|:--------------------------------------------------------------:|
+| modal (default) | On click, open confirmation modal to confirm process execution | 
+|      form       |    On click, open a form to set input and context execution    |
+|      null       |              Run process without any confirmation              | 
 
 ### Launch process via http request
 You can launch a process via http post request
