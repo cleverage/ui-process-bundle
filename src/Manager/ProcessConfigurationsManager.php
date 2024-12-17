@@ -24,6 +24,8 @@ use Symfony\Component\Validator\Constraint;
  * @phpstan-type UiOptions array{
  *      'source': ?string,
  *      'target': ?string,
+ *      'ui_launch_mode': ?string,
+ *      'run_confirmation_modal': bool,
  *      'entrypoint_type': string,
  *      'constraints': Constraint[],
  *      'run': 'null|bool',
@@ -76,6 +78,7 @@ final readonly class ProcessConfigurationsManager
                     'source' => null,
                     'target' => null,
                     'entrypoint_type' => 'text',
+                    'ui_launch_mode' => 'modal',
                     'constraints' => [],
                     'run' => null,
                     'default' => function (OptionsResolver $defaultResolver) {
@@ -95,6 +98,7 @@ final readonly class ProcessConfigurationsManager
             );
             $uiResolver->setAllowedValues('entrypoint_type', ['text', 'file']);
             $uiResolver->setNormalizer('constraints', fn (Options $options, array $values): array => (new ConstraintLoader())->buildConstraints($values));
+            $uiResolver->setAllowedValues('ui_launch_mode', ['modal', null, 'form']);
         });
         /**
          * @var array{'ui': UiOptions} $options
