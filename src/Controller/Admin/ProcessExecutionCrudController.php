@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace CleverAge\UiProcessBundle\Controller\Admin;
 
+use CleverAge\UiProcessBundle\Admin\Field\ContextField;
 use CleverAge\UiProcessBundle\Admin\Field\EnumField;
 use CleverAge\UiProcessBundle\Entity\ProcessExecution;
 use CleverAge\UiProcessBundle\Repository\ProcessExecutionRepository;
@@ -58,7 +59,7 @@ class ProcessExecutionCrudController extends AbstractCrudController
                 return $entity->duration(); // returned format can be changed here
             }),
             ArrayField::new('report')->setTemplatePath('@CleverAgeUiProcess/admin/field/report.html.twig'),
-            ArrayField::new('context')->setTemplatePath('@CleverAgeUiProcess/admin/field/report.html.twig'),
+            ContextField::new('context'),
         ];
     }
 
