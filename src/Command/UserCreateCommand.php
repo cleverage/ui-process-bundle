@@ -2,51 +2,57 @@
 
 declare(strict_types=1);
 
-namespace CleverAge\ProcessUiBundle\Command;
+/*
+ * This file is part of the CleverAge/UiProcessBundle package.
+ *
+ * Copyright (c) Clever-Age
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
 
-use CleverAge\ProcessUiBundle\Entity\User;
+namespace CleverAge\UiProcessBundle\Command;
+
+use CleverAge\UiProcessBundle\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\Constraints\Email;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-/**
- * Class UserCreateCommand.
- */
-final class UserCreateCommand extends Command
+#[AsCommand(
+    name: 'cleverage:ui-process:user-create',
+    description: 'Command to create a new admin into database for ui process.'
+)]
+class UserCreateCommand extends Command
 {
-    private ValidatorInterface $validator;
-    private UserPasswordHasherInterface $passwordEncoder;
-    private EntityManagerInterface $em;
-
     public function __construct(
-        ValidatorInterface $validator,
-        UserPasswordHasherInterface $passwordEncoder,
-        EntityManagerInterface $em
+        private readonly ValidatorInterface $validator,
+        private readonly UserPasswordHasherInterface $passwordEncoder,
+        private readonly EntityManagerInterface $em,
     ) {
-        $this->validator = $validator;
-        $this->passwordEncoder = $passwordEncoder;
-        $this->em = $em;
         parent::__construct();
-    }
-
-    protected function configure(): void
-    {
-        $this->setName('cleverage:process-ui:user-create');
-        $this->setDescription('Command to create a new admin into database for process ui.');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $style = new SymfonyStyle($input, $output);
         $username = $this->ask('Please enter the email.', $style, [new Email()]);
-        $password = $this->ask('Please enter the user password.', $style, [new NotBlank(), new Length(min: 8)]);
+
+        $password = $this->askPassword(
+            (new Question('Please enter the user password.'))->setHidden(true)->setHiddenFallback(false),
+            $input,
+            $output
+        );
 
         $user = new User();
         $user->setEmail($username);
@@ -62,7 +68,7 @@ final class UserCreateCommand extends Command
     }
 
     /**
-     * @param array <int, mixed> $constraints
+     * @param Constraint[] $constraints
      */
     private function ask(string $question, SymfonyStyle $style, array $constraints = []): mixed
     {
@@ -76,5 +82,22 @@ final class UserCreateCommand extends Command
         }
 
         return $value;
+    }
+
+    private function askPassword(Question $question, InputInterface $input, OutputInterface $output): mixed
+    {
+        $constraints = [new NotBlank(), new Length(min: 8)];
+        /** @var QuestionHelper $helper */
+        $helper = $this->getHelper('question');
+        $password = $helper->ask($input, $output, $question);
+        $violations = $this->validator->validate($password, $constraints);
+        while ($violations->count() > 0) {
+            $violationsMessage = $violations->get(0)->getMessage();
+            $output->writeln("<error>$violationsMessage</error>");
+            $password = $helper->ask($input, $output, $question);
+            $violations = $this->validator->validate($password, $constraints);
+        }
+
+        return $password;
     }
 }

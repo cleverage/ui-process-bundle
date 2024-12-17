@@ -1,0 +1,11 @@
+services:
+    cleverage_ui_process.scheduler.cron:
+        class: CleverAge\UiProcessBundle\Scheduler\CronScheduler
+        public: false
+        arguments:
+            - '@cleverage_ui_process.repository.process_schedule'
+            - '@validator'
+            - '@logger'
+        tags:
+            - scheduler.schedule_provider: { name: 'cron' }
+            - { name: 'monolog.logger', channel: 'scheduler' }

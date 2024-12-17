@@ -2,52 +2,58 @@
 
 declare(strict_types=1);
 
-namespace CleverAge\ProcessUiBundle\Entity;
+/*
+ * This file is part of the CleverAge/UiProcessBundle package.
+ *
+ * Copyright (c) Clever-Age
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
 
-use CleverAge\ProcessUiBundle\Repository\UserRepository;
+namespace CleverAge\UiProcessBundle\Entity;
+
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
-/**
- * @ORM\Entity(repositoryClass=UserRepository::class)
- * @ORM\Table(name="user")
- */
+#[ORM\Entity]
+#[ORM\Table(name: 'process_user')]
+#[ORM\Index(name: 'idx_process_user_email', columns: ['email'])]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
-    private ?int $id;
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column]
+    private ?int $id = null;
+
+    #[ORM\Column(type: Types::STRING, length: 255, unique: true)]
+    private string $email;
+
+    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
+    private ?string $firstname = null;
+
+    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
+    private ?string $lastname = null;
 
     /**
-     * @ORM\Column(type="string", length=255, unique=true)
+     * @var string[]
      */
-    private ?string $email;
-
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    private ?string $firstname;
-
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    private ?string $lastname;
-
-    /**
-     * @ORM\Column(type="json")
-     *
-     * @var array <int, string>
-     */
+    #[ORM\Column(type: Types::JSON)]
     private array $roles = [];
 
-    /**
-     * @ORM\Column(type="string")
-     */
-    private ?string $password;
+    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
+    private ?string $password = null;
+
+    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
+    private ?string $timezone = null;
+
+    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
+    private ?string $locale = null;
+
+    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
+    private ?string $token = null;
 
     public function getId(): ?int
     {
@@ -90,14 +96,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    /**
-     * A visual identifier that represents this user.
-     *
-     * @see UserInterface
-     */
     public function getUserIdentifier(): string
     {
-        return (string) $this->email;
+        if ('' === $this->email) {
+            throw new \LogicException('The User class must have an email.');
+        }
+
+        return $this->email;
     }
 
     public function getUsername(): string
@@ -105,20 +110,37 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->getUserIdentifier();
     }
 
-    /**
-     * @see UserInterface
-     */
+    public function getTimezone(): ?string
+    {
+        return $this->timezone;
+    }
+
+    public function setTimezone(?string $timezone): self
+    {
+        $this->timezone = $timezone;
+
+        return $this;
+    }
+
+    public function getLocale(): ?string
+    {
+        return $this->locale;
+    }
+
+    public function setLocale(?string $locale): self
+    {
+        $this->locale = $locale;
+
+        return $this;
+    }
+
     public function getRoles(): array
     {
-        $roles = $this->roles;
-        // guarantee every user at least has ROLE_USER
-        $roles[] = 'ROLE_USER';
-
-        return array_unique($roles);
+        return array_merge(['ROLE_USER'], $this->roles);
     }
 
     /**
-     * @param array <int, string> $roles
+     * @param array<int, string> $roles
      */
     public function setRoles(array $roles): self
     {
@@ -127,9 +149,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    /**
-     * @see PasswordAuthenticatedUserInterface
-     */
     public function getPassword(): ?string
     {
         return $this->password;
@@ -142,20 +161,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    /**
-     * Returning a salt is only needed, if you are not using a modern
-     * hashing algorithm (e.g. bcrypt or sodium) in your security.yaml.
-     *
-     * @see UserInterface
-     */
-    public function getSalt(): ?string
+    public function getToken(): ?string
     {
-        return null;
+        return $this->token;
     }
 
-    /**
-     * @see UserInterface
-     */
+    public function setToken(?string $token): self
+    {
+        $this->token = $token;
+
+        return $this;
+    }
+
     public function eraseCredentials(): void
     {
         // If you store any temporary, sensitive data on the user, clear it here

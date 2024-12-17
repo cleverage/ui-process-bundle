@@ -2,164 +2,87 @@
 
 declare(strict_types=1);
 
-namespace CleverAge\ProcessUiBundle\EventSubscriber;
+/*
+ * This file is part of the CleverAge/UiProcessBundle package.
+ *
+ * Copyright (c) Clever-Age
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
+namespace CleverAge\UiProcessBundle\EventSubscriber;
 
 use CleverAge\ProcessBundle\Event\ProcessEvent;
-use CleverAge\ProcessUiBundle\Entity\Process;
-use CleverAge\ProcessUiBundle\Entity\ProcessExecution;
-use CleverAge\ProcessUiBundle\Event\IncrementReportInfoEvent;
-use CleverAge\ProcessUiBundle\Event\SetReportInfoEvent;
-use CleverAge\ProcessUiBundle\Manager\ProcessUiConfigurationManager;
-use CleverAge\ProcessUiBundle\Message\LogIndexerMessage;
-use CleverAge\ProcessUiBundle\Monolog\Handler\ProcessLogHandler;
-use CleverAge\ProcessUiBundle\Repository\ProcessRepository;
-use DateTime;
-use Doctrine\ORM\EntityManagerInterface;
-use RuntimeException;
-use SplFileObject;
+use CleverAge\UiProcessBundle\Entity\Enum\ProcessExecutionStatus;
+use CleverAge\UiProcessBundle\Entity\ProcessExecution;
+use CleverAge\UiProcessBundle\Manager\ProcessExecutionManager;
+use CleverAge\UiProcessBundle\Monolog\Handler\DoctrineProcessHandler;
+use CleverAge\UiProcessBundle\Monolog\Handler\ProcessHandler;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Symfony\Component\Messenger\MessageBusInterface;
+use Symfony\Component\Uid\Uuid;
 
-class ProcessEventSubscriber implements EventSubscriberInterface
+final readonly class ProcessEventSubscriber implements EventSubscriberInterface
 {
-    private array $processExecution = [];
-    private EntityManagerInterface $entityManager;
-    private ProcessLogHandler $processLogHandler;
-    private MessageBusInterface $messageBus;
-    private ProcessUiConfigurationManager $processUiConfigurationManager;
-    private string $processLogDir;
-    private bool $indexLogs;
-
     public function __construct(
-        EntityManagerInterface $entityManager,
-        ProcessLogHandler $processLogHandler,
-        MessageBusInterface $messageBus,
-        ProcessUiConfigurationManager $processUiConfigurationManager,
-        string $processLogDir,
-        bool $indexLogs
+        private ProcessHandler $processHandler,
+        private DoctrineProcessHandler $doctrineProcessHandler,
+        private ProcessExecutionManager $processExecutionManager,
     ) {
-        $this->entityManager = $entityManager;
-        $this->processLogHandler = $processLogHandler;
-        $this->messageBus = $messageBus;
-        $this->processUiConfigurationManager = $processUiConfigurationManager;
-        $this->processLogDir = $processLogDir;
-        $this->indexLogs = $indexLogs;
+    }
+
+    public function onProcessStart(ProcessEvent $event): void
+    {
+        if (false === $this->processHandler->hasFilename()) {
+            $this->processHandler->setFilename(\sprintf('%s/%s.log', $event->getProcessCode(), Uuid::v4()));
+        }
+        if (!$this->processExecutionManager->getCurrentProcessExecution() instanceof ProcessExecution) {
+            $processExecution = new ProcessExecution(
+                $event->getProcessCode(),
+                basename((string) $this->processHandler->getFilename()),
+                $event->getProcessContext()
+            );
+            $this->processExecutionManager->setCurrentProcessExecution($processExecution)->save();
+        }
+    }
+
+    public function success(ProcessEvent $event): void
+    {
+        if ($event->getProcessCode() === $this->processExecutionManager->getCurrentProcessExecution()?->getCode()) {
+            $this->processExecutionManager->getCurrentProcessExecution()->setStatus(ProcessExecutionStatus::Finish);
+            $this->processExecutionManager->getCurrentProcessExecution()->end();
+            $this->processExecutionManager->save()->unsetProcessExecution($event->getProcessCode());
+            $this->processHandler->close();
+        }
+    }
+
+    public function fail(ProcessEvent $event): void
+    {
+        if ($event->getProcessCode() === $this->processExecutionManager->getCurrentProcessExecution()?->getCode()) {
+            $this->processExecutionManager->getCurrentProcessExecution()->setStatus(ProcessExecutionStatus::Failed);
+            $this->processExecutionManager->getCurrentProcessExecution()->end();
+            $this->processExecutionManager->save()->unsetProcessExecution($event->getProcessCode());
+            $this->processHandler->close();
+        }
+    }
+
+    public function flushDoctrineLogs(ProcessEvent $event): void
+    {
+        $this->doctrineProcessHandler->flush();
     }
 
     public static function getSubscribedEvents(): array
     {
         return [
-            ProcessEvent::EVENT_PROCESS_STARTED => [
-                ['syncProcessIntoDatabase', 1000],
-                ['onProcessStarted', 0],
-            ],
+            ProcessEvent::EVENT_PROCESS_STARTED => 'onProcessStart',
             ProcessEvent::EVENT_PROCESS_ENDED => [
-                ['onProcessEnded'],
+                ['flushDoctrineLogs', 100],
+                ['success', 100],
             ],
             ProcessEvent::EVENT_PROCESS_FAILED => [
-                ['onProcessFailed'],
-            ],
-            IncrementReportInfoEvent::NAME => [
-                ['updateProcessExecutionReport'],
-            ],
-            SetReportInfoEvent::NAME => [
-                ['updateProcessExecutionReport'],
+                ['flushDoctrineLogs', 100],
+                ['fail', 100],
             ],
         ];
-    }
-
-    public function onProcessStarted(ProcessEvent $event): void
-    {
-        $process = $this->entityManager->getRepository(Process::class)
-            ->findOneBy(['processCode' => $event->getProcessCode()]);
-        if (null === $process) {
-            throw new RuntimeException('Unable to found process into database.');
-        }
-        $processExecution = new ProcessExecution($process);
-        $processExecution->setProcessCode($event->getProcessCode());
-        $processExecution->setSource($this->processUiConfigurationManager->getSource($event->getProcessCode()));
-        $processExecution->setTarget($this->processUiConfigurationManager->getTarget($event->getProcessCode()));
-        $logFilename = sprintf(
-            'process_%s_%s.log',
-            $event->getProcessCode(),
-            sha1(uniqid((string) mt_rand(), true))
-        );
-        $this->processLogHandler->setLogFilename($logFilename, $event->getProcessCode());
-        $this->processLogHandler->setCurrentProcessCode($event->getProcessCode());
-        $processExecution->setLog($logFilename);
-        $this->entityManager->persist($processExecution);
-        $this->entityManager->flush();
-        $this->processExecution[$event->getProcessCode()] = $processExecution;
-    }
-
-    public function onProcessEnded(ProcessEvent $processEvent): void
-    {
-        if ($processExecution = ($this->processExecution[$processEvent->getProcessCode()] ?? null)) {
-            $this->processExecution = array_filter($this->processExecution);
-            array_pop($this->processExecution);
-            $this->processLogHandler->setCurrentProcessCode((string) array_key_last($this->processExecution));
-            $processExecution->setEndDate(new DateTime());
-            $processExecution->setStatus(ProcessExecution::STATUS_SUCCESS);
-            $processExecution->getProcess()->setLastExecutionDate($processExecution->getStartDate());
-            $processExecution->getProcess()->setLastExecutionStatus(
-                ProcessExecution::STATUS_SUCCESS
-            );
-            $this->entityManager->persist($processExecution);
-            $this->entityManager->flush();
-            $this->dispatchLogIndexerMessage($processExecution);
-            $this->processExecution[$processEvent->getProcessCode()] = null;
-        }
-    }
-
-    public function onProcessFailed(ProcessEvent $processEvent): void
-    {
-        if ($processExecution = ($this->processExecution[$processEvent->getProcessCode()] ?? null)) {
-            $processExecution->setEndDate(new DateTime());
-            $processExecution->setStatus(ProcessExecution::STATUS_FAIL);
-            $processExecution->getProcess()->setLastExecutionDate($processExecution->getStartDate());
-            $processExecution->getProcess()->setLastExecutionStatus(ProcessExecution::STATUS_FAIL);
-            $this->entityManager->persist($processExecution);
-            $this->entityManager->flush();
-            $this->dispatchLogIndexerMessage($processExecution);
-            $this->processExecution[$processEvent->getProcessCode()] = null;
-        }
-    }
-
-    public function syncProcessIntoDatabase(): void
-    {
-        /** @var ProcessRepository $repository */
-        $repository = $this->entityManager->getRepository(Process::class);
-        $repository->sync();
-    }
-
-    protected function dispatchLogIndexerMessage(ProcessExecution $processExecution): void
-    {
-        if ($this->indexLogs && null !== $processExecutionId = $processExecution->getId()) {
-            $filePath = $this->processLogDir.\DIRECTORY_SEPARATOR.$processExecution->getLog();
-            $file = new SplFileObject($filePath);
-            $file->seek(\PHP_INT_MAX);
-            $chunkSize = LogIndexerMessage::DEFAULT_OFFSET;
-            $chunk = (int) ($file->key() / $chunkSize) + 1;
-            for ($i = 0; $i < $chunk; ++$i) {
-                $this->messageBus->dispatch(
-                    new LogIndexerMessage(
-                        $processExecutionId,
-                        $this->processLogDir.\DIRECTORY_SEPARATOR.$processExecution->getLog(),
-                        $i * $chunkSize
-                    )
-                );
-            }
-        }
-    }
-
-    public function updateProcessExecutionReport(IncrementReportInfoEvent|SetReportInfoEvent $event): void
-    {
-        if ($processExecution = ($this->processExecution[$event->getProcessCode()] ?? false)) {
-            $report = $processExecution->getReport();
-            $event instanceof IncrementReportInfoEvent
-                ? $report[$event->getKey()] = ($report[$event->getKey()] ?? 0) + 1
-                : $report[$event->getKey()] = $event->getValue();
-            $processExecution->setReport($report);
-        }
     }
 }

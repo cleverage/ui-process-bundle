@@ -1,0 +1,10 @@
+services:
+    cleverage_ui_process.event_subscriber.process:
+        class: CleverAge\UiProcessBundle\EventSubscriber\ProcessEventSubscriber
+        public: false
+        tags:
+            - { name: 'kernel.event_subscriber' }
+        arguments:
+            - '@cleverage_ui_process.monolog_handler.process'
+            - '@cleverage_ui_process.monolog_handler.doctrine_process'
+            - '@cleverage_ui_process.manager.process_execution'

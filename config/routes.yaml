@@ -1,4 +1,0 @@
-_process-ui:
-  prefix: '/process'
-  resource: ../src/Controller/
-  type: annotation

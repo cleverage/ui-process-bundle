@@ -1,0 +1,16 @@
+services:
+    CleverAge\UiProcessBundle\Controller\:
+        resource: '../../src/Controller/'
+        autowire: true
+        autoconfigure: true
+        bind:
+            $processConfigurationsManager: '@cleverage_ui_process.manager.process_configuration'
+            $localeSwitcher: '@translation.locale_switcher'
+            $requestStack: '@request_stack'
+            $messageBus: '@messenger.default_bus'
+            $uploadDirectory: '%upload_directory%'
+            $context: '@EasyCorp\Bundle\EasyAdminBundle\Factory\AdminContextFactory'
+            $logDirectory: '%kernel.logs_dir%'
+            $processExecutionRepository: '@cleverage_ui_process.repository.process_execution'
+        tags:
+            - { name: 'controller.service_arguments' }

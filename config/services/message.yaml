@@ -1,0 +1,16 @@
+services:
+    cleverage_ui_process.message.cron_process_message_handler:
+        class: CleverAge\UiProcessBundle\Message\CronProcessMessageHandler
+        public: false
+        arguments:
+            - '@messenger.default_bus'
+        tags: [messenger.message_handler]
+
+    cleverage_ui_process.message.process_execute_handler:
+        class: CleverAge\UiProcessBundle\Message\ProcessExecuteHandler
+        public: false
+        arguments:
+            - '@cleverage_process.manager.process'
+            - '@cleverage_ui_process.monolog_handler.process'
+        tags: [messenger.message_handler]
+

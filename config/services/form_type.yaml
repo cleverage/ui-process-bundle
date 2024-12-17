@@ -1,0 +1,9 @@
+services:
+    cleverage_ui_process.form_type.launch:
+        class: CleverAge\UiProcessBundle\Form\Type\LaunchType
+        public: false
+        arguments:
+            - '@cleverage_process.registry.process_configuration'
+            - '@cleverage_ui_process.manager.process_configuration'
+        tags:
+            - { name: 'form.type' }

@@ -1,0 +1,78 @@
+{# @var urlGenerator \EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator #}
+{% extends ea.templatePath('layout') %}
+{% trans_default_domain ea.i18n.translationDomain %}
+
+{% block main %}
+    <table class="table datagrid">
+        <thead>
+        {% block table_head %}
+            <tr>
+                <th>{{ 'Process code'|trans }}</th>
+                <th>{{ 'Last execution'|trans }}</th>
+                <th>{{ 'Status'|trans }}</th>
+                <th>{{ 'Source'|trans }}</th>
+                <th>{{ 'Target'|trans }}</th>
+                <th class="text-center">{{ 'Actions'|trans }}</th>
+            </tr>
+        {% endblock %}
+        </thead>
+        <tbody>
+        {% block table_body %}
+            {# @var process \CleverAge\ProcessBundle\Configuration\ProcessConfiguration #}
+            {% for process in processes %}
+                {% set lastExecution = get_last_execution_date(process.code) %}
+                {% set uiOptions = resolve_ui_options(process.code) %}
+                {% set statusClass = '' %}
+                {% if lastExecution is not null %}
+                    {% set statusClass = lastExecution.status.value == 'failed' ? 'danger' : 'success' %}
+                {% endif %}
+                <tr>
+                    <td>{{ process.code }}</td>
+                    <td>{% if lastExecution is not null %}{{ lastExecution.startDate|date('Y/m/d H:i:s') }}{% endif %}</td>
+                    <td><span class="badge badge-{{ statusClass }}">{% if lastExecution is not null %}{{ lastExecution.status.value }}{% endif %}</span></td>
+                    <td>{% if process.options.ui.source is defined %}{{ process.options.ui.source }}{% endif %}</td>
+                    <td>{% if process.options.ui.target is defined %}{{ process.options.ui.target }}{% endif %}</td>
+                    <td class="text-center">
+                        {% if ('modal' == uiOptions.ui_launch_mode) %}
+                            <a class="px-1" data-toggle="tooltip" data-placement="top" title="{{ 'Launch'|trans }}" data-bs-toggle="modal" data-bs-target="#{{ process.code }}">
+                                <i class="fas fa-rocket"></i>
+                            </a>
+                        {% else %}
+                            <a class="px-1" data-toggle="tooltip" data-placement="top" title="{{ 'Launch'|trans }}" href="{{ url('process', {routeName: 'process_launch', process: process.code}) }}">
+                                <i class="fas fa-rocket"></i>
+                            </a>
+                        {% endif %}
+                        <a
+                            class="px-1"
+                            data-toggle="tooltip"
+                            data-placement="top"
+                            title="{{ 'View executions'|trans }}"
+                            href="{{ url(
+                                'process',
+                                {
+                                    crudAction: 'index',
+                                    crudControllerFqcn: 'CleverAge\\UiProcessBundle\\Controller\\Admin\\ProcessExecutionCrudController',
+                                    filters: {
+                                        code: {
+                                            comparison: '=',
+                                            value: process.code,
+                                        },
+                                    },
+                                },
+                            ) }}"
+                        >
+                            <i class="fas fa-eye"></i>
+                        </a>
+                    </td>
+                </tr>
+                <twig:ui:BootstrapModal
+                        id="{{ process.code }}"
+                        title="{{ 'Run process'|trans }} {{ process.code }}"
+                        message="{{ 'Do you really want to run process %process% in background'|trans({'%process%': process.code}) }} ?"
+                        confirmUrl="{{ url('process', {routeName: 'process_launch', process: process.code}) }}"
+                />
+            {% endfor %}
+        {% endblock %}
+        </tbody>
+    </table>
+{% endblock %}

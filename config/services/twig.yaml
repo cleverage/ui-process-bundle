@@ -1,0 +1,59 @@
+services:
+    cleverage_ui_process.twig.log_level_extension:
+        class: CleverAge\UiProcessBundle\Twig\Extension\LogLevelExtension
+        public: false
+        tags:
+            - { name: 'twig.extension' }
+
+    cleverage_ui_process.twig.md5_extension:
+        class: CleverAge\UiProcessBundle\Twig\Extension\MD5Extension
+        public: false
+        tags:
+            - { name: 'twig.extension' }
+
+    cleverage_ui_process.twig.process_execution_extension:
+        class: CleverAge\UiProcessBundle\Twig\Extension\ProcessExecutionExtension
+        public: false
+        tags:
+            - { name: 'twig.extension' }
+
+    cleverage_ui_process.twig.process_extension:
+        class: CleverAge\UiProcessBundle\Twig\Extension\ProcessExtension
+        public: false
+        tags:
+            - { name: 'twig.extension' }
+
+    cleverage_ui_process.twig.log_level_extension_runtime:
+        class: CleverAge\UiProcessBundle\Twig\Runtime\LogLevelExtensionRuntime
+        public: false
+        tags:
+            - { name: 'twig.runtime' }
+
+    cleverage_ui_process.twig.md5_extension_runtime:
+        class: CleverAge\UiProcessBundle\Twig\Runtime\MD5ExtensionRuntime
+        public: false
+        tags:
+            - { name: 'twig.runtime' }
+
+    cleverage_ui_process.twig.process_execution_extension_runtime:
+        class: CleverAge\UiProcessBundle\Twig\Runtime\ProcessExecutionExtensionRuntime
+        public: false
+        tags:
+            - { name: 'twig.runtime' }
+        arguments:
+            - '@cleverage_ui_process.repository.process_execution'
+            - '@cleverage_ui_process.manager.process_configuration'
+
+    cleverage_ui_process.twig.process_extension_runtime:
+        class: CleverAge\UiProcessBundle\Twig\Runtime\ProcessExtensionRuntime
+        public: false
+        tags:
+            - { name: 'twig.runtime' }
+        arguments:
+            - '@cleverage_ui_process.manager.process_configuration'
+
+    cleverage_ui_process.twig.component.bootstrap_modal:
+        class: CleverAge\UiProcessBundle\Twig\Components\BootstrapModal
+        shared: false
+        tags:
+            - { name: 'twig.component', key: 'ui:BootstrapModal', template: '@CleverAgeUiProcess/components/BootstrapModal.html.twig' }

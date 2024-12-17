@@ -2,77 +2,64 @@
 
 declare(strict_types=1);
 
-namespace CleverAge\ProcessUiBundle\Repository;
+/*
+ * This file is part of the CleverAge/UiProcessBundle package.
+ *
+ * Copyright (c) Clever-Age
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
 
-use CleverAge\ProcessUiBundle\Entity\ProcessExecution;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\Persistence\ManagerRegistry;
+namespace CleverAge\UiProcessBundle\Repository;
+
+use CleverAge\UiProcessBundle\Entity\LogRecord;
+use CleverAge\UiProcessBundle\Entity\ProcessExecution;
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\EntityRepository;
 
 /**
- * @extends ServiceEntityRepository<ProcessExecution>
+ * @extends EntityRepository<ProcessExecution>
+ *
+ * @method ProcessExecution|null find($id, $lockMode = null, $lockVersion = null)
+ * @method ProcessExecution|null findOneBy(mixed[] $criteria, string[] $orderBy = null)
+ * @method ProcessExecution[]    findAll()
+ * @method ProcessExecution[]    findBy(mixed[] $criteria, string[] $orderBy = null, $limit = null, $offset = null)
  */
-class ProcessExecutionRepository extends ServiceEntityRepository
+class ProcessExecutionRepository extends EntityRepository
 {
-    public function __construct(ManagerRegistry $registry)
+    public function __construct(EntityManagerInterface $em)
     {
-        parent::__construct($registry, ProcessExecution::class);
+        parent::__construct($em, $em->getClassMetadata(ProcessExecution::class));
     }
 
-    /**
-     * @return array <string, string>
-     */
-    public function getProcessCodeChoices(): array
+    public function save(ProcessExecution $processExecution): void
     {
-        $choices = [];
-        $qb = $this->createQueryBuilder('pe');
-        $qb->distinct(true);
-        $qb->select('pe.processCode');
-        foreach ($qb->getQuery()->getArrayResult() as $result) {
-            $choices[(string) $result['processCode']] = (string) $result['processCode'];
-        }
-
-        return $choices;
+        $this->getEntityManager()->persist($processExecution);
+        $this->getEntityManager()->flush();
     }
 
-    /**
-     * @return array <string, string>
-     */
-    public function getSourceChoices(): array
+    public function getLastProcessExecution(string $code): ?ProcessExecution
     {
-        $choices = [];
         $qb = $this->createQueryBuilder('pe');
-        $qb->distinct(true);
-        $qb->select('pe.source');
-        foreach ($qb->getQuery()->getArrayResult() as $result) {
-            $choices[(string) $result['source']] = (string) $result['source'];
-        }
 
-        return $choices;
+        return $qb->select('pe')
+            ->where($qb->expr()->eq('pe.code', $qb->expr()->literal($code)))
+            ->orderBy('pe.startDate', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
     }
 
-    /**
-     * @return array <string, string>
-     */
-    public function getTargetChoices(): array
+    public function hasLogs(ProcessExecution $processExecution): bool
     {
-        $choices = [];
-        $qb = $this->createQueryBuilder('pe');
-        $qb->distinct(true);
-        $qb->select('pe.target');
-        foreach ($qb->getQuery()->getArrayResult() as $result) {
-            $choices[(string) $result['target']] = (string) $result['target'];
-        }
+        $qb = $this->createQueryBuilder('pe')
+            ->select('count(lr.id)')
+            ->join(LogRecord::class, 'lr', 'WITH', 'lr.processExecution = pe')
+            ->where('pe.id = :id')
+            ->setParameter('id', $processExecution->getId()
+            );
 
-        return $choices;
-    }
-
-    public function deleteBefore(\DateTime $dateTime): void
-    {
-        $qb = $this->createQueryBuilder('pe');
-        $qb->delete();
-        $qb->where('pe.startDate < :date');
-        $qb->setParameter('date', $dateTime);
-
-        $qb->getQuery()->execute();
+        return (int) $qb->getQuery()->getSingleScalarResult() > 0;
     }
 }
