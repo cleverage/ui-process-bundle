@@ -2,5 +2,7 @@
 {# @var field \EasyCorp\Bundle\EasyAdminBundle\Dto\FieldDto #}
 {# @var entity \EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto #}
 <ul>
-  {{ field.value }}
+    {% for key, item in field.value %}
+        <li class="list-group-item"><span class="badge badge-{{ log_css_class(key) }}">{{ key }}</span> : {{ item }}</li>
+    {% endfor %}
 </ul>
