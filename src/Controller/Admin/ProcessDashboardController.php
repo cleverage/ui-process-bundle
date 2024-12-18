@@ -47,6 +47,7 @@ class ProcessDashboardController extends AbstractDashboardController
     public function configureDashboard(): Dashboard
     {
         return Dashboard::new()
+            ->renderContentMaximized()
             ->setTitle('<img src="'.$this->logoPath.'" />');
     }
 
