@@ -2,17 +2,19 @@
 {% extends ea.templatePath('layout') %}
 {% trans_default_domain ea.i18n.translationDomain %}
 
+{% block content_title %}{{ 'Processes'|trans }}{% endblock %}
+
 {% block main %}
     <table class="table datagrid">
         <thead>
         {% block table_head %}
             <tr>
-                <th>{{ 'Process code'|trans }}</th>
-                <th>{{ 'Last execution'|trans }}</th>
-                <th>{{ 'Status'|trans }}</th>
-                <th>{{ 'Source'|trans }}</th>
-                <th>{{ 'Target'|trans }}</th>
-                <th class="text-center">{{ 'Actions'|trans }}</th>
+                <th><span>{{ 'Code'|trans }}</span></th>
+                <th><span>{{ 'Last execution'|trans }}</span></th>
+                <th><span>{{ 'Status'|trans }}</span></th>
+                <th><span>{{ 'Source'|trans }}</span></th>
+                <th><span>{{ 'Target'|trans }}</span></th>
+                <th class="text-center"><span>{{ 'Actions'|trans }}</span></th>
             </tr>
         {% endblock %}
         </thead>
