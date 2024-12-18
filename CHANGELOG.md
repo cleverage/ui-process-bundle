@@ -1,3 +1,11 @@
+v2.0.1
+------
+
+## Fixes
+
+* [#21](https://github.com/cleverage/ui-process-bundle/issues/21) Fix report.html.twig templating.
+
+
 v2.0
 ------
 
