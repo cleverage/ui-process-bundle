@@ -140,6 +140,7 @@ final class CleverAgeUiProcessExtension extends Extension implements PrependExte
                 'firewalls' => [
                     'main' => [
                         'provider' => 'process_user_provider',
+                        'custom_authenticator' => ['cleverage_ui_process.security.http_process_execution_authenticator'],
                         'form_login' => [
                             'login_path' => 'process_login',
                             'check_path' => 'process_login',
