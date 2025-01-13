@@ -17,7 +17,7 @@ use CleverAge\UiProcessBundle\Http\Model\HttpProcessExecution;
 use CleverAge\UiProcessBundle\Message\ProcessExecuteMessage;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpKernel\Attribute\ValueResolver;
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Attribute\Route;
@@ -27,7 +27,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 class ProcessExecuteController extends AbstractController
 {
     public function __invoke(
-        #[ValueResolver('http_process_execution')] HttpProcessExecution $httpProcessExecution,
+        #[MapRequestPayload] HttpProcessExecution $httpProcessExecution,
         ValidatorInterface $validator,
         MessageBusInterface $bus,
     ): JsonResponse {
