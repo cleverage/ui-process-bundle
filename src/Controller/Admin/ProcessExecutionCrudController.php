@@ -15,6 +15,7 @@ namespace CleverAge\UiProcessBundle\Controller\Admin;
 
 use CleverAge\UiProcessBundle\Admin\Field\ContextField;
 use CleverAge\UiProcessBundle\Admin\Field\EnumField;
+use CleverAge\UiProcessBundle\Admin\Filter\ProcessExecutionDurationFilter;
 use CleverAge\UiProcessBundle\Entity\ProcessExecution;
 use CleverAge\UiProcessBundle\Repository\ProcessExecutionRepository;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
@@ -143,7 +144,13 @@ class ProcessExecutionCrudController extends AbstractCrudController
 
     public function configureFilters(Filters $filters): Filters
     {
-        return $filters->add('code')->add('startDate');
+        return $filters
+            ->add('code')
+            ->add('startDate')
+            ->add(
+                ProcessExecutionDurationFilter::new('duration', 'Duration (in seconds)')
+                    ->setFormTypeOption('mapped', false)
+            );
     }
 
     private function getLogFilePath(ProcessExecution $processExecution): string
