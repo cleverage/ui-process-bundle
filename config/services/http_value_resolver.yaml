@@ -5,6 +5,8 @@ services:
         public: false
         arguments:
             - '%upload_directory%'
+            - '@validator'
+            - '@serializer'
 
     cleverage_ui_process.http_value_resolver.process_configuration:
         class: CleverAge\UiProcessBundle\Http\ValueResolver\ProcessConfigurationValueResolver

@@ -14,8 +14,11 @@ declare(strict_types=1);
 namespace CleverAge\UiProcessBundle\Http\Model;
 
 use CleverAge\UiProcessBundle\Validator\IsValidProcessCode;
+use Symfony\Component\Validator\Constraints\AtLeastOneOf;
+use Symfony\Component\Validator\Constraints\Json;
 use Symfony\Component\Validator\Constraints\NotNull;
 use Symfony\Component\Validator\Constraints\Sequentially;
+use Symfony\Component\Validator\Constraints\Type;
 
 final readonly class HttpProcessExecution
 {
@@ -26,7 +29,8 @@ final readonly class HttpProcessExecution
         #[Sequentially(constraints: [new NotNull(message: 'Process code is required.'), new IsValidProcessCode()])]
         public ?string $code = null,
         public ?string $input = null,
-        public array $context = [],
+        #[AtLeastOneOf(constraints: [new Json(), new Type('array')])]
+        public string|array $context = [],
     ) {
     }
 }
