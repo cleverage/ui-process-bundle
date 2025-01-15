@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /*
- * This file is part of the CleverAge/ProcessBundleDemo package.
+ * This file is part of the CleverAge/UiProcessBundle package.
  *
  * Copyright (c) Clever-Age
  *
@@ -25,10 +25,10 @@ class ProcessExecutionDurationFilter implements FilterInterface
 {
     use FilterTrait;
 
-    public static function new(string $propertyName, $label = null): self
+    public static function new(string $propertyName, ?string $label = null): self
     {
         return (new self())
-            ->setFilterFqcn(__CLASS__)
+            ->setFilterFqcn(self::class)
             ->setProperty($propertyName)
             ->setLabel($label)
             ->setFormType(NumericFilterType::class)
