@@ -1,3 +1,16 @@
+v2.0.2
+------
+
+## Fixes
+
+* [#29](https://github.com/cleverage/ui-process-bundle/issues/29) HttpProcessExecutionAuthenticator is not used
+* [#30](https://github.com/cleverage/ui-process-bundle/issues/30) Run process via http post request to http_process_execute does not work
+
+## Changes
+
+* [#25](https://github.com/cleverage/ui-process-bundle/issues/25) UX tweak: take all the width available
+* [#27](https://github.com/cleverage/ui-process-bundle/issues/27) UX Tweak: make the process listing more consistant with the other cruds
+
 v2.0.1
 ------
 
