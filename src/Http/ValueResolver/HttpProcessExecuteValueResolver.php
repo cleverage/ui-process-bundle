@@ -21,17 +21,12 @@ use Symfony\Component\HttpKernel\Attribute\AsTargetedValueResolver;
 use Symfony\Component\HttpKernel\Controller\ValueResolverInterface;
 use Symfony\Component\HttpKernel\ControllerMetadata\ArgumentMetadata;
 use Symfony\Component\Serializer\SerializerInterface;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Contracts\Service\Attribute\Required;
 
 #[AsTargetedValueResolver('http_process_execution')]
 readonly class HttpProcessExecuteValueResolver implements ValueResolverInterface
 {
-    public function __construct(
-        private string $storageDir,
-        private ValidatorInterface $validator,
-        private SerializerInterface $serializer
-    )
+    public function __construct(private string $storageDir, private SerializerInterface $serializer)
     {
     }
 
