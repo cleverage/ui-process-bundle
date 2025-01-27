@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace CleverAge\UiProcessBundle\Controller\Admin;
 
+use CleverAge\ProcessBundle\Registry\ProcessConfigurationRegistry;
 use CleverAge\UiProcessBundle\Entity\User;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
@@ -31,19 +32,29 @@ use Symfony\Component\Form\Extension\Core\Type\RepeatedType;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\Pbkdf2PasswordHasher;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
-#[IsGranted('ROLE_USER')]
+#[IsGranted('ROLE_SUPER_ADMIN')]
 class UserCrudController extends AbstractCrudController
 {
-    /** @param array<string, string> $roles */
-    public function __construct(private readonly array $roles)
-    {
+    /** @param array<string, array<string, string>|string> $roles */
+    public function __construct(
+        private array $roles,
+        private readonly ProcessConfigurationRegistry $processConfigurationRegistry,
+        private readonly TranslatorInterface $translator,
+    ) {
+        foreach ($this->processConfigurationRegistry->getProcessConfigurations() as $config) {
+            $this->roles[$config->getCode()] = [
+                $this->translator->trans('View process').' '.$config->getCode() => 'ROLE_PROCESS_VIEW#'.$config->getCode(),
+                $this->translator->trans('Execute process').' '.$config->getCode() => 'ROLE_PROCESS_EXECUTE#'.$config->getCode(),
+            ];
+        }
     }
 
     public function configureCrud(Crud $crud): Crud
     {
         $crud->showEntityActionsInlined();
-        $crud->setEntityPermission('ROLE_ADMIN');
+        $crud->setEntityPermission('ROLE_SUPER_ADMIN');
 
         return $crud;
     }
@@ -79,7 +90,7 @@ class UserCrudController extends AbstractCrudController
         yield FormField::addTab('Roles')->setIcon('fa fa-theater-masks');
         yield ChoiceField::new('roles', false)
             ->setChoices($this->roles)
-            ->setFormTypeOptions(['multiple' => true, 'expanded' => true]);
+            ->setFormTypeOptions(['multiple' => true, 'expanded' => false]);
         yield FormField::addTab('Intl.')->setIcon('fa fa-flag');
         yield TimezoneField::new('timezone');
         yield LocaleField::new('locale');

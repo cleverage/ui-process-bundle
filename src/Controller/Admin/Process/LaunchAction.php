@@ -54,6 +54,10 @@ class LaunchAction extends AbstractController
         if (null === $processCode) {
             throw new MissingProcessException();
         }
+
+        if (false === $this->isGranted('ROLE_PROCESS_EXECUTE#'.$processCode)) {
+            throw $this->createAccessDeniedException();
+        }
         $uiOptions = $processConfigurationsManager->getUiOptions($processCode);
         if (null === $uiOptions) {
             throw new \InvalidArgumentException('Missing UI Options');

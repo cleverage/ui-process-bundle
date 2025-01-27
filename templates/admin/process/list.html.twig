@@ -14,7 +14,7 @@
                 <th><span>{{ 'Status'|trans }}</span></th>
                 <th><span>{{ 'Source'|trans }}</span></th>
                 <th><span>{{ 'Target'|trans }}</span></th>
-                <th class="text-center"><span>{{ 'Actions'|trans }}</span></th>
+                <th class="text-right"><span>{{ 'Actions'|trans }}</span></th>
             </tr>
         {% endblock %}
         </thead>
@@ -22,57 +22,61 @@
         {% block table_body %}
             {# @var process \CleverAge\ProcessBundle\Configuration\ProcessConfiguration #}
             {% for process in processes %}
-                {% set lastExecution = get_last_execution_date(process.code) %}
-                {% set uiOptions = resolve_ui_options(process.code) %}
-                {% set statusClass = '' %}
-                {% if lastExecution is not null %}
-                    {% set statusClass = lastExecution.status.value == 'failed' ? 'danger' : 'success' %}
-                {% endif %}
-                <tr>
-                    <td>{{ process.code }}</td>
-                    <td>{% if lastExecution is not null %}{{ lastExecution.startDate|date('Y/m/d H:i:s') }}{% endif %}</td>
-                    <td><span class="badge badge-{{ statusClass }}">{% if lastExecution is not null %}{{ lastExecution.status.value }}{% endif %}</span></td>
-                    <td>{% if process.options.ui.source is defined %}{{ process.options.ui.source }}{% endif %}</td>
-                    <td>{% if process.options.ui.target is defined %}{{ process.options.ui.target }}{% endif %}</td>
-                    <td class="text-center">
-                        {% if ('modal' == uiOptions.ui_launch_mode) %}
-                            <a class="px-1" data-toggle="tooltip" data-placement="top" title="{{ 'Launch'|trans }}" data-bs-toggle="modal" data-bs-target="#{{ process.code }}">
-                                <i class="fas fa-rocket"></i>
-                            </a>
-                        {% else %}
-                            <a class="px-1" data-toggle="tooltip" data-placement="top" title="{{ 'Launch'|trans }}" href="{{ url('process', {routeName: 'process_launch', process: process.code}) }}">
-                                <i class="fas fa-rocket"></i>
-                            </a>
-                        {% endif %}
-                        <a
-                            class="px-1"
-                            data-toggle="tooltip"
-                            data-placement="top"
-                            title="{{ 'View executions'|trans }}"
-                            href="{{ url(
-                                'process',
-                                {
-                                    crudAction: 'index',
-                                    crudControllerFqcn: 'CleverAge\\UiProcessBundle\\Controller\\Admin\\ProcessExecutionCrudController',
-                                    filters: {
-                                        code: {
-                                            comparison: '=',
-                                            value: process.code,
+                {% if is_granted("ROLE_PROCESS_VIEW##{process.code}", process) %}
+                    {% set lastExecution = get_last_execution_date(process.code) %}
+                    {% set uiOptions = resolve_ui_options(process.code) %}
+                    {% set statusClass = '' %}
+                    {% if lastExecution is not null %}
+                        {% set statusClass = lastExecution.status.value == 'failed' ? 'danger' : 'success' %}
+                    {% endif %}
+                    <tr>
+                        <td>{{ process.code }}</td>
+                        <td>{% if lastExecution is not null %}{{ lastExecution.startDate|date('Y/m/d H:i:s') }}{% endif %}</td>
+                        <td><span class="badge badge-{{ statusClass }}">{% if lastExecution is not null %}{{ lastExecution.status.value }}{% endif %}</span></td>
+                        <td>{% if process.options.ui.source is defined %}{{ process.options.ui.source }}{% endif %}</td>
+                        <td>{% if process.options.ui.target is defined %}{{ process.options.ui.target }}{% endif %}</td>
+                        <td class="text-right">
+                            {% if is_granted("ROLE_PROCESS_EXECUTE##{process.code}", process) %}
+                                {% if ('modal' == uiOptions.ui_launch_mode) %}
+                                    <a class="px-1" data-toggle="tooltip" data-placement="top" title="{{ 'Launch'|trans }}" data-bs-toggle="modal" data-bs-target="#{{ process.code }}" role="button">
+                                        <i class="fas fa-rocket"></i>
+                                    </a>
+                                {% else %}
+                                    <a class="px-1" data-toggle="tooltip" data-placement="top" title="{{ 'Launch'|trans }}" href="{{ url('process', {routeName: 'process_launch', process: process.code}) }}" role="button">
+                                        <i class="fas fa-rocket"></i>
+                                    </a>
+                                {% endif %}
+                            {% endif %}
+                            <a
+                                class="px-1"
+                                data-toggle="tooltip"
+                                data-placement="top"
+                                title="{{ 'View executions'|trans }}"
+                                href="{{ url(
+                                    'process',
+                                    {
+                                        crudAction: 'index',
+                                        crudControllerFqcn: 'CleverAge\\UiProcessBundle\\Controller\\Admin\\ProcessExecutionCrudController',
+                                        filters: {
+                                            code: {
+                                                comparison: '=',
+                                                value: process.code,
+                                            },
                                         },
                                     },
-                                },
-                            ) }}"
-                        >
-                            <i class="fas fa-eye"></i>
-                        </a>
-                    </td>
-                </tr>
-                <twig:ui:BootstrapModal
-                        id="{{ process.code }}"
-                        title="{{ 'Run process'|trans }} {{ process.code }}"
-                        message="{{ 'Do you really want to run process %process% in background'|trans({'%process%': process.code}) }} ?"
-                        confirmUrl="{{ url('process', {routeName: 'process_launch', process: process.code}) }}"
-                />
+                                ) }}"
+                            >
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    <twig:ui:BootstrapModal
+                            id="{{ process.code }}"
+                            title="{{ 'Run process'|trans }} {{ process.code }}"
+                            message="{{ 'Do you really want to run process %process% in background'|trans({'%process%': process.code}) }} ?"
+                            confirmUrl="{{ url('process', {routeName: 'process_launch', process: process.code}) }}"
+                    />
+                {% endif %}
             {% endfor %}
         {% endblock %}
         </tbody>
