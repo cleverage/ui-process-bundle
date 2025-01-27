@@ -36,7 +36,7 @@ readonly class HttpProcessExecuteValueResolver implements ValueResolverInterface
     {
         $all = $request->request->all();
         try {
-            if (empty($all)) {
+            if ($all === []) {
                 $httpProcessExecution = $this->serializer->deserialize(
                     $request->getContent(),
                     HttpProcessExecution::class,
@@ -57,7 +57,7 @@ readonly class HttpProcessExecuteValueResolver implements ValueResolverInterface
             }
 
             return [$httpProcessExecution];
-        } catch (\Throwable $e) {
+        } catch (\Throwable) {
             return [new HttpProcessExecution()];
         }
     }
