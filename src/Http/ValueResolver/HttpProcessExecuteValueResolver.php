@@ -21,7 +21,6 @@ use Symfony\Component\HttpKernel\Attribute\AsTargetedValueResolver;
 use Symfony\Component\HttpKernel\Controller\ValueResolverInterface;
 use Symfony\Component\HttpKernel\ControllerMetadata\ArgumentMetadata;
 use Symfony\Component\Serializer\SerializerInterface;
-use Symfony\Contracts\Service\Attribute\Required;
 
 #[AsTargetedValueResolver('http_process_execution')]
 readonly class HttpProcessExecuteValueResolver implements ValueResolverInterface
@@ -46,7 +45,7 @@ readonly class HttpProcessExecuteValueResolver implements ValueResolverInterface
             } else {
                 $input = $request->get('input', $request->files->get('input'));
                 if ($input instanceof UploadedFile) {
-                    $uploadFileName = $this->storageDir . \DIRECTORY_SEPARATOR . date('YmdHis') . '_' . uniqid() . '_' . $input->getClientOriginalName();
+                    $uploadFileName = $this->storageDir.\DIRECTORY_SEPARATOR.date('YmdHis').'_'.uniqid().'_'.$input->getClientOriginalName();
                     (new Filesystem())->dumpFile($uploadFileName, $input->getContent());
                     $input = $uploadFileName;
                 }

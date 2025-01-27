@@ -17,7 +17,6 @@ use CleverAge\UiProcessBundle\Http\Model\HttpProcessExecution;
 use CleverAge\UiProcessBundle\Message\ProcessExecuteMessage;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\HttpKernel\Attribute\ValueResolver;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 use Symfony\Component\Messenger\MessageBusInterface;
@@ -44,7 +43,7 @@ class ProcessExecuteController extends AbstractController
             new ProcessExecuteMessage(
                 $httpProcessExecution->code ?? '',
                 $httpProcessExecution->input,
-                is_string($httpProcessExecution->context)
+                \is_string($httpProcessExecution->context)
                     ? json_decode($httpProcessExecution->context, true)
                     : $httpProcessExecution->context
             )
