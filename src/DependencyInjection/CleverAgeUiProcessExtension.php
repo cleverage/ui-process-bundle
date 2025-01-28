@@ -150,6 +150,7 @@ final class CleverAgeUiProcessExtension extends Extension implements PrependExte
                             'target' => 'process_login',
                             'clear_site_data' => '*',
                         ],
+                        'switch_user' => true,
                     ],
                 ],
             ]

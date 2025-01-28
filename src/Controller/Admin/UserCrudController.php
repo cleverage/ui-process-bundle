@@ -31,6 +31,7 @@ use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\RepeatedType;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\Pbkdf2PasswordHasher;
+use Symfony\Component\Routing\Generator\UrlGenerator;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
@@ -106,7 +107,10 @@ class UserCrudController extends AbstractCrudController
                 ->addCssClass('text-warning'))->update(Crud::PAGE_INDEX, Action::DELETE, fn (Action $action) => $action->setIcon('fa fa-trash-o')
                 ->setLabel(false)
                 ->addCssClass(''))->update(Crud::PAGE_INDEX, Action::BATCH_DELETE, fn (Action $action) => $action->setLabel('Delete')
-                ->addCssClass(''))->add(Crud::PAGE_EDIT, Action::new('generateToken')->linkToCrudAction('generateToken'));
+                ->addCssClass(''))->add(Crud::PAGE_EDIT, Action::new('generateToken')->linkToCrudAction('generateToken'))
+                ->add(Crud::PAGE_INDEX, Action::new('ConnectAs')->linkToUrl(function (User $user) {
+                    return $this->generateUrl('process', ['_switch_user' => $user->getEmail()], UrlGenerator::ABSOLUTE_URL);
+                })->setLabel(false)->setIcon('fa-solid fa-right-to-bracket'))->setPermission('ConnectAs', 'ROLE_SUPER_ADMIN');
     }
 
     public function generateToken(AdminContext $adminContext, AdminUrlGenerator $adminUrlGenerator): Response
