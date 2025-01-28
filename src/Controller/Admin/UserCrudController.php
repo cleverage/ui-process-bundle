@@ -108,9 +108,7 @@ class UserCrudController extends AbstractCrudController
                 ->setLabel(false)
                 ->addCssClass(''))->update(Crud::PAGE_INDEX, Action::BATCH_DELETE, fn (Action $action) => $action->setLabel('Delete')
                 ->addCssClass(''))->add(Crud::PAGE_EDIT, Action::new('generateToken')->linkToCrudAction('generateToken'))
-                ->add(Crud::PAGE_INDEX, Action::new('ConnectAs')->linkToUrl(function (User $user) {
-                    return $this->generateUrl('process', ['_switch_user' => $user->getEmail()], UrlGenerator::ABSOLUTE_URL);
-                })->setLabel(false)->setIcon('fa-solid fa-right-to-bracket'))->setPermission('ConnectAs', 'ROLE_SUPER_ADMIN');
+                ->add(Crud::PAGE_INDEX, Action::new('ConnectAs')->linkToUrl(fn (User $user) => $this->generateUrl('process', ['_switch_user' => $user->getEmail()], UrlGenerator::ABSOLUTE_URL))->setLabel(false)->setIcon('fa-solid fa-right-to-bracket'))->setPermission('ConnectAs', 'ROLE_SUPER_ADMIN');
     }
 
     public function generateToken(AdminContext $adminContext, AdminUrlGenerator $adminUrlGenerator): Response
