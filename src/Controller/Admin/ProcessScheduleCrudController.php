@@ -35,7 +35,9 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Scheduler\Trigger\CronExpressionTrigger;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
+#[IsGranted('ROLE_SUPER_ADMIN')]
 class ProcessScheduleCrudController extends AbstractCrudController
 {
     public function __construct(private readonly ProcessConfigurationsManager $processConfigurationsManager)
