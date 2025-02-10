@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace CleverAge\UiProcessBundle\Command;
 
-use CleverAge\UiProcessBundle\Entity\User;
+use CleverAge\UiProcessBundle\Entity\UserInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -35,7 +35,11 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 )]
 class UserCreateCommand extends Command
 {
+    /**
+     * @param class-string<UserInterface> $userClassName
+     */
     public function __construct(
+        private readonly string $userClassName,
         private readonly ValidatorInterface $validator,
         private readonly UserPasswordHasherInterface $passwordEncoder,
         private readonly EntityManagerInterface $em,
@@ -54,7 +58,8 @@ class UserCreateCommand extends Command
             $output
         );
 
-        $user = new User();
+        /** @var UserInterface $user */
+        $user = new $this->userClassName();
         $user->setEmail($username);
         $user->setRoles(['ROLE_USER', 'ROLE_ADMIN']);
         $user->setPassword($this->passwordEncoder->hashPassword($user, $password));

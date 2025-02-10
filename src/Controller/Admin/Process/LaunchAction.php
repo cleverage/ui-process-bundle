@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace CleverAge\UiProcessBundle\Controller\Admin\Process;
 
 use CleverAge\ProcessBundle\Exception\MissingProcessException;
-use CleverAge\UiProcessBundle\Entity\User;
+use CleverAge\UiProcessBundle\Entity\UserInterface;
 use CleverAge\UiProcessBundle\Form\Type\LaunchType;
 use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
 use CleverAge\UiProcessBundle\Message\ProcessExecuteMessage;
@@ -130,9 +130,9 @@ class LaunchAction extends AbstractController
         $this->messageBus->dispatch($message);
     }
 
-    protected function getUser(): ?User
+    protected function getUser(): ?UserInterface
     {
-        /** @var User $user */
+        /** @var UserInterface $user */
         $user = parent::getUser();
 
         return $user;

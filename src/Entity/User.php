@@ -13,47 +13,28 @@ declare(strict_types=1);
 
 namespace CleverAge\UiProcessBundle\Entity;
 
-use Doctrine\DBAL\Types\Types;
-use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
-use Symfony\Component\Security\Core\User\UserInterface;
-
-#[ORM\Entity]
-#[ORM\Table(name: 'process_user')]
-#[ORM\Index(name: 'idx_process_user_email', columns: ['email'])]
-class User implements UserInterface, PasswordAuthenticatedUserInterface
+class User implements UserInterface
 {
-    #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column]
-    private ?int $id = null;
+    protected ?int $id = null;
 
-    #[ORM\Column(type: Types::STRING, length: 255, unique: true)]
-    private string $email;
+    protected string $email;
 
-    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
-    private ?string $firstname = null;
+    protected ?string $firstname = null;
 
-    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
-    private ?string $lastname = null;
+    protected ?string $lastname = null;
 
     /**
      * @var string[]
      */
-    #[ORM\Column(type: Types::JSON)]
-    private array $roles = [];
+    protected array $roles = [];
 
-    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
-    private ?string $password = null;
+    protected ?string $password = null;
 
-    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
-    private ?string $timezone = null;
+    protected ?string $timezone = null;
 
-    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
-    private ?string $locale = null;
+    protected ?string $locale = null;
 
-    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
-    private ?string $token = null;
+    protected ?string $token = null;
 
     public function getId(): ?int
     {
@@ -65,11 +46,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->email;
     }
 
-    public function setEmail(string $email): self
+    public function setEmail(string $email): static
     {
         $this->email = $email;
 
         return $this;
+    }
+
+    public function getUsername(): string
+    {
+        return $this->getUserIdentifier();
     }
 
     public function getFirstname(): ?string
@@ -77,7 +63,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->firstname;
     }
 
-    public function setFirstname(?string $firstname): self
+    public function setFirstname(?string $firstname): static
     {
         $this->firstname = $firstname;
 
@@ -89,47 +75,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->lastname;
     }
 
-    public function setLastname(?string $lastname): self
+    public function setLastname(?string $lastname): static
     {
         $this->lastname = $lastname;
-
-        return $this;
-    }
-
-    public function getUserIdentifier(): string
-    {
-        if ('' === $this->email) {
-            throw new \LogicException('The User class must have an email.');
-        }
-
-        return $this->email;
-    }
-
-    public function getUsername(): string
-    {
-        return $this->getUserIdentifier();
-    }
-
-    public function getTimezone(): ?string
-    {
-        return $this->timezone;
-    }
-
-    public function setTimezone(?string $timezone): self
-    {
-        $this->timezone = $timezone;
-
-        return $this;
-    }
-
-    public function getLocale(): ?string
-    {
-        return $this->locale;
-    }
-
-    public function setLocale(?string $locale): self
-    {
-        $this->locale = $locale;
 
         return $this;
     }
@@ -139,10 +87,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return array_merge(['ROLE_USER'], $this->roles);
     }
 
-    /**
-     * @param array<int, string> $roles
-     */
-    public function setRoles(array $roles): self
+    public function setRoles(array $roles): static
     {
         $this->roles = $roles;
 
@@ -154,9 +99,33 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->password;
     }
 
-    public function setPassword(string $password): self
+    public function setPassword(string $password): static
     {
         $this->password = $password;
+
+        return $this;
+    }
+
+    public function getTimezone(): ?string
+    {
+        return $this->timezone;
+    }
+
+    public function setTimezone(?string $timezone): static
+    {
+        $this->timezone = $timezone;
+
+        return $this;
+    }
+
+    public function getLocale(): ?string
+    {
+        return $this->locale;
+    }
+
+    public function setLocale(?string $locale): static
+    {
+        $this->locale = $locale;
 
         return $this;
     }
@@ -166,7 +135,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->token;
     }
 
-    public function setToken(?string $token): self
+    public function setToken(?string $token): static
     {
         $this->token = $token;
 
@@ -177,5 +146,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         // If you store any temporary, sensitive data on the user, clear it here
         // $this->plainPassword = null;
+    }
+
+    public function getUserIdentifier(): string
+    {
+        if ('' === $this->email) {
+            throw new \LogicException('The User class must have an email.');
+        }
+
+        return $this->email;
     }
 }

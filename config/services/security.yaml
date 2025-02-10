@@ -3,5 +3,5 @@ services:
         class: CleverAge\UiProcessBundle\Security\HttpProcessExecutionAuthenticator
         public: false
         arguments:
-            - '@doctrine.orm.entity_manager'
+            - '@cleverage_ui_process.repository.user'
 

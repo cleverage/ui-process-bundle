@@ -13,34 +13,34 @@ declare(strict_types=1);
 
 namespace CleverAge\UiProcessBundle\Manager;
 
-use CleverAge\UiProcessBundle\Entity\ProcessExecution;
-use CleverAge\UiProcessBundle\Repository\ProcessExecutionRepository;
+use CleverAge\UiProcessBundle\Entity\ProcessExecutionInterface;
+use CleverAge\UiProcessBundle\Repository\ProcessExecutionRepositoryInterface;
 
 class ProcessExecutionManager
 {
-    private ?ProcessExecution $currentProcessExecution = null;
+    private ?ProcessExecutionInterface $currentProcessExecution = null;
 
-    public function __construct(private readonly ProcessExecutionRepository $processExecutionRepository)
+    public function __construct(private readonly ProcessExecutionRepositoryInterface $processExecutionRepository)
     {
     }
 
-    public function setCurrentProcessExecution(ProcessExecution $processExecution): self
+    public function setCurrentProcessExecution(ProcessExecutionInterface $processExecution): self
     {
-        if (!$this->currentProcessExecution instanceof ProcessExecution) {
+        if (!$this->currentProcessExecution instanceof ProcessExecutionInterface) {
             $this->currentProcessExecution = $processExecution;
         }
 
         return $this;
     }
 
-    public function getCurrentProcessExecution(): ?ProcessExecution
+    public function getCurrentProcessExecution(): ?ProcessExecutionInterface
     {
         return $this->currentProcessExecution;
     }
 
     public function unsetProcessExecution(string $processCode): self
     {
-        if ($this->currentProcessExecution?->code === $processCode) {
+        if ($this->currentProcessExecution?->getCode() === $processCode) {
             $this->currentProcessExecution = null;
         }
 
@@ -49,7 +49,7 @@ class ProcessExecutionManager
 
     public function save(): self
     {
-        if ($this->currentProcessExecution instanceof ProcessExecution) {
+        if ($this->currentProcessExecution instanceof ProcessExecutionInterface) {
             $this->processExecutionRepository->save($this->currentProcessExecution);
         }
 

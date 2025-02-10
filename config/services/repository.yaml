@@ -4,10 +4,19 @@ services:
         public: false
         arguments:
             - '@doctrine.orm.entity_manager'
+            - '%cleverage_ui_process.entity.process_execution.class%'
+            - '%cleverage_ui_process.entity.log_record.class%'
 
     cleverage_ui_process.repository.process_schedule:
         class: CleverAge\UiProcessBundle\Repository\ProcessScheduleRepository
         public: false
         arguments:
-            - '@doctrine'
+            - '@doctrine.orm.entity_manager'
+            - '%cleverage_ui_process.entity.process_schedule.class%'
 
+    cleverage_ui_process.repository.user:
+        class: CleverAge\UiProcessBundle\Repository\UserRepository
+        public: false
+        arguments:
+            - '@doctrine.orm.entity_manager'
+            - '%cleverage_ui_process.entity.user.class%'

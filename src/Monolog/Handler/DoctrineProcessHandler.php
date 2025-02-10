@@ -13,7 +13,8 @@ declare(strict_types=1);
 
 namespace CleverAge\UiProcessBundle\Monolog\Handler;
 
-use CleverAge\UiProcessBundle\Entity\ProcessExecution;
+use CleverAge\UiProcessBundle\Entity\LogRecordInterface;
+use CleverAge\UiProcessBundle\Entity\ProcessExecutionInterface;
 use CleverAge\UiProcessBundle\Manager\ProcessExecutionManager;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
@@ -27,6 +28,8 @@ class DoctrineProcessHandler extends AbstractProcessingHandler
     private ArrayCollection $records;
     private ?ProcessExecutionManager $processExecutionManager = null;
     private ?EntityManagerInterface $em = null;
+    /** @var string class-string<LogRecordInterface> */
+    private string $logRecordClassName;
 
     public function __construct(int|string|Level $level = Level::Debug, bool $bubble = true)
     {
@@ -44,6 +47,11 @@ class DoctrineProcessHandler extends AbstractProcessingHandler
         $this->processExecutionManager = $processExecutionManager;
     }
 
+    public function setLogRecordClassName(string $logRecordClassName): void
+    {
+        $this->logRecordClassName = $logRecordClassName;
+    }
+
     public function __destruct()
     {
         $this->flush();
@@ -53,8 +61,8 @@ class DoctrineProcessHandler extends AbstractProcessingHandler
     public function flush(): void
     {
         foreach ($this->records as $record) {
-            if (($currentProcessExecution = $this->processExecutionManager?->getCurrentProcessExecution()) instanceof ProcessExecution) {
-                $entity = new \CleverAge\UiProcessBundle\Entity\LogRecord($record, $currentProcessExecution);
+            if (($currentProcessExecution = $this->processExecutionManager?->getCurrentProcessExecution()) instanceof ProcessExecutionInterface) {
+                $entity = new $this->logRecordClassName($record, $currentProcessExecution);
                 $this->em?->persist($entity);
             }
         }

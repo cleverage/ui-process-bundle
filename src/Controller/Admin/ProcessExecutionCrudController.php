@@ -17,7 +17,7 @@ use CleverAge\UiProcessBundle\Admin\Field\ContextField;
 use CleverAge\UiProcessBundle\Admin\Field\EnumField;
 use CleverAge\UiProcessBundle\Admin\Filter\ProcessExecutionDurationFilter;
 use CleverAge\UiProcessBundle\Entity\ProcessExecution;
-use CleverAge\UiProcessBundle\Repository\ProcessExecutionRepository;
+use CleverAge\UiProcessBundle\Repository\ProcessExecutionRepositoryInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
@@ -37,7 +37,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class ProcessExecutionCrudController extends AbstractCrudController
 {
     public function __construct(
-        private readonly ProcessExecutionRepository $processExecutionRepository,
+        private readonly ProcessExecutionRepositoryInterface $processExecutionRepository,
         private readonly string $logDirectory,
     ) {
     }
@@ -124,9 +124,8 @@ class ProcessExecutionCrudController extends AbstractCrudController
         return $this->redirect($url);
     }
 
-    public function downloadLogFile(
-        AdminContext $context,
-    ): Response {
+    public function downloadLogFile(AdminContext $context): Response
+    {
         /** @var ProcessExecution $processExecution */
         $processExecution = $context->getEntity()->getInstance();
         $filepath = $this->getLogFilePath($processExecution);
@@ -156,7 +155,7 @@ class ProcessExecutionCrudController extends AbstractCrudController
     private function getLogFilePath(ProcessExecution $processExecution): string
     {
         return $this->logDirectory.
-            \DIRECTORY_SEPARATOR.$processExecution->code.
+            \DIRECTORY_SEPARATOR.$processExecution->getCode().
             \DIRECTORY_SEPARATOR.$processExecution->logFilename
         ;
     }
