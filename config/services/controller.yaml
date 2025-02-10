@@ -12,5 +12,8 @@ services:
             $context: '@EasyCorp\Bundle\EasyAdminBundle\Factory\AdminContextFactory'
             $logDirectory: '%kernel.logs_dir%'
             $processExecutionRepository: '@cleverage_ui_process.repository.process_execution'
+            CleverAge\ProcessBundle\Registry\ProcessConfigurationRegistry $processConfigurationRegistry: '@cleverage_process.registry.process_configuration'
+            Symfony\Component\Security\Core\Role\RoleHierarchy $roleHierarchy: '@security.role_hierarchy'
+            Symfony\Contracts\Translation\TranslatorInterface $translator: '@translator'
         tags:
             - { name: 'controller.service_arguments' }

@@ -39,6 +39,9 @@ class ProcessExecuteController extends AbstractController
             }
             throw new UnprocessableEntityHttpException(implode('. ', $violationsMessages));
         }
+        if (false === $this->isGranted('ROLE_PROCESS_EXECUTE#'.$httpProcessExecution->code)) {
+            throw $this->createAccessDeniedException();
+        }
         $bus->dispatch(
             new ProcessExecuteMessage(
                 $httpProcessExecution->code ?? '',

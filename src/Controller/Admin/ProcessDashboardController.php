@@ -27,7 +27,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Translation\LocaleSwitcher;
 
-#[IsGranted('ROLE_USER')]
+#[IsGranted('ROLE_ADMIN')]
 class ProcessDashboardController extends AbstractDashboardController
 {
     public function __construct(
@@ -59,16 +59,15 @@ class ProcessDashboardController extends AbstractDashboardController
                 MenuItem::linkToRoute('Process list', 'fas fa-list', 'process_list'),
                 MenuItem::linkToCrud('Executions', 'fas fa-rocket', ProcessExecution::class),
                 MenuItem::linkToCrud('Logs', 'fas fa-pen', LogRecord::class),
-                MenuItem::linkToCrud('Scheduler', 'fas fa-solid fa-clock', ProcessSchedule::class),
+                MenuItem::linkToCrud('Scheduler', 'fas fa-solid fa-clock', ProcessSchedule::class)
+                    ->setPermission('ROLE_SUPER_ADMIN'),
             ]
         );
-        if ($this->isGranted('ROLE_ADMIN')) {
-            yield MenuItem::subMenu('Users', 'fas fa-user')->setSubItems(
-                [
-                    MenuItem::linkToCrud('User List', 'fas fa-user', User::class),
-                ]
-            );
-        }
+        yield MenuItem::subMenu('Users', 'fas fa-user')->setSubItems(
+            [
+                MenuItem::linkToCrud('User List', 'fas fa-user', User::class),
+            ]
+        )->setPermission('ROLE_SUPER_ADMIN');
     }
 
     public function configureCrud(): Crud
