@@ -13,9 +13,17 @@ declare(strict_types=1);
 
 namespace CleverAge\UiProcessBundle\Entity\Enum;
 
-enum ProcessExecutionStatus: string
+use Symfony\Contracts\Translation\TranslatableInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
+
+enum ProcessExecutionStatus: string implements TranslatableInterface
 {
     case Started = 'started';
     case Finish = 'finish';
     case Failed = 'failed';
+
+    public function trans(TranslatorInterface $translator, ?string $locale = null): string
+    {
+        return $translator->trans('enum.process_execution_status.'.$this->value, domain: 'enums', locale: $locale);
+    }
 }

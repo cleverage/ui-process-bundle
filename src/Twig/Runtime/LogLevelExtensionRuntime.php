@@ -14,13 +14,26 @@ declare(strict_types=1);
 namespace CleverAge\UiProcessBundle\Twig\Runtime;
 
 use Monolog\Level;
+use Symfony\Contracts\Translation\TranslatorInterface;
 use Twig\Extension\RuntimeExtensionInterface;
 
 class LogLevelExtensionRuntime implements RuntimeExtensionInterface
 {
+    private TranslatorInterface $translator;
+
+    public function setTranslator(TranslatorInterface $translator): void
+    {
+        $this->translator = $translator;
+    }
+
     public function getLabel(int $value): string
     {
         return Level::from($value)->getName();
+    }
+
+    public function getTranslation(string $key): string
+    {
+        return $this->translator->trans('enum.log_level.'.strtolower($key), domain: 'enums');
     }
 
     public function getCssClass(string|int $value): string

@@ -1,0 +1,2 @@
+The value "{{ value }}" is not every valid expression.: La valeur "{{ value }}" n'est pas une expression valide pour le type "Chaque date".
+The value "{{ value }}" is not a valid cron expression.: La valeur "{{ value }}" n'est pas une expression valide pour le type "Tâche planifiée".
