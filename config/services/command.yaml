@@ -5,6 +5,7 @@ services:
         tags:
             - { name: console.command }
         arguments:
+            - '%cleverage_ui_process.entity.user.class%'
             - '@validator'
             - '@security.user_password_hasher'
             - '@doctrine.orm.entity_manager'

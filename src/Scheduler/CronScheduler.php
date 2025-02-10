@@ -15,7 +15,7 @@ namespace CleverAge\UiProcessBundle\Scheduler;
 
 use CleverAge\UiProcessBundle\Entity\Enum\ProcessScheduleType;
 use CleverAge\UiProcessBundle\Message\CronProcessMessage;
-use CleverAge\UiProcessBundle\Repository\ProcessScheduleRepository;
+use CleverAge\UiProcessBundle\Repository\ProcessScheduleRepositoryInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Scheduler\RecurringMessage;
 use Symfony\Component\Scheduler\Schedule;
@@ -25,7 +25,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 readonly class CronScheduler implements ScheduleProviderInterface
 {
     public function __construct(
-        private ProcessScheduleRepository $repository,
+        private ProcessScheduleRepositoryInterface $processScheduleRepository,
         private ValidatorInterface $validator,
         private LoggerInterface $logger,
     ) {
@@ -35,7 +35,7 @@ readonly class CronScheduler implements ScheduleProviderInterface
     {
         $schedule = new Schedule();
         try {
-            foreach ($this->repository->findAll() as $processSchedule) {
+            foreach ($this->processScheduleRepository->findAll() as $processSchedule) {
                 $violations = $this->validator->validate($processSchedule);
                 if (0 !== $violations->count()) {
                     foreach ($violations as $violation) {

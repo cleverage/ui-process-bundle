@@ -27,10 +27,21 @@ class Configuration implements ConfigurationInterface
         $rootNode = $tb->getRootNode();
         $rootNode
             ->children()
+                ->arrayNode('class')
+                ->addDefaultsIfNotSet()
+                    ->children()
+                        ->scalarNode('log_record')->defaultValue('App\Entity\LogRecord')->end()
+                        ->scalarNode('process_execution')->defaultValue('App\Entity\ProcessExecution')->end()
+                        ->scalarNode('process_schedule')->defaultValue('App\Entity\ProcessSchedule')->end()
+                        ->scalarNode('user')->defaultValue('App\Entity\User')->end()
+            ->end();
+        $rootNode
+            ->children()
                 ->arrayNode('security')
                 ->addDefaultsIfNotSet()
                     ->children()
-                        ->arrayNode('roles')->defaultValue(['ROLE_ADMIN'])->scalarPrototype()->end(); // Roles displayed inside user edit form
+                        ->arrayNode('roles')->defaultValue(['ROLE_ADMIN'])->scalarPrototype() // Roles displayed inside user edit form
+            ->end();
         $rootNode
             ->children()
                 ->arrayNode('logs')

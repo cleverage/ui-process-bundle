@@ -13,20 +13,20 @@ declare(strict_types=1);
 
 namespace CleverAge\UiProcessBundle\Twig\Runtime;
 
-use CleverAge\UiProcessBundle\Entity\ProcessExecution;
+use CleverAge\UiProcessBundle\Entity\ProcessExecutionInterface;
 use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
-use CleverAge\UiProcessBundle\Repository\ProcessExecutionRepository;
+use CleverAge\UiProcessBundle\Repository\ProcessExecutionRepositoryInterface;
 use Twig\Extension\RuntimeExtensionInterface;
 
 readonly class ProcessExecutionExtensionRuntime implements RuntimeExtensionInterface
 {
     public function __construct(
-        private ProcessExecutionRepository $processExecutionRepository,
+        private ProcessExecutionRepositoryInterface $processExecutionRepository,
         private ProcessConfigurationsManager $processConfigurationsManager,
     ) {
     }
 
-    public function getLastExecutionDate(string $code): ?ProcessExecution
+    public function getLastExecutionDate(string $code): ?ProcessExecutionInterface
     {
         return $this->processExecutionRepository->getLastProcessExecution($code);
     }

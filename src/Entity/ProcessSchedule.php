@@ -14,45 +14,23 @@ declare(strict_types=1);
 namespace CleverAge\UiProcessBundle\Entity;
 
 use CleverAge\UiProcessBundle\Entity\Enum\ProcessScheduleType;
-use CleverAge\UiProcessBundle\Repository\ProcessScheduleRepository;
-use CleverAge\UiProcessBundle\Validator\CronExpression;
-use CleverAge\UiProcessBundle\Validator\EveryExpression;
-use CleverAge\UiProcessBundle\Validator\IsValidProcessCode;
-use Doctrine\DBAL\Types\Types;
-use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Validator\Constraints as Assert;
 
-#[ORM\Entity(repositoryClass: ProcessScheduleRepository::class)]
-class ProcessSchedule
+class ProcessSchedule implements ProcessScheduleInterface
 {
-    #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column]
-    private ?int $id = null;
+    protected ?int $id = null;
 
-    #[ORM\Column(length: 255)]
-    #[IsValidProcessCode]
-    private string $process;
+    protected string $process;
 
-    #[ORM\Column(length: 6)]
-    private ProcessScheduleType $type;
-    #[ORM\Column(length: 255)]
-    #[Assert\When(
-        expression: 'this.getType().value == "cron"', constraints: [new CronExpression()]
-    )]
-    #[Assert\When(
-        expression: 'this.getType().value == "every"', constraints: [new EveryExpression()]
-    )]
-    private string $expression;
+    protected ProcessScheduleType $type;
 
-    #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $input = null;
+    protected string $expression;
+
+    protected ?string $input = null;
 
     /**
-     * @var string|array<string|int, mixed>
+     * @var array<string|int, mixed>
      */
-    #[ORM\Column(type: Types::JSON)]
-    private string|array $context = [];
+    protected array $context = [];
 
     public function getId(): ?int
     {
@@ -71,22 +49,6 @@ class ProcessSchedule
         return $this;
     }
 
-    /**
-     * @return array<string|int, mixed>
-     */
-    public function getContext(): array
-    {
-        return \is_array($this->context) ? $this->context : json_decode($this->context);
-    }
-
-    /**
-     * @param array<string|int, mixed> $context
-     */
-    public function setContext(array $context): void
-    {
-        $this->context = $context;
-    }
-
     public function getNextExecution(): null
     {
         return null;
@@ -97,7 +59,7 @@ class ProcessSchedule
         return $this->type;
     }
 
-    public function setType(ProcessScheduleType $type): self
+    public function setType(ProcessScheduleType $type): static
     {
         $this->type = $type;
 
@@ -109,7 +71,7 @@ class ProcessSchedule
         return $this->expression;
     }
 
-    public function setExpression(string $expression): self
+    public function setExpression(string $expression): static
     {
         $this->expression = $expression;
 
@@ -121,9 +83,21 @@ class ProcessSchedule
         return $this->input;
     }
 
-    public function setInput(?string $input): self
+    public function setInput(?string $input): static
     {
         $this->input = $input;
+
+        return $this;
+    }
+
+    public function getContext(): array
+    {
+        return $this->context;
+    }
+
+    public function setContext(array $context): static
+    {
+        $this->context = $context;
 
         return $this;
     }

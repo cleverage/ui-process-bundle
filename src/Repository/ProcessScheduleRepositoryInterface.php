@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /*
  * This file is part of the CleverAge/UiProcessBundle package.
  *
@@ -11,13 +9,14 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace CleverAge\UiProcessBundle\Message;
+namespace CleverAge\UiProcessBundle\Repository;
 
 use CleverAge\UiProcessBundle\Entity\ProcessScheduleInterface;
+use Doctrine\Persistence\ObjectRepository;
 
-final readonly class CronProcessMessage
+/**
+ * @extends ObjectRepository<ProcessScheduleInterface>
+ */
+interface ProcessScheduleRepositoryInterface extends ObjectRepository
 {
-    public function __construct(public ProcessScheduleInterface $processSchedule)
-    {
-    }
 }

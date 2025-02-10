@@ -15,7 +15,7 @@ namespace CleverAge\UiProcessBundle\EventSubscriber;
 
 use CleverAge\ProcessBundle\Event\ProcessEvent;
 use CleverAge\UiProcessBundle\Entity\Enum\ProcessExecutionStatus;
-use CleverAge\UiProcessBundle\Entity\ProcessExecution;
+use CleverAge\UiProcessBundle\Entity\ProcessExecutionInterface;
 use CleverAge\UiProcessBundle\Manager\ProcessExecutionManager;
 use CleverAge\UiProcessBundle\Monolog\Handler\DoctrineProcessHandler;
 use CleverAge\UiProcessBundle\Monolog\Handler\ProcessHandler;
@@ -24,7 +24,11 @@ use Symfony\Component\Uid\Uuid;
 
 final readonly class ProcessEventSubscriber implements EventSubscriberInterface
 {
+    /**
+     * @param class-string<ProcessExecutionInterface> $processExecutionClassName
+     */
     public function __construct(
+        private string $processExecutionClassName,
         private ProcessHandler $processHandler,
         private DoctrineProcessHandler $doctrineProcessHandler,
         private ProcessExecutionManager $processExecutionManager,
@@ -36,8 +40,8 @@ final readonly class ProcessEventSubscriber implements EventSubscriberInterface
         if (false === $this->processHandler->hasFilename()) {
             $this->processHandler->setFilename(\sprintf('%s/%s.log', $event->getProcessCode(), Uuid::v4()));
         }
-        if (!$this->processExecutionManager->getCurrentProcessExecution() instanceof ProcessExecution) {
-            $processExecution = new ProcessExecution(
+        if (!$this->processExecutionManager->getCurrentProcessExecution() instanceof ProcessExecutionInterface) {
+            $processExecution = new $this->processExecutionClassName(
                 $event->getProcessCode(),
                 basename((string) $this->processHandler->getFilename()),
                 $event->getProcessContext()
