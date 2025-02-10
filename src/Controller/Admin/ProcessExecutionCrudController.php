@@ -32,6 +32,7 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 #[IsGranted('ROLE_USER')]
 class ProcessExecutionCrudController extends AbstractCrudController
@@ -39,6 +40,7 @@ class ProcessExecutionCrudController extends AbstractCrudController
     public function __construct(
         private readonly ProcessExecutionRepository $processExecutionRepository,
         private readonly string $logDirectory,
+        private readonly TranslatorInterface $translator,
     ) {
     }
 
@@ -52,12 +54,12 @@ class ProcessExecutionCrudController extends AbstractCrudController
         return [
             TextField::new('code'),
             EnumField::new('status'),
-            DateTimeField::new('startDate')->setFormat('Y/M/dd H:mm:ss'),
-            DateTimeField::new('endDate')->setFormat('Y/M/dd H:mm:ss'),
+            DateTimeField::new('startDate')->setFormat('short', 'medium'),
+            DateTimeField::new('endDate')->setFormat('short', 'medium'),
             TextField::new('source')->setTemplatePath('@CleverAgeUiProcess/admin/field/process_source.html.twig'),
             TextField::new('target')->setTemplatePath('@CleverAgeUiProcess/admin/field/process_target.html.twig'),
             TextField::new('duration')->formatValue(function ($value, ProcessExecution $entity) {
-                return $entity->duration(); // returned format can be changed here
+                return $entity->duration($this->translator->trans('%H hour(s) %I min(s) %S s')); // returned format can be changed here
             }),
             ArrayField::new('report')->setTemplatePath('@CleverAgeUiProcess/admin/field/report.html.twig'),
             ContextField::new('context'),

@@ -21,14 +21,14 @@ Timezone: Fuseau horaire
 Locale: Locale
 ProcessExecution: Exécution des processus
 Code: Code
-Status: Status
+Status: Statut
 Start Date: Date de début
 End Date: Date de fin
 Source: Source
 Target: Destination
 Duration: Durée
 Report: Rapport
-Context: Context
+Context: Contexte
 Launch: Exécuter
 View executions: Voir les éxécutions
 Process code: Code du processus
@@ -38,17 +38,22 @@ LogRecord: Logs
 Level: Niveau
 Message: Message
 Created At: Date de création
-Has context info ?: Context ?
+Has context info ?: Contexte ?
 ProcessSchedule: Planificateur
 To run scheduler, ensure "bin/console messenger:consume scheduler_cron" console is alive. See https://symfony.com/doc/current/messenger.html#supervisor-configuration.: "Pour fonctionner, assurez vous que la commande \"bin/console messenger:consume scheduler_cron\" soit exécutée. Plus d''informations sur https://symfony.com/doc/current/messenger.html#supervisor-configuration."
 Delete: Supprimer
 Type: Type
 Expression: Expression
 Next Execution: Prochaîne exécution
-Input: Input
+Input: Entrée
 General: Général
-Context (key/value): Context (clé/valeur)
+Context (key/value): Contexte (clé/valeur)
 key: clé
 value: valeur
-Context Key: Context clé
-Context Value: Context valeur
+Context Key: Contexte clé
+Context Value: Contexte valeur
+"%H hour(s) %I min(s) %S s": "%H heure(s) %I minute(s) %S seconde(s)"
+Duration (in seconds): Durée (en secondes)
+Run process: Exécuter le processus
+Do you really want to run process %process% in background: Voulez-vous vraiment exécuter le processus %process% en arrière plan
+Confirm: Confirmer

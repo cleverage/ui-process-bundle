@@ -13,8 +13,16 @@ declare(strict_types=1);
 
 namespace CleverAge\UiProcessBundle\Entity\Enum;
 
-enum ProcessScheduleType: string
+use Symfony\Contracts\Translation\TranslatableInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
+
+enum ProcessScheduleType: string implements TranslatableInterface
 {
     case CRON = 'cron';
     case EVERY = 'every';
+
+    public function trans(TranslatorInterface $translator, ?string $locale = null): string
+    {
+        return $translator->trans('enum.process_schedule_type.'.$this->value, domain: 'enums', locale: $locale);
+    }
 }
