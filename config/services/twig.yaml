@@ -26,6 +26,8 @@ services:
     cleverage_ui_process.twig.log_level_extension_runtime:
         class: CleverAge\UiProcessBundle\Twig\Runtime\LogLevelExtensionRuntime
         public: false
+        calls:
+            - [setTranslator, ['@translator']]
         tags:
             - { name: 'twig.runtime' }
 

@@ -1,2 +1,2 @@
 {% set class = field.value.value == 'failed' ? 'danger' : 'success' %}
-<span class="badge badge-{{ class }}">{{ field.value.value }}</span>
+<span class="badge badge-{{ class }}">{{ field.value|trans() }}</span>

@@ -51,7 +51,7 @@ class LogRecordCrudController extends AbstractCrudController
         return [
             LogLevelField::new('level'),
             TextField::new('message')->setMaxLength(512),
-            DateTimeField::new('createdAt')->setFormat('Y/M/dd H:mm:ss'),
+            DateTimeField::new('createdAt')->setFormat('short', 'medium'),
             ContextField::new('context')
                 ->onlyOnDetail(),
             BooleanField::new('contextIsEmpty', 'Has context info ?')
