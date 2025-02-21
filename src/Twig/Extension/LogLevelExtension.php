@@ -23,6 +23,7 @@ class LogLevelExtension extends AbstractExtension
     {
         return [
             new TwigFunction('log_label', [LogLevelExtensionRuntime::class, 'getLabel']),
+            new TwigFunction('log_translation', [LogLevelExtensionRuntime::class, 'getTranslation']),
             new TwigFunction('log_css_class', [LogLevelExtensionRuntime::class, 'getCssClass']),
         ];
     }

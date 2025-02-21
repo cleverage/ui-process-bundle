@@ -30,8 +30,8 @@
                 {% endif %}
                 <tr>
                     <td>{{ process.code }}</td>
-                    <td>{% if lastExecution is not null %}{{ lastExecution.startDate|date('Y/m/d H:i:s') }}{% endif %}</td>
-                    <td><span class="badge badge-{{ statusClass }}">{% if lastExecution is not null %}{{ lastExecution.status.value }}{% endif %}</span></td>
+                    <td>{% if lastExecution is not null %}{{ IntlFormatterService.formatDateTime(lastExecution.startDate, 'short', 'medium') }}{% endif %}</td>
+                    <td><span class="badge badge-{{ statusClass }}">{% if lastExecution is not null %}{{ lastExecution.status|trans() }}{% endif %}</span></td>
                     <td>{% if process.options.ui.source is defined %}{{ process.options.ui.source }}{% endif %}</td>
                     <td>{% if process.options.ui.target is defined %}{{ process.options.ui.target }}{% endif %}</td>
                     <td class="text-center">

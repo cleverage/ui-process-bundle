@@ -1,0 +1,15 @@
+enum.process_execution_status.started: 'Started'
+enum.process_execution_status.finish: 'Finished'
+enum.process_execution_status.failed: 'Failed'
+
+enum.process_schedule_type.cron: 'Cron'
+enum.process_schedule_type.every: 'Every date'
+
+enum.log_level.debug: 'Debug'
+enum.log_level.info: 'Info'
+enum.log_level.notice: 'Notice'
+enum.log_level.warning: 'Warning'
+enum.log_level.error: 'Error'
+enum.log_level.critical: 'Critical'
+enum.log_level.alert: 'Alert'
+enum.log_level.emergency: 'Emergency'

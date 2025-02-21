@@ -12,5 +12,7 @@ services:
             $context: '@EasyCorp\Bundle\EasyAdminBundle\Factory\AdminContextFactory'
             $logDirectory: '%kernel.logs_dir%'
             $processExecutionRepository: '@cleverage_ui_process.repository.process_execution'
+            $intlFormatter: '@EasyCorp\Bundle\EasyAdminBundle\Intl\IntlFormatter'
+            $translator: '@translator'
         tags:
             - { name: 'controller.service_arguments' }

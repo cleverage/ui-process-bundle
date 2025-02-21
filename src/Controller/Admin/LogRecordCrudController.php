@@ -51,7 +51,7 @@ class LogRecordCrudController extends AbstractCrudController
         return [
             LogLevelField::new('level'),
             TextField::new('message')->setMaxLength(512),
-            DateTimeField::new('createdAt')->setFormat('Y/M/dd H:mm:ss'),
+            DateTimeField::new('createdAt')->setFormat('short', 'medium'),
             ContextField::new('context')
                 ->onlyOnDetail(),
             BooleanField::new('contextIsEmpty', 'Has context info ?')
@@ -87,9 +87,14 @@ class LogRecordCrudController extends AbstractCrudController
         $processList = array_map(fn (ProcessConfiguration $cfg) => $cfg->getCode(), $processList);
 
         return $filters->add(
-            LogProcessFilter::new('process', $processList, $id)
+            LogProcessFilter::new('Process', $processList, $id)
         )->add(
-            ChoiceFilter::new('level')->setChoices(array_combine(Level::NAMES, Level::VALUES))
+            ChoiceFilter::new('level')
+                ->setTranslatableChoices(array_combine(
+                    Level::VALUES,
+                    array_map(fn ($value) => 'enum.log_level.'.strtolower((string) $value), Level::NAMES)
+                ))
+                ->setFormTypeOption('translation_domain', 'enums'),
         )->add('message')->add('context')->add('createdAt');
     }
 }
