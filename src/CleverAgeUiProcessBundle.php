@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace CleverAge\UiProcessBundle;
 
+use CleverAge\UiProcessBundle\DependencyInjection\CompilerPass\SecurityRolesCompilerPass;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 
 class CleverAgeUiProcessBundle extends Bundle
@@ -20,5 +22,10 @@ class CleverAgeUiProcessBundle extends Bundle
     public function getPath(): string
     {
         return \dirname(__DIR__);
+    }
+
+    public function build(ContainerBuilder $container)
+    {
+        $container->addCompilerPass(new SecurityRolesCompilerPass());
     }
 }
