@@ -20,11 +20,12 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Attribute\AsTargetedValueResolver;
 use Symfony\Component\HttpKernel\Controller\ValueResolverInterface;
 use Symfony\Component\HttpKernel\ControllerMetadata\ArgumentMetadata;
+use Symfony\Component\Serializer\SerializerInterface;
 
 #[AsTargetedValueResolver('http_process_execution')]
 readonly class HttpProcessExecuteValueResolver implements ValueResolverInterface
 {
-    public function __construct(private string $storageDir)
+    public function __construct(private string $storageDir, private SerializerInterface $serializer)
     {
     }
 
@@ -33,13 +34,31 @@ readonly class HttpProcessExecuteValueResolver implements ValueResolverInterface
      */
     public function resolve(Request $request, ArgumentMetadata $argument): iterable
     {
-        $input = $request->get('input', $request->files->get('input'));
-        if ($input instanceof UploadedFile) {
-            $uploadFileName = $this->storageDir.\DIRECTORY_SEPARATOR.date('YmdHis').'_'.uniqid().'_'.$input->getClientOriginalName();
-            (new Filesystem())->dumpFile($uploadFileName, $input->getContent());
-            $input = $uploadFileName;
-        }
+        $all = $request->request->all();
+        try {
+            if ([] === $all) {
+                $httpProcessExecution = $this->serializer->deserialize(
+                    $request->getContent(),
+                    HttpProcessExecution::class,
+                    'json'
+                );
+            } else {
+                $input = $request->get('input', $request->files->get('input'));
+                if ($input instanceof UploadedFile) {
+                    $uploadFileName = $this->storageDir.\DIRECTORY_SEPARATOR.date('YmdHis').'_'.uniqid().'_'.$input->getClientOriginalName();
+                    (new Filesystem())->dumpFile($uploadFileName, $input->getContent());
+                    $input = $uploadFileName;
+                }
+                $httpProcessExecution = new HttpProcessExecution(
+                    $request->get('code'),
+                    $input,
+                    $request->get('context', [])
+                );
+            }
 
-        return [new HttpProcessExecution($request->get('code'), $input, $request->get('context', []))];
+            return [$httpProcessExecution];
+        } catch (\Throwable) {
+            return [new HttpProcessExecution()];
+        }
     }
 }
