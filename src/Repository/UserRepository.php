@@ -13,19 +13,19 @@ declare(strict_types=1);
 
 namespace CleverAge\UiProcessBundle\Repository;
 
-use CleverAge\UiProcessBundle\Entity\ProcessScheduleInterface;
+use CleverAge\UiProcessBundle\Entity\UserInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 
 /**
- * @template T of ProcessScheduleInterface
+ * @template T of UserInterface
  *
- * @template-extends EntityRepository<ProcessScheduleInterface>
+ * @template-extends EntityRepository<UserInterface>
  */
-class ProcessScheduleRepository extends EntityRepository implements ProcessScheduleRepositoryInterface
+class UserRepository extends EntityRepository implements UserRepositoryInterface
 {
     /**
-     * @param class-string<ProcessScheduleInterface> $className
+     * @param class-string<UserInterface> $className
      */
     public function __construct(EntityManagerInterface $em, string $className)
     {

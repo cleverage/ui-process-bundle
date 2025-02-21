@@ -19,6 +19,82 @@ Remember to add the following line to `config/bundles.php` (not required if Symf
 CleverAge\UiProcessBundle\CleverAgeUiProcessBundle::class => ['all' => true],
 ```
 
+## Doctrine ORM Configuration
+
+Add these in the config mapping definition (or enable [auto_mapping](https://symfony.com/doc/current/reference/configuration/doctrine.html#mapping-configuration)):
+
+```yaml
+# config/packages/doctrine.yaml
+
+doctrine:
+  orm:
+    mappings:
+      CleverAgeUiProcessBundle: ~
+```
+
+And then create the corresponding entities:
+
+```php
+// src/Entity/LogRecord.php
+
+use Doctrine\ORM\Mapping as ORM;
+use CleverAge\UiProcessBundle\Entity\LogRecord as BaseLogRecord;
+
+#[ORM\Entity]
+#[ORM\Table]
+class LogRecord extends BaseLogRecord
+{
+}
+```
+
+```php
+// src/Entity/ProcessExecution.php
+
+use Doctrine\ORM\Mapping as ORM;
+use CleverAge\UiProcessBundle\Entity\ProcessExecution as BaseProcessExecution;
+
+#[ORM\Entity]
+#[ORM\Table]
+class ProcessExecution extends BaseProcessExecution
+{
+}
+```
+
+```php
+// src/Entity/ProcessSchedule.php
+
+use Doctrine\ORM\Mapping as ORM;
+use CleverAge\UiProcessBundle\Entity\ProcessSchedule as BaseProcessSchedule;
+
+#[ORM\Entity]
+#[ORM\Table]
+class ProcessSchedule extends BaseProcessSchedule
+{
+}
+```
+
+```php
+// src/Entity/User.php
+
+use Doctrine\ORM\Mapping as ORM;
+use CleverAge\UiProcessBundle\Entity\User as BaseUser;
+
+#[ORM\Entity]
+#[ORM\Table(name: 'process_user')]
+class User extends BaseUser
+{
+}
+```
+
+So, update your schema:
+
+```bash
+bin/console doctrine:schema:update --force
+```
+or use [DoctrineMigrationsBundle](https://github.com/doctrine/DoctrineMigrationsBundle)
+
+And create a User using `cleverage:ui-process:user-create` console.
+
 ## Import routes
 
 ```yaml
@@ -26,8 +102,6 @@ ui-process-bundle:
   resource: '@CleverAgeUiProcessBundle/src/Controller'
   type: attribute
 ```
-* Run doctrine migration
-* Create a user using `cleverage:ui-process:user-create` console.
 
 Now you can access UI Process via http://your-domain.com/process
 

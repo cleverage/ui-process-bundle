@@ -13,33 +13,32 @@ declare(strict_types=1);
 
 namespace CleverAge\UiProcessBundle\Repository;
 
-use CleverAge\UiProcessBundle\Entity\LogRecord;
-use CleverAge\UiProcessBundle\Entity\ProcessExecution;
+use CleverAge\UiProcessBundle\Entity\ProcessExecutionInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 
 /**
- * @extends EntityRepository<ProcessExecution>
+ * @template T of ProcessExecutionInterface
  *
- * @method ProcessExecution|null find($id, $lockMode = null, $lockVersion = null)
- * @method ProcessExecution|null findOneBy(mixed[] $criteria, string[] $orderBy = null)
- * @method ProcessExecution[]    findAll()
- * @method ProcessExecution[]    findBy(mixed[] $criteria, string[] $orderBy = null, $limit = null, $offset = null)
+ * @template-extends EntityRepository<ProcessExecutionInterface>
  */
-class ProcessExecutionRepository extends EntityRepository
+class ProcessExecutionRepository extends EntityRepository implements ProcessExecutionRepositoryInterface
 {
-    public function __construct(EntityManagerInterface $em)
+    /**
+     * @param class-string<ProcessExecutionInterface> $className
+     */
+    public function __construct(EntityManagerInterface $em, string $className, private readonly string $logRecordClassName)
     {
-        parent::__construct($em, $em->getClassMetadata(ProcessExecution::class));
+        parent::__construct($em, $em->getClassMetadata($className));
     }
 
-    public function save(ProcessExecution $processExecution): void
+    public function save(ProcessExecutionInterface $processExecution): void
     {
         $this->getEntityManager()->persist($processExecution);
         $this->getEntityManager()->flush();
     }
 
-    public function getLastProcessExecution(string $code): ?ProcessExecution
+    public function getLastProcessExecution(string $code): ?ProcessExecutionInterface
     {
         $qb = $this->createQueryBuilder('pe');
 
@@ -51,11 +50,11 @@ class ProcessExecutionRepository extends EntityRepository
             ->getOneOrNullResult();
     }
 
-    public function hasLogs(ProcessExecution $processExecution): bool
+    public function hasLogs(ProcessExecutionInterface $processExecution): bool
     {
         $qb = $this->createQueryBuilder('pe')
             ->select('count(lr.id)')
-            ->join(LogRecord::class, 'lr', 'WITH', 'lr.processExecution = pe')
+            ->join($this->logRecordClassName, 'lr', 'WITH', 'lr.processExecution = pe')
             ->where('pe.id = :id')
             ->setParameter('id', $processExecution->getId()
             );

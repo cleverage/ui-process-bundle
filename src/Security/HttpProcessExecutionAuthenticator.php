@@ -13,8 +13,7 @@ declare(strict_types=1);
 
 namespace CleverAge\UiProcessBundle\Security;
 
-use CleverAge\UiProcessBundle\Entity\User;
-use Doctrine\ORM\EntityManagerInterface;
+use CleverAge\UiProcessBundle\Repository\UserRepositoryInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -28,7 +27,7 @@ use Symfony\Component\Security\Http\Authenticator\Passport\SelfValidatingPasspor
 
 class HttpProcessExecutionAuthenticator extends AbstractAuthenticator
 {
-    public function __construct(private readonly EntityManagerInterface $entityManager)
+    public function __construct(private readonly UserRepositoryInterface $userRepository)
     {
     }
 
@@ -44,7 +43,7 @@ class HttpProcessExecutionAuthenticator extends AbstractAuthenticator
         }
         $token = $request->headers->get('Authorization');
         $token = str_replace('Bearer ', '', $token ?? '');
-        $user = $this->entityManager->getRepository(User::class)->findOneBy(
+        $user = $this->userRepository->findOneBy(
             ['token' => (new Pbkdf2PasswordHasher())->hash($token)]
         );
         if (null === $user) {

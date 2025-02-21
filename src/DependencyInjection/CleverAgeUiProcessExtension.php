@@ -33,12 +33,18 @@ final class CleverAgeUiProcessExtension extends Extension implements PrependExte
 
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
+
         $container->getDefinition(UserCrudController::class)
             ->setArgument('$roles', array_combine($config['security']['roles'], $config['security']['roles']));
         $container->getDefinition('cleverage_ui_process.monolog_handler.process')
             ->addMethodCall('setReportIncrementLevel', [$config['logs']['report_increment_level']]);
         $container->getDefinition(ProcessDashboardController::class)
             ->setArgument('$logoPath', $config['design']['logo_path']);
+
+        $container->setParameter('cleverage_ui_process.entity.log_record.class', $config['class']['log_record']);
+        $container->setParameter('cleverage_ui_process.entity.process_execution.class', $config['class']['process_execution']);
+        $container->setParameter('cleverage_ui_process.entity.process_schedule.class', $config['class']['process_schedule']);
+        $container->setParameter('cleverage_ui_process.entity.user.class', $config['class']['user']);
     }
 
     /**

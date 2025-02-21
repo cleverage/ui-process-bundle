@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping">
+    <mapped-superclass name="CleverAge\UiProcessBundle\Entity\LogRecord">
+        <indexes>
+            <index name="idx_log_record_level" columns="level" />
+            <index name="idx_log_record_created_at" columns="created_at" />
+        </indexes>
+
+        <id name="id" column="id" type="integer">
+            <generator strategy="AUTO" />
+        </id>
+        <field name="channel" type="string" length="64" />
+        <field name="level" type="integer" />
+        <field name="message" type="string" length="512" />
+        <field name="context" type="json" />
+        <field name="createdAt" type="datetime_immutable" />
+        <many-to-one field="processExecution" target-entity="CleverAge\UiProcessBundle\Entity\ProcessExecutionInterface">
+            <join-column name="process_execution_id" referenced-column-name="id" on-delete="CASCADE" nullable="false" />
+        </many-to-one>
+    </mapped-superclass>
+</doctrine-mapping>
