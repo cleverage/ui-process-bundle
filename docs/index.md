@@ -52,12 +52,25 @@ That's all, now you can launch a process via http post request
 ***Curl sample***
 ```bash
 make bash
-curl --location 'http://apache2/http/process/execute?code=demo.die' \
---header 'Authorization: Bearer 3da8409b5f5b640fb0c43d68e8ac8d23' \
---form 'input=@"/file.csv"' \
---form 'context[context_1]="FOO"' \
---form 'context[context_2]="BAR"'
+curl --location 'http://localhost/http/process/execute' \
+--header 'Authorization: Bearer myBearerToken' \
+--form 'input=@"/path/to/your/file.csv"' \
+--form 'code="demo.dummy"' \
+--form 'context="{\"foo\": \"bar\"}"'
 ```
+
+```bash
+make bash
+curl --location 'http://localhost/http/process/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer d641d254aed12733758a3a4247559868' \
+--header 'Cookie: PHPSESSID=m8l9s5sniknv1b0jb798f8sri7; main_auth_profile_token=2f3d24' \
+--data '{
+"code": "demo.die",
+"context": {"foo": "bar"}
+}'
+```
+
 * Query string code parameter must be a valid process code
 * Header Authorization: Bearer is the previously generated token
 * input could be string or file representation
