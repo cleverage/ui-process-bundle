@@ -59,9 +59,7 @@ class DoctrineProcessHandler extends AbstractProcessingHandler
             }
         }
         $this->em?->flush();
-        foreach ($this->records as $record) {
-            $this->em?->detach($record);
-        }
+        $this->em?->clear();
         $this->records = new ArrayCollection();
     }
 
@@ -70,6 +68,7 @@ class DoctrineProcessHandler extends AbstractProcessingHandler
         $this->records->add($record);
         if (500 === $this->records->count()) {
             $this->flush();
+            $this->em?->clear();
         }
     }
 }
