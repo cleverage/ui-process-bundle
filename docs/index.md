@@ -91,12 +91,12 @@ See more details about ***messenger:consume*** command in consume message sectio
 ## Consume Messages
 Symfony messenger is used in order to run process via UI or schedule process
 
-*To consume process launched via UI make sure the following command is running*
+* To consume process launched via UI make sure the following command is running*
 ```bash
 bin/console messenger:consume execute_process
 ```
 
-*To consume scheduled process make sure the following command is running*
+* To consume scheduled process make sure the following command is running*
 ```bash
 bin/console messenger:consume scheduler_cron
 ```
@@ -143,6 +143,17 @@ user=www-data
 killasgroup=true
 stopasgroup=true
 ``` 
+
+## Troubleshooting
+
+### PHP Fatal error: Allowed memory size of xxx bytes exhausted
+
+When `store_in_database` option is set, with lower value of `database_level` option, the process may generate many LogRecord.
+On debug environment, profiling too much queries cause memory exhaustion. So, you can :
+- Set `doctrine.dbal.profiling_collect_backtrace: false`
+- Increase `memory_limit` in php.ini
+- Set `clever_age_ui_process.logs.store_in_database: false` or improve value of `clever_age_ui_process.logs.database_level`
+- Use `--no-debug` flag for `cleverage:process:execute`
 
 ## Reference
 
