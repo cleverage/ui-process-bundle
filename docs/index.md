@@ -19,17 +19,39 @@ Remember to add the following line to `config/bundles.php` (not required if Symf
 CleverAge\UiProcessBundle\CleverAgeUiProcessBundle::class => ['all' => true],
 ```
 
-## Import routes
+## Configuration
+
+### Import routes
 
 ```yaml
 ui-process-bundle:
   resource: '@CleverAgeUiProcessBundle/src/Controller'
   type: attribute
 ```
+
+### Doctrine ORM Configuration
+
 * Run doctrine migration
 * Create a user using `cleverage:ui-process:user-create` console.
 
 Now you can access UI Process via http://your-domain.com/process
+
+## Full configuration
+
+```yaml
+# config/packages/clever_age_ui_process.yaml
+
+clever_age_ui_process:
+  security:
+    roles: ['ROLE_ADMIN'] # Roles displayed inside user edit form
+  logs:
+    store_in_database: true # enable/disable store log in database (log_record table)
+    database_level: Debug (on dev env) or Info # min log level to store log record in database
+    file_level: Debug (on dev env) or Info # min log level to store log record in file
+    report_increment_level: Warning # min log level to increment process execution report
+  design:
+    logo_path: 'bundles/cleverageuiprocess/logo.jpg' # logo displayed in UI navigation toolbar
+```
 
 ## Features
 
@@ -51,7 +73,6 @@ That's all, now you can launch a process via http post request
 
 ***Curl sample***
 ```bash
-make bash
 curl --location 'http://localhost/http/process/execute' \
 --header 'Authorization: Bearer myBearerToken' \
 --form 'input=@"/path/to/your/file.csv"' \
@@ -60,7 +81,6 @@ curl --location 'http://localhost/http/process/execute' \
 ```
 
 ```bash
-make bash
 curl --location 'http://localhost/http/process/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer d641d254aed12733758a3a4247559868' \
@@ -154,7 +174,3 @@ On debug environment, profiling too much queries cause memory exhaustion. So, yo
 - Increase `memory_limit` in php.ini
 - Set `clever_age_ui_process.logs.store_in_database: false` or improve value of `clever_age_ui_process.logs.database_level`
 - Use `--no-debug` flag for `cleverage:process:execute`
-
-## Reference
-
-_TODO_

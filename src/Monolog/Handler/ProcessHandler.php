@@ -25,8 +25,9 @@ class ProcessHandler extends StreamHandler
     public function __construct(
         private readonly string $directory,
         private readonly ProcessExecutionManager $processExecutionManager,
+        int|string|Level $level = Level::Debug,
     ) {
-        parent::__construct($this->directory);
+        parent::__construct($this->directory, $level);
     }
 
     /**

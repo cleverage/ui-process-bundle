@@ -25,8 +25,9 @@ class DoctrineProcessHandler extends AbstractProcessingHandler
 {
     /** @var ArrayCollection<int, LogRecord> */
     private ArrayCollection $records;
-    private ?ProcessExecutionManager $processExecutionManager = null;
     private ?EntityManagerInterface $em = null;
+    private ?ProcessExecutionManager $processExecutionManager = null;
+    private bool $enabled = true;
 
     public function __construct(int|string|Level $level = Level::Debug, bool $bubble = true)
     {
@@ -44,6 +45,11 @@ class DoctrineProcessHandler extends AbstractProcessingHandler
         $this->processExecutionManager = $processExecutionManager;
     }
 
+    public function disable(): void
+    {
+        $this->enabled = false;
+    }
+
     public function __destruct()
     {
         $this->flush();
@@ -52,6 +58,9 @@ class DoctrineProcessHandler extends AbstractProcessingHandler
 
     public function flush(): void
     {
+        if (!$this->enabled) {
+            return;
+        }
         foreach ($this->records as $record) {
             if (($currentProcessExecution = $this->processExecutionManager?->getCurrentProcessExecution()) instanceof ProcessExecution) {
                 $entity = new \CleverAge\UiProcessBundle\Entity\LogRecord($record, $currentProcessExecution);
@@ -67,6 +76,9 @@ class DoctrineProcessHandler extends AbstractProcessingHandler
 
     protected function write(LogRecord $record): void
     {
+        if (!$this->enabled) {
+            return;
+        }
         $this->records->add($record);
         if (500 === $this->records->count()) {
             $this->flush();
