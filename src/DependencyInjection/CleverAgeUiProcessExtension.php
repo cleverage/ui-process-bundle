@@ -17,7 +17,6 @@ use CleverAge\UiProcessBundle\Controller\Admin\ProcessDashboardController;
 use CleverAge\UiProcessBundle\Controller\Admin\UserCrudController;
 use CleverAge\UiProcessBundle\Entity\User;
 use CleverAge\UiProcessBundle\Message\ProcessExecuteMessage;
-use Monolog\Level;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\Extension;
@@ -31,12 +30,25 @@ final class CleverAgeUiProcessExtension extends Extension implements PrependExte
     {
         $this->findServices($container, __DIR__.'/../../config/services');
 
-        $configuration = new Configuration();
+        /** @var string $env */
+        $env = $container->getParameter('kernel.environment');
+        $configuration = new Configuration($env);
         $config = $this->processConfiguration($configuration, $configs);
+
         $container->getDefinition(UserCrudController::class)
             ->setArgument('$roles', array_combine($config['security']['roles'], $config['security']['roles']));
+
         $container->getDefinition('cleverage_ui_process.monolog_handler.process')
-            ->addMethodCall('setReportIncrementLevel', [$config['logs']['report_increment_level']]);
+            ->setArgument('$level', $config['logs']['file_level'])
+            ->addMethodCall('setReportIncrementLevel', [$config['logs']['report_increment_level']])
+        ;
+        $container->getDefinition('cleverage_ui_process.monolog_handler.doctrine_process')
+            ->setArgument('$level', $config['logs']['database_level']);
+        if (!$config['logs']['store_in_database']) {
+            $container->getDefinition('cleverage_ui_process.monolog_handler.doctrine_process')
+                ->addMethodCall('disable');
+        }
+
         $container->getDefinition(ProcessDashboardController::class)
             ->setArgument('$logoPath', $config['design']['logo_path']);
     }
@@ -46,7 +58,6 @@ final class CleverAgeUiProcessExtension extends Extension implements PrependExte
      */
     public function prepend(ContainerBuilder $container): void
     {
-        $env = $container->getParameter('kernel.environment');
         $container->loadFromExtension(
             'monolog',
             [
@@ -59,50 +70,19 @@ final class CleverAgeUiProcessExtension extends Extension implements PrependExte
                         'type' => 'service',
                         'id' => 'cleverage_ui_process.monolog_handler.doctrine_process',
                     ],
+                    'pb_ui_file_filter' => [
+                        'type' => 'filter',
+                        'handler' => 'pb_ui_file',
+                        'channels' => ['cleverage_process', 'cleverage_process_task'],
+                    ],
+                    'pb_ui_orm_filter' => [
+                        'type' => 'filter',
+                        'handler' => 'pb_ui_orm',
+                        'channels' => ['cleverage_process', 'cleverage_process_task'],
+                    ],
                 ],
             ]
         );
-        if ('dev' === $env) {
-            $container->loadFromExtension(
-                'monolog',
-                [
-                    'handlers' => [
-                        'pb_ui_file_filter' => [
-                            'type' => 'filter',
-                            'min_level' => Level::Debug->name,
-                            'handler' => 'pb_ui_file',
-                            'channels' => ['cleverage_process', 'cleverage_process_task'],
-                        ],
-                        'pb_ui_orm_filter' => [
-                            'type' => 'filter',
-                            'min_level' => Level::Debug->name,
-                            'handler' => 'pb_ui_orm',
-                            'channels' => ['cleverage_process', 'cleverage_process_task'],
-                        ],
-                    ],
-                ]
-            );
-        } else {
-            $container->loadFromExtension(
-                'monolog',
-                [
-                    'handlers' => [
-                        'pb_ui_file_filter' => [
-                            'type' => 'filter',
-                            'min_level' => Level::Info->name,
-                            'handler' => 'pb_ui_file',
-                            'channels' => ['cleverage_process', 'cleverage_process_task'],
-                        ],
-                        'pb_ui_orm_filter' => [
-                            'type' => 'filter',
-                            'min_level' => Level::Info->name,
-                            'handler' => 'pb_ui_orm',
-                            'channels' => ['cleverage_process', 'cleverage_process_task'],
-                        ],
-                    ],
-                ]
-            );
-        }
         $container->loadFromExtension(
             'doctrine_migrations',
             [
