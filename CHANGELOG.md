@@ -1,3 +1,19 @@
+v2.1
+------
+
+## Fixes
+
+* [#42](https://github.com/cleverage/ui-process-bundle/issues/42) composer require dragonmantank/cron-expression because CronExpressionTrigger needs it
+* [#40](https://github.com/cleverage/ui-process-bundle/issues/40) Fix localisation issues
+* [#45](https://github.com/cleverage/ui-process-bundle/issues/45) Implement store_in_database & [database|file]_level configuration. Update documentation with full configuration.
+
+
+## Changes
+
+* [#34](https://github.com/cleverage/ui-process-bundle/issues/34) Improve process launch using http call.
+* [#33](https://github.com/cleverage/ui-process-bundle/issues/33) Add duration filter on Process Execution Crud.
+* [#47](https://github.com/cleverage/ui-process-bundle/issues/47) Add Troubleshooting section on documentation
+
 v2.0.2
 ------
 
