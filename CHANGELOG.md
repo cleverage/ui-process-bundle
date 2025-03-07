@@ -1,3 +1,10 @@
+v2.1.1
+------
+
+## Fixes
+
+* [#52](https://github.com/cleverage/ui-process-bundle/issues/52) Fix ProcessScheduleRepository definition to be bundled compliant
+
 v2.1
 ------
 
