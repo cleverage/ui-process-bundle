@@ -14,21 +14,21 @@ declare(strict_types=1);
 namespace CleverAge\UiProcessBundle\Repository;
 
 use CleverAge\UiProcessBundle\Entity\ProcessSchedule;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\EntityRepository;
 
 /**
- * @extends ServiceEntityRepository<ProcessSchedule>
+ * @extends EntityRepository<ProcessSchedule>
  *
  * @method ProcessSchedule|null find($id, $lockMode = null, $lockVersion = null)
  * @method ProcessSchedule|null findOneBy(mixed[] $criteria, string[] $orderBy = null)
  * @method ProcessSchedule[]    findAll()
  * @method ProcessSchedule[]    findBy(mixed[] $criteria, string[] $orderBy = null, $limit = null, $offset = null)
  */
-class ProcessScheduleRepository extends ServiceEntityRepository
+class ProcessScheduleRepository extends EntityRepository
 {
-    public function __construct(ManagerRegistry $registry)
+    public function __construct(EntityManagerInterface $em)
     {
-        parent::__construct($registry, ProcessSchedule::class);
+        parent::__construct($em, $em->getClassMetadata(ProcessSchedule::class));
     }
 }

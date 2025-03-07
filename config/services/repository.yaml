@@ -9,5 +9,4 @@ services:
         class: CleverAge\UiProcessBundle\Repository\ProcessScheduleRepository
         public: false
         arguments:
-            - '@doctrine'
-
+            - '@doctrine.orm.entity_manager'
