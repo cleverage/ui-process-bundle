@@ -52,7 +52,8 @@ readonly class HttpProcessExecuteValueResolver implements ValueResolverInterface
                 $httpProcessExecution = new HttpProcessExecution(
                     $request->get('code'),
                     $input,
-                    $request->get('context', [])
+                    $request->get('context', []),
+                    $request->request->getBoolean('queue', true),
                 );
             }
 
