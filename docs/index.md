@@ -174,3 +174,8 @@ On debug environment, profiling too much queries cause memory exhaustion. So, yo
 - Increase `memory_limit` in php.ini
 - Set `clever_age_ui_process.logs.store_in_database: false` or improve value of `clever_age_ui_process.logs.database_level`
 - Use `--no-debug` flag for `cleverage:process:execute`
+
+### {"message":"Missing auth token."} Response when launch process via http request
+
+If you use apache2 webserver, `SetEnvIfNoCase ^Authorization$ "(.+)" HTTP_AUTHORIZATION=$1` VirtualHost directive must be 
+uncomment to "force Apache to pass the Authorization header to PHP: required for "basic_auth" under PHP-FPM and FastCGI"
