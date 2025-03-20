@@ -23,7 +23,7 @@ use Symfony\Component\Validator\Constraints\Type;
 final readonly class HttpProcessExecution
 {
     /**
-     * @param array<string|int, mixed> $context
+     * @param string|array<string|int, mixed> $context
      */
     public function __construct(
         #[Sequentially(constraints: [new NotNull(message: 'Process code is required.'), new IsValidProcessCode()])]
@@ -31,6 +31,7 @@ final readonly class HttpProcessExecution
         public ?string $input = null,
         #[AtLeastOneOf(constraints: [new Json(), new Type('array')])]
         public string|array $context = [],
+        public bool $queue = true,
     ) {
     }
 }

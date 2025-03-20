@@ -75,9 +75,9 @@ That's all, now you can launch a process via http post request
 ```bash
 curl --location 'http://localhost/http/process/execute' \
 --header 'Authorization: Bearer myBearerToken' \
---form 'input=@"/path/to/your/file.csv"' \
---form 'code="demo.dummy"' \
---form 'context="{\"foo\": \"bar\"}"'
+--form 'code="demo.upload_and_run"' \
+--form 'input="/path/to/your/file.csv"' \
+--form 'context="{\"foo\": \"bar\", \"delimiter\": \";\"}"'
 ```
 
 ```bash
@@ -91,10 +91,18 @@ curl --location 'http://localhost/http/process/execute' \
 }'
 ```
 
+```bash
+curl --location 'http://localhost/http/process/execute' \
+--header 'Authorization: Bearer myBearerToken' \
+--form 'code="demo.dummy"' \
+--form 'queue="false"'
+```
+
 * Query string code parameter must be a valid process code
 * Header Authorization: Bearer is the previously generated token
 * input could be string or file representation
-* context you can pass multiple context values
+* you can pass multiple context values
+* queue define if the process should be queued (default) or directly run
 
 
 ### Scheduler

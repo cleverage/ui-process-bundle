@@ -14,5 +14,6 @@ services:
             $processExecutionRepository: '@cleverage_ui_process.repository.process_execution'
             $intlFormatter: '@EasyCorp\Bundle\EasyAdminBundle\Intl\IntlFormatter'
             $translator: '@translator'
+            $processManager: '@cleverage_process.manager.process'
         tags:
             - { name: 'controller.service_arguments' }
