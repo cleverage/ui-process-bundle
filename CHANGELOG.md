@@ -1,3 +1,10 @@
+v2.2
+------
+
+## Changes
+
+* [#54](https://github.com/cleverage/ui-process-bundle/issues/54) When Launch process via http request, add queue parameter which define if the process should be queued (default) or directly run
+
 v2.1.1
 ------
 
