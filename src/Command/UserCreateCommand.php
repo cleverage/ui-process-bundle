@@ -18,6 +18,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\QuestionHelper;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\Question;
@@ -43,16 +44,33 @@ class UserCreateCommand extends Command
         parent::__construct();
     }
 
+    protected function configure(): void
+    {
+        $this
+            ->addArgument('email', InputArgument::OPTIONAL, 'Email address')
+            ->addArgument('password', InputArgument::OPTIONAL, 'Password')
+        ;
+    }
+
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $style = new SymfonyStyle($input, $output);
-        $username = $this->ask('Please enter the email.', $style, [new Email()]);
 
-        $password = $this->askPassword(
-            (new Question('Please enter the user password.'))->setHidden(true)->setHiddenFallback(false),
-            $input,
-            $output
-        );
+        if ($input->getArgument('email')) {
+            $username = $input->getArgument('email');
+        } else {
+            $username = $this->ask('Please enter the email.', $style, [new Email()]);
+        }
+
+        if ($input->getArgument('password')) {
+            $password = $input->getArgument('password');
+        } else {
+            $password = $this->askPassword(
+                (new Question('Please enter the user password.'))->setHidden(true)->setHiddenFallback(false),
+                $input,
+                $output
+            );
+        }
 
         $user = new User();
         $user->setEmail($username);
