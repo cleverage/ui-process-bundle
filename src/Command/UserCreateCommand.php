@@ -56,13 +56,13 @@ class UserCreateCommand extends Command
     {
         $style = new SymfonyStyle($input, $output);
 
-        if ($input->getArgument('email')) {
+        if (!empty($input->getArgument('email'))) {
             $username = $input->getArgument('email');
         } else {
             $username = $this->ask('Please enter the email.', $style, [new Email()]);
         }
 
-        if ($input->getArgument('password')) {
+        if (!empty($input->getArgument('password'))) {
             $password = $input->getArgument('password');
         } else {
             $password = $this->askPassword(
