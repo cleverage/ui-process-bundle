@@ -22,12 +22,15 @@ use Symfony\Component\Scheduler\Schedule;
 use Symfony\Component\Scheduler\ScheduleProviderInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-readonly class CronScheduler implements ScheduleProviderInterface
+/**
+ * PHP 8.2 : Replace by readonly class.
+ */
+class CronScheduler implements ScheduleProviderInterface
 {
     public function __construct(
-        private ProcessScheduleRepository $repository,
-        private ValidatorInterface $validator,
-        private LoggerInterface $logger,
+        private readonly ProcessScheduleRepository $repository,
+        private readonly ValidatorInterface $validator,
+        private readonly LoggerInterface $logger,
     ) {
     }
 

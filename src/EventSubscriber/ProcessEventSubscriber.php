@@ -22,12 +22,15 @@ use CleverAge\UiProcessBundle\Monolog\Handler\ProcessHandler;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Uid\Uuid;
 
-final readonly class ProcessEventSubscriber implements EventSubscriberInterface
+/**
+ * PHP 8.2 : Replace by readonly class.
+ */
+final class ProcessEventSubscriber implements EventSubscriberInterface
 {
     public function __construct(
-        private ProcessHandler $processHandler,
-        private DoctrineProcessHandler $doctrineProcessHandler,
-        private ProcessExecutionManager $processExecutionManager,
+        private readonly ProcessHandler $processHandler,
+        private readonly DoctrineProcessHandler $doctrineProcessHandler,
+        private readonly ProcessExecutionManager $processExecutionManager,
     ) {
     }
 

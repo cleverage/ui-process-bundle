@@ -21,6 +21,9 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraint;
 
 /**
+ * PHP 8.2 : Replace by readonly class.
+ */
+/**
  * @phpstan-type UiOptions array{
  *      'source': ?string,
  *      'target': ?string,
@@ -32,9 +35,9 @@ use Symfony\Component\Validator\Constraint;
  *      'default': array{'input': mixed, 'context': array{array{'key': 'int|text', 'value':'int|text'}}}
  *  }
  */
-final readonly class ProcessConfigurationsManager
+final class ProcessConfigurationsManager
 {
-    public function __construct(private ProcessConfigurationRegistry $registry)
+    public function __construct(private readonly ProcessConfigurationRegistry $registry)
     {
     }
 

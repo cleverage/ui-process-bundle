@@ -20,10 +20,13 @@ use Symfony\Component\HttpKernel\Attribute\AsTargetedValueResolver;
 use Symfony\Component\HttpKernel\Controller\ValueResolverInterface;
 use Symfony\Component\HttpKernel\ControllerMetadata\ArgumentMetadata;
 
+/**
+ * PHP 8.2 : Replace by readonly class.
+ */
 #[AsTargetedValueResolver('process')]
-readonly class ProcessConfigurationValueResolver implements ValueResolverInterface
+class ProcessConfigurationValueResolver implements ValueResolverInterface
 {
-    public function __construct(private ProcessConfigurationRegistry $registry)
+    public function __construct(private readonly ProcessConfigurationRegistry $registry)
     {
     }
 
