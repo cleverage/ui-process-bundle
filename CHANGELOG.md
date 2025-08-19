@@ -1,3 +1,16 @@
+v2.3
+------
+
+## Changes
+
+* [#60](https://github.com/cleverage/ui-process-bundle/issues/60) Upgrade to Symfony 7.3 & PHP 8.4
+
+## Fixes
+
+* [#57](https://github.com/cleverage/ui-process-bundle/issues/57) add arguments to pass username and password to cleverage:ui-process:user-create
+* [#60](https://github.com/cleverage/ui-process-bundle/issues/60) Fix php version to >=8.1 according to cleverage/process-bundle
+* [#60](https://github.com/cleverage/ui-process-bundle/issues/60) Fix PHP 8.1 restrictions
+
 v2.2
 ------
 
