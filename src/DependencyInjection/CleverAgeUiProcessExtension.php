@@ -109,7 +109,7 @@ final class CleverAgeUiProcessExtension extends Extension implements PrependExte
                 'migrations_paths' => ['CleverAge\UiProcessBundle\Migrations' => \dirname(__DIR__).'/Migrations'],
             ]
         );
-        $container->loadFromExtension(
+        $container->prependExtensionConfig(
             'framework',
             [
                 'messenger' => [
