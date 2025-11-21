@@ -19,17 +19,39 @@ Remember to add the following line to `config/bundles.php` (not required if Symf
 CleverAge\UiProcessBundle\CleverAgeUiProcessBundle::class => ['all' => true],
 ```
 
-## Import routes
+## Configuration
+
+### Import routes
 
 ```yaml
 ui-process-bundle:
   resource: '@CleverAgeUiProcessBundle/src/Controller'
   type: attribute
 ```
+
+### Doctrine ORM Configuration
+
 * Run doctrine migration
 * Create a user using `cleverage:ui-process:user-create` console.
 
 Now you can access UI Process via http://your-domain.com/process
+
+## Full configuration
+
+```yaml
+# config/packages/clever_age_ui_process.yaml
+
+clever_age_ui_process:
+  security:
+    roles: ['ROLE_ADMIN'] # Roles displayed inside user edit form
+  logs:
+    store_in_database: true # enable/disable store log in database (log_record table)
+    database_level: Debug (on dev env) or Info # min log level to store log record in database
+    file_level: Debug (on dev env) or Info # min log level to store log record in file
+    report_increment_level: Warning # min log level to increment process execution report
+  design:
+    logo_path: 'bundles/cleverageuiprocess/logo.jpg' # logo displayed in UI navigation toolbar
+```
 
 ## Features
 
@@ -51,17 +73,36 @@ That's all, now you can launch a process via http post request
 
 ***Curl sample***
 ```bash
-make bash
-curl --location 'http://apache2/http/process/execute?code=demo.die' \
---header 'Authorization: Bearer 3da8409b5f5b640fb0c43d68e8ac8d23' \
---form 'input=@"/file.csv"' \
---form 'context[context_1]="FOO"' \
---form 'context[context_2]="BAR"'
+curl --location 'http://localhost/http/process/execute' \
+--header 'Authorization: Bearer myBearerToken' \
+--form 'code="demo.upload_and_run"' \
+--form 'input="/path/to/your/file.csv"' \
+--form 'context="{\"foo\": \"bar\", \"delimiter\": \";\"}"'
 ```
+
+```bash
+curl --location 'http://localhost/http/process/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer d641d254aed12733758a3a4247559868' \
+--header 'Cookie: PHPSESSID=m8l9s5sniknv1b0jb798f8sri7; main_auth_profile_token=2f3d24' \
+--data '{
+"code": "demo.die",
+"context": {"foo": "bar"}
+}'
+```
+
+```bash
+curl --location 'http://localhost/http/process/execute' \
+--header 'Authorization: Bearer myBearerToken' \
+--form 'code="demo.dummy"' \
+--form 'queue="false"'
+```
+
 * Query string code parameter must be a valid process code
 * Header Authorization: Bearer is the previously generated token
 * input could be string or file representation
-* context you can pass multiple context values
+* you can pass multiple context values
+* queue define if the process should be queued (default) or directly run
 
 
 ### Scheduler
@@ -78,12 +119,12 @@ See more details about ***messenger:consume*** command in consume message sectio
 ## Consume Messages
 Symfony messenger is used in order to run process via UI or schedule process
 
-*To consume process launched via UI make sure the following command is running*
+* To consume process launched via UI make sure the following command is running*
 ```bash
 bin/console messenger:consume execute_process
 ```
 
-*To consume scheduled process make sure the following command is running*
+* To consume scheduled process make sure the following command is running*
 ```bash
 bin/console messenger:consume scheduler_cron
 ```
@@ -131,6 +172,18 @@ killasgroup=true
 stopasgroup=true
 ``` 
 
-## Reference
+## Troubleshooting
 
-_TODO_
+### PHP Fatal error: Allowed memory size of xxx bytes exhausted
+
+When `store_in_database` option is set, with lower value of `database_level` option, the process may generate many LogRecord.
+On debug environment, profiling too much queries cause memory exhaustion. So, you can :
+- Set `doctrine.dbal.profiling_collect_backtrace: false`
+- Increase `memory_limit` in php.ini
+- Set `clever_age_ui_process.logs.store_in_database: false` or improve value of `clever_age_ui_process.logs.database_level`
+- Use `--no-debug` flag for `cleverage:process:execute`
+
+### {"message":"Missing auth token."} Response when launch process via http request
+
+If you use apache2 webserver, `SetEnvIfNoCase ^Authorization$ "(.+)" HTTP_AUTHORIZATION=$1` VirtualHost directive must be 
+uncomment to "force Apache to pass the Authorization header to PHP: required for "basic_auth" under PHP-FPM and FastCGI"

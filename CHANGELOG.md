@@ -1,3 +1,46 @@
+v2.3
+------
+
+## Changes
+
+* [#60](https://github.com/cleverage/ui-process-bundle/issues/60) Upgrade to Symfony 7.3 & PHP 8.4
+
+## Fixes
+
+* [#57](https://github.com/cleverage/ui-process-bundle/issues/57) add arguments to pass username and password to cleverage:ui-process:user-create
+* [#60](https://github.com/cleverage/ui-process-bundle/issues/60) Fix php version to >=8.1 according to cleverage/process-bundle
+* [#60](https://github.com/cleverage/ui-process-bundle/issues/60) Fix PHP 8.1 restrictions
+
+v2.2
+------
+
+## Changes
+
+* [#54](https://github.com/cleverage/ui-process-bundle/issues/54) When Launch process via http request, add queue parameter which define if the process should be queued (default) or directly run
+
+v2.1.1
+------
+
+## Fixes
+
+* [#52](https://github.com/cleverage/ui-process-bundle/issues/52) Fix ProcessScheduleRepository definition to be bundled compliant
+
+v2.1
+------
+
+## Fixes
+
+* [#42](https://github.com/cleverage/ui-process-bundle/issues/42) composer require dragonmantank/cron-expression because CronExpressionTrigger needs it
+* [#40](https://github.com/cleverage/ui-process-bundle/issues/40) Fix localisation issues
+* [#45](https://github.com/cleverage/ui-process-bundle/issues/45) Implement store_in_database & [database|file]_level configuration. Update documentation with full configuration.
+
+
+## Changes
+
+* [#34](https://github.com/cleverage/ui-process-bundle/issues/34) Improve process launch using http call.
+* [#33](https://github.com/cleverage/ui-process-bundle/issues/33) Add duration filter on Process Execution Crud.
+* [#47](https://github.com/cleverage/ui-process-bundle/issues/47) Add Troubleshooting section on documentation
+
 v2.0.2
 ------
 

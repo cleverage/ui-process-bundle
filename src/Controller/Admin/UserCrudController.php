@@ -32,6 +32,11 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\Pbkdf2PasswordHasher;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
+/**
+ * @phpstan-template TEntity of AbstractCrudController
+ *
+ * @phpstan-extends AbstractCrudController<User>
+ */
 #[IsGranted('ROLE_USER')]
 class UserCrudController extends AbstractCrudController
 {

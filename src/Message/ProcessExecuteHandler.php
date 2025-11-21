@@ -17,10 +17,13 @@ use CleverAge\ProcessBundle\Manager\ProcessManager;
 use CleverAge\UiProcessBundle\Monolog\Handler\ProcessHandler;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
+/**
+ * PHP 8.2 : Replace by readonly class.
+ */
 #[AsMessageHandler]
-readonly class ProcessExecuteHandler
+class ProcessExecuteHandler
 {
-    public function __construct(private ProcessManager $manager, private readonly ProcessHandler $processHandler)
+    public function __construct(private readonly ProcessManager $manager, private readonly ProcessHandler $processHandler)
     {
     }
 

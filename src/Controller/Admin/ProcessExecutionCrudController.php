@@ -34,6 +34,11 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
+/**
+ * @phpstan-template TEntity of AbstractCrudController
+ *
+ * @phpstan-extends AbstractCrudController<ProcessExecution>
+ */
 #[IsGranted('ROLE_USER')]
 class ProcessExecutionCrudController extends AbstractCrudController
 {
@@ -117,7 +122,9 @@ class ProcessExecutionCrudController extends AbstractCrudController
                     [
                         'process' => [
                             'comparison' => '=',
-                            'value' => $this->getContext()?->getEntity()->getInstance()->getId(),
+                            'value' => $this->getContext()?->getEntity()->getInstance() instanceof ProcessExecution
+                                ? $this->getContext()->getEntity()->getInstance()->getId()
+                                : null,
                         ],
                     ]
                 )
