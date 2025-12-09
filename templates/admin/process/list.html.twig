@@ -1,6 +1,6 @@
 {# @var urlGenerator \EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator #}
-{% extends ea.templatePath('layout') %}
-{% trans_default_domain ea.i18n.translationDomain %}
+{% extends ea().templatePath('layout') %}
+{% trans_default_domain ea().i18n.translationDomain %}
 
 {% block content_title %}{{ 'Processes'|trans }}{% endblock %}
 

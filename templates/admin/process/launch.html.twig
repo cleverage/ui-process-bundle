@@ -1,5 +1,5 @@
-{% extends ea.templatePath('layout') %}
-{% trans_default_domain ea.i18n.translationDomain %}
+{% extends ea().templatePath('layout') %}
+{% trans_default_domain ea().i18n.translationDomain %}
 
 {% block main %}
     {% form_theme form '@EasyAdmin/crud/form_theme.html.twig' %}
