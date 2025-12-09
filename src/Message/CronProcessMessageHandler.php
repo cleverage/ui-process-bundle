@@ -16,13 +16,10 @@ namespace CleverAge\UiProcessBundle\Message;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Messenger\MessageBusInterface;
 
-/**
- * PHP 8.2 : Replace by readonly class.
- */
 #[AsMessageHandler]
-final class CronProcessMessageHandler
+readonly final class CronProcessMessageHandler
 {
-    public function __construct(private readonly MessageBusInterface $bus)
+    public function __construct(private MessageBusInterface $bus)
     {
     }
 

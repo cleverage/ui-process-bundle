@@ -15,12 +15,9 @@ namespace CleverAge\UiProcessBundle\Message;
 
 use CleverAge\UiProcessBundle\Entity\ProcessSchedule;
 
-/**
- * PHP 8.2 : Replace by readonly class.
- */
-final class CronProcessMessage
+readonly final class CronProcessMessage
 {
-    public function __construct(public readonly ProcessSchedule $processSchedule)
+    public function __construct(public ProcessSchedule $processSchedule)
     {
     }
 }
