@@ -22,13 +22,10 @@ use Symfony\Component\HttpKernel\Controller\ValueResolverInterface;
 use Symfony\Component\HttpKernel\ControllerMetadata\ArgumentMetadata;
 use Symfony\Component\Serializer\SerializerInterface;
 
-/**
- * PHP 8.2 : Replace by readonly class.
- */
 #[AsTargetedValueResolver('http_process_execution')]
-class HttpProcessExecuteValueResolver implements ValueResolverInterface
+readonly class HttpProcessExecuteValueResolver implements ValueResolverInterface
 {
-    public function __construct(private readonly string $storageDir, private readonly SerializerInterface $serializer)
+    public function __construct(private string $storageDir, private SerializerInterface $serializer)
     {
     }
 

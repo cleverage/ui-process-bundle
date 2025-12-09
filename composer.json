@@ -22,7 +22,7 @@
     {
       "name": "Xavier Marchegay",
       "email": "xmarchegay@clever-age.com",
-      "role": "Developer"
+      "role": "Lead Developer"
     }
   ],
   "autoload": {
@@ -36,24 +36,24 @@
     }
   },
   "require": {
-    "php": ">=8.1",
+    "php": ">=8.2",
     "ext-ctype": "*",
     "ext-iconv": "*",
-    "cleverage/process-bundle": "^4.0",
-    "doctrine/common": "^3.0",
-    "doctrine/dbal": "^2.9 || ^3.0",
-    "doctrine/doctrine-bundle": "^2.5",
-    "doctrine/doctrine-migrations-bundle": "^3.2",
-    "doctrine/orm": "^2.9 || ^3.0",
-    "dragonmantank/cron-expression": "^3.4",
-    "easycorp/easyadmin-bundle": "^4.8",
-    "symfony/doctrine-messenger": "^6.4|^7.3",
-    "symfony/dotenv": "^6.4|^7.3",
-    "symfony/messenger": "^6.4|^7.3",
-    "symfony/runtime": "^6.4|^7.3",
-    "symfony/scheduler": "^6.4|^7.3",
-    "symfony/string": "^6.4|^7.3",
-    "symfony/uid": "^6.4|^7.3"
+    "cleverage/process-bundle": "^5.0",
+    "doctrine/common": "^3.5",
+    "doctrine/dbal": "^3.10 || ^4.4",
+    "doctrine/doctrine-bundle": "^2.18 || ^3.1",
+    "doctrine/doctrine-migrations-bundle": "^3.7 || ^4",
+    "doctrine/orm": "^2.20 || ^3.5",
+    "dragonmantank/cron-expression": "^3.6",
+    "easycorp/easyadmin-bundle": "^4.27",
+    "symfony/doctrine-messenger": "^6.4 || ^7.4 || ^8",
+    "symfony/dotenv": "^6.4 || ^7.4 || ^8",
+    "symfony/messenger":"^6.4 || ^7.4 || ^8",
+    "symfony/runtime": "^6.4 || ^7.4 || ^8",
+    "symfony/scheduler": "^6.4 || ^7.4 || ^8",
+    "symfony/string":"^6.4 || ^7.4 || ^8",
+    "symfony/uid": "^6.4 || ^7.4 || ^8"
   },
   "require-dev": {
     "doctrine/doctrine-fixtures-bundle": "^3.4",
@@ -62,15 +62,15 @@
     "phpstan/phpstan": "*",
     "phpstan/phpstan-doctrine": "*",
     "phpstan/phpstan-symfony": "*",
-    "phpunit/phpunit": "<10.0",
+    "phpunit/phpunit": "*",
     "rector/rector": "*",
     "roave/security-advisories": "dev-latest",
-    "symfony/browser-kit": "^6.4|^7.3",
-    "symfony/css-selector": "^6.4|^7.3",
-    "symfony/debug-bundle": "^6.4|^7.3",
+    "symfony/browser-kit": "^6.4 || ^7.4 || ^8",
+    "symfony/css-selector": "^6.4 || ^7.4 || ^8",
+    "symfony/debug-bundle": "^6.4 || ^7.4 || ^8",
     "symfony/maker-bundle": "^1.31",
-    "symfony/web-profiler-bundle": "^6.4|^7.3",
-    "vincentlanglet/twig-cs-fixer": "^3.3"
+    "symfony/web-profiler-bundle": "^6.4 || ^7.4 || ^8",
+    "vincentlanglet/twig-cs-fixer": "^3.11"
   },
   "conflict": {
     "symfony/twig-bridge": "7.2.0",

@@ -34,7 +34,7 @@ class HttpProcessExecutionAuthenticator extends AbstractAuthenticator
 
     public function supports(Request $request): ?bool
     {
-        return 'http_process_execute' === $request->get('_route') && $request->isMethod(Request::METHOD_POST);
+        return 'http_process_execute' === $request->request->get('_route') && $request->isMethod(Request::METHOD_POST);
     }
 
     public function authenticate(Request $request): Passport

@@ -18,14 +18,11 @@ use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
 use CleverAge\UiProcessBundle\Repository\ProcessExecutionRepository;
 use Twig\Extension\RuntimeExtensionInterface;
 
-/**
- * PHP 8.2 : Replace by readonly class.
- */
-class ProcessExecutionExtensionRuntime implements RuntimeExtensionInterface
+readonly class ProcessExecutionExtensionRuntime implements RuntimeExtensionInterface
 {
     public function __construct(
-        private readonly ProcessExecutionRepository $processExecutionRepository,
-        private readonly ProcessConfigurationsManager $processConfigurationsManager,
+        private ProcessExecutionRepository $processExecutionRepository,
+        private ProcessConfigurationsManager $processConfigurationsManager,
     ) {
     }
 

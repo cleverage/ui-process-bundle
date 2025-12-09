@@ -50,8 +50,8 @@ class LaunchAction extends AbstractController
         ProcessConfigurationsManager $processConfigurationsManager,
         AdminContext $context,
     ): Response {
-        $processCode = $requestStack->getMainRequest()?->get('process');
-        if (null === $processCode) {
+        $processCode = (string) $requestStack->getMainRequest()?->request->get('process');
+        if ('' === $processCode) {
             throw new MissingProcessException();
         }
         $uiOptions = $processConfigurationsManager->getUiOptions($processCode);

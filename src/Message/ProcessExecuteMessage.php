@@ -13,15 +13,12 @@ declare(strict_types=1);
 
 namespace CleverAge\UiProcessBundle\Message;
 
-/**
- * PHP 8.2 : Replace by readonly class.
- */
-class ProcessExecuteMessage
+readonly class ProcessExecuteMessage
 {
     /**
      * @param mixed[] $context
      */
-    public function __construct(public readonly string $code, public readonly mixed $input, public readonly array $context = [])
+    public function __construct(public string $code, public mixed $input, public array $context = [])
     {
     }
 }
