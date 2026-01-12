@@ -15,7 +15,7 @@ namespace CleverAge\UiProcessBundle\Message;
 
 use CleverAge\UiProcessBundle\Entity\ProcessSchedule;
 
-readonly final class CronProcessMessage
+final readonly class CronProcessMessage
 {
     public function __construct(public ProcessSchedule $processSchedule)
     {

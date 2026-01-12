@@ -32,6 +32,6 @@ readonly class ProcessConfigurationValueResolver implements ValueResolverInterfa
      */
     public function resolve(Request $request, ArgumentMetadata $argument): iterable
     {
-        return [$this->registry->getProcessConfiguration((string)$request->request->get('process'))];
+        return [$this->registry->getProcessConfiguration((string) $request->request->get('process'))];
     }
 }

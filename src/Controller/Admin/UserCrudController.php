@@ -41,7 +41,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class UserCrudController extends AbstractCrudController
 {
     /** @param array<string, string> $roles */
-    public function __construct(private readonly array $roles)
+    public function __construct(private readonly array $roles, private readonly AdminContext $adminContext, private readonly AdminUrlGenerator $adminUrlGenerator)
     {
     }
 
@@ -103,20 +103,20 @@ class UserCrudController extends AbstractCrudController
                 ->addCssClass(''))->add(Crud::PAGE_EDIT, Action::new('generateToken')->linkToCrudAction('generateToken'));
     }
 
-    public function generateToken(AdminContext $adminContext, AdminUrlGenerator $adminUrlGenerator): Response
+    public function generateToken(): Response
     {
         /** @var User $user */
-        $user = $adminContext->getEntity()->getInstance();
+        $user = $this->adminContext->getEntity()->getInstance();
         $token = md5(uniqid(date('YmdHis')));
         $user->setToken((new Pbkdf2PasswordHasher())->hash($token));
         $this->persistEntity(
-            $this->container->get('doctrine')->getManagerForClass($adminContext->getEntity()->getFqcn()),
+            $this->container->get('doctrine')->getManagerForClass($this->adminContext->getEntity()->getFqcn()),
             $user
         );
         $this->addFlash('success', 'New token generated '.$token.' (keep it in secured area. This token will never be displayed anymore)');
 
         return $this->redirect(
-            $adminUrlGenerator
+            $this->adminUrlGenerator
                 ->setController(self::class)
                 ->setAction(Action::EDIT)
                 ->setEntityId($user->getId())

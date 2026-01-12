@@ -32,7 +32,7 @@ use Symfony\Component\Validator\Constraint;
  *      'default': array{'input': mixed, 'context': array{array{'key': 'int|text', 'value':'int|text'}}}
  *  }
  */
-readonly final class ProcessConfigurationsManager
+final readonly class ProcessConfigurationsManager
 {
     public function __construct(private ProcessConfigurationRegistry $registry)
     {

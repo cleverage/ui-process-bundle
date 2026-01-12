@@ -17,7 +17,7 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Messenger\MessageBusInterface;
 
 #[AsMessageHandler]
-readonly final class CronProcessMessageHandler
+final readonly class CronProcessMessageHandler
 {
     public function __construct(private MessageBusInterface $bus)
     {

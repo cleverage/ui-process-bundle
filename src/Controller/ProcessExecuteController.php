@@ -28,13 +28,14 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 #[Route(path: '/http/process/execute', name: 'http_process_execute', methods: ['POST'])]
 class ProcessExecuteController extends AbstractController
 {
+    public function __construct(private readonly ValidatorInterface $validator, private readonly MessageBusInterface $bus, private readonly ProcessManager $processManager)
+    {
+    }
+
     public function __invoke(
         #[ValueResolver('http_process_execution')] HttpProcessExecution $httpProcessExecution,
-        ValidatorInterface $validator,
-        MessageBusInterface $bus,
-        ProcessManager $processManager,
     ): JsonResponse {
-        $violations = $validator->validate($httpProcessExecution);
+        $violations = $this->validator->validate($httpProcessExecution);
         if ($violations->count() > 0) {
             $violationsMessages = [];
             foreach ($violations as $violation) {
@@ -43,7 +44,7 @@ class ProcessExecuteController extends AbstractController
             throw new UnprocessableEntityHttpException(implode('. ', $violationsMessages));
         }
         if ($httpProcessExecution->queue) {
-            $bus->dispatch(
+            $this->bus->dispatch(
                 new ProcessExecuteMessage(
                     $httpProcessExecution->code ?? '',
                     $httpProcessExecution->input,
@@ -56,7 +57,7 @@ class ProcessExecuteController extends AbstractController
             return new JsonResponse('Process has been added to queue. It will start as soon as possible.');
         } else {
             try {
-                $processManager->execute(
+                $this->processManager->execute(
                     $httpProcessExecution->code ?? '',
                     $httpProcessExecution->input,
                     \is_string($httpProcessExecution->context)

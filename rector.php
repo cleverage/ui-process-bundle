@@ -19,7 +19,7 @@ return RectorConfig::configure()
     ->withPreparedSets(deadCode: true, codeQuality: true, doctrineCodeQuality: true, symfonyCodeQuality: true)
     ->withAttributesSets(symfony: true, doctrine: true)
     ->withSets([
-        LevelSetList::UP_TO_PHP_85,
+        LevelSetList::UP_TO_PHP_82,
         SymfonySetList::SYMFONY_64,
         SymfonySetList::SYMFONY_CODE_QUALITY,
         SymfonySetList::SYMFONY_CONSTRUCTOR_INJECTION,

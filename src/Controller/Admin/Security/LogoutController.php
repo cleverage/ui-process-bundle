@@ -20,10 +20,14 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class LogoutController extends AbstractController
 {
-    #[Route('/process/logout', name: 'process_logout')]
-    public function __invoke(Security $security): Response
+    public function __construct(private readonly Security $security)
     {
-        $security->logout();
+    }
+
+    #[Route('/process/logout', name: 'process_logout')]
+    public function __invoke(): Response
+    {
+        $this->security->logout();
 
         return $this->redirectToRoute('process_login');
     }

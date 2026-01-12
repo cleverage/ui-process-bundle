@@ -37,9 +37,11 @@ use Symfony\Component\Uid\Uuid;
 #[IsGranted('ROLE_USER')]
 class UploadAndExecuteAction extends AbstractController
 {
+    public function __construct(private readonly RequestStack $requestStack, private readonly MessageBusInterface $messageBus)
+    {
+    }
+
     public function __invoke(
-        RequestStack $requestStack,
-        MessageBusInterface $messageBus,
         string $uploadDirectory,
         #[ValueResolver('process')] ProcessConfiguration $processConfiguration,
     ): Response {
@@ -49,15 +51,15 @@ class UploadAndExecuteAction extends AbstractController
         $form = $this->createForm(
             ProcessUploadFileType::class,
             null,
-            ['process_code' => $requestStack->getMainRequest()?->request->get('process')]
+            ['process_code' => $this->requestStack->getMainRequest()?->request->get('process')]
         );
-        $form->handleRequest($requestStack->getMainRequest());
+        $form->handleRequest($this->requestStack->getMainRequest());
         if ($form->isSubmitted() && $form->isValid()) {
             /** @var UploadedFile $file */
             $file = $form->getData();
             $savedFilepath = \sprintf('%s/%s.%s', $uploadDirectory, Uuid::v4(), $file->getClientOriginalExtension());
             (new Filesystem())->dumpFile($savedFilepath, $file->getContent());
-            $messageBus->dispatch(
+            $this->messageBus->dispatch(
                 new ProcessExecuteMessage(
                     $form->getConfig()->getOption('process_code'),
                     $savedFilepath

@@ -22,7 +22,7 @@ use CleverAge\UiProcessBundle\Monolog\Handler\ProcessHandler;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Uid\Uuid;
 
-readonly final class ProcessEventSubscriber implements EventSubscriberInterface
+final readonly class ProcessEventSubscriber implements EventSubscriberInterface
 {
     public function __construct(
         private ProcessHandler $processHandler,

@@ -40,21 +40,18 @@ use Symfony\Component\Uid\Uuid;
 #[IsGranted('ROLE_USER')]
 class LaunchAction extends AbstractController
 {
-    public function __construct(private readonly MessageBusInterface $messageBus)
+    public function __construct(private readonly MessageBusInterface $messageBus, private readonly RequestStack $requestStack, private readonly ProcessConfigurationsManager $processConfigurationsManager, private readonly AdminContext $context)
     {
     }
 
     public function __invoke(
-        RequestStack $requestStack,
         string $uploadDirectory,
-        ProcessConfigurationsManager $processConfigurationsManager,
-        AdminContext $context,
     ): Response {
-        $processCode = (string) $requestStack->getMainRequest()?->request->get('process');
+        $processCode = (string) $this->requestStack->getMainRequest()?->request->get('process');
         if ('' === $processCode) {
             throw new MissingProcessException();
         }
-        $uiOptions = $processConfigurationsManager->getUiOptions($processCode);
+        $uiOptions = $this->processConfigurationsManager->getUiOptions($processCode);
         if (null === $uiOptions) {
             throw new \InvalidArgumentException('Missing UI Options');
         }
@@ -84,7 +81,7 @@ class LaunchAction extends AbstractController
             }
             $form->setData($default);
         }
-        $form->handleRequest($requestStack->getMainRequest());
+        $form->handleRequest($this->requestStack->getMainRequest());
         if ($form->isSubmitted() && $form->isValid()) {
             $input = $form->get('input')->getData();
             if ($input instanceof UploadedFile) {
@@ -104,7 +101,7 @@ class LaunchAction extends AbstractController
 
             return $this->redirectToRoute('process', ['routeName' => 'process_list']);
         }
-        $context->getAssets()->addJsAsset(Asset::fromEasyAdminAssetPackage('field-collection.js')->getAsDto());
+        $this->context->getAssets()->addJsAsset(Asset::fromEasyAdminAssetPackage('field-collection.js')->getAsDto());
 
         return $this->render(
             '@CleverAgeUiProcess/admin/process/launch.html.twig',
