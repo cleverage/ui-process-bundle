@@ -46,7 +46,6 @@ class ProcessExecutionCrudController extends AbstractCrudController
         private readonly ProcessExecutionRepository $processExecutionRepository,
         private readonly string $logDirectory,
         private readonly TranslatorInterface $translator,
-        private readonly AdminContext $context,
     ) {
     }
 
@@ -134,10 +133,10 @@ class ProcessExecutionCrudController extends AbstractCrudController
         return $this->redirect($url);
     }
 
-    public function downloadLogFile(): Response
+    public function downloadLogFile(AdminContext $context): Response
     {
         /** @var ProcessExecution $processExecution */
-        $processExecution = $this->context->getEntity()->getInstance();
+        $processExecution = $context->getEntity()->getInstance();
         $filepath = $this->getLogFilePath($processExecution);
         $basename = basename($filepath);
         $content = file_get_contents($filepath);
