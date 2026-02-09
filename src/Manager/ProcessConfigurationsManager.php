@@ -25,7 +25,6 @@ use Symfony\Component\Validator\Constraint;
  *      'source': ?string,
  *      'target': ?string,
  *      'ui_launch_mode': ?string,
- *      'run_confirmation_modal': bool,
  *      'entrypoint_type': string,
  *      'constraints': Constraint[],
  *      'run': 'null|bool',
@@ -72,7 +71,10 @@ final readonly class ProcessConfigurationsManager
     private function resolveUiOptions(array $options): array
     {
         $resolver = new OptionsResolver();
-        $resolver->setDefault('ui', function (OptionsResolver $uiResolver): void {
+        $resolver->setDefault('ui', []);
+        $resolver->setAllowedTypes('ui', 'array');
+        $resolver->setNormalizer('ui', function (Options $options, array $ui): array {
+            $uiResolver = new OptionsResolver();
             $uiResolver->setDefaults(
                 [
                     'source' => null,
@@ -90,15 +92,11 @@ final readonly class ProcessConfigurationsManager
                     },
                 ]
             );
-            $uiResolver->setDeprecated(
-                'run',
-                'cleverage/ui-process-bundle',
-                '2',
-                'run ui option is deprecated. Use public option instead to hide a process from UI'
-            );
             $uiResolver->setAllowedValues('entrypoint_type', ['text', 'file']);
             $uiResolver->setNormalizer('constraints', fn (Options $options, array $values): array => (new ConstraintLoader())->buildConstraints($values));
             $uiResolver->setAllowedValues('ui_launch_mode', ['modal', null, 'form']);
+
+            return $uiResolver->resolve($ui);
         });
         /**
          * @var array{'ui': UiOptions} $options
