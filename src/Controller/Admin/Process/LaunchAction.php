@@ -48,7 +48,7 @@ class LaunchAction extends AbstractController
         AdminContext $context,
         string $uploadDirectory,
     ): Response {
-        $processCode = (string) $this->requestStack->getMainRequest()?->request->get('process');
+        $processCode = (string) $this->requestStack->getMainRequest()?->query->get('process');
         if ('' === $processCode) {
             throw new MissingProcessException();
         }
