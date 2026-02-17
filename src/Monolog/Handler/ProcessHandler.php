@@ -21,13 +21,15 @@ use Monolog\LogRecord;
 class ProcessHandler extends StreamHandler
 {
     private Level $reportIncrementLevel = Level::Error;
+    private bool $filenameSet = false;
 
     public function __construct(
         private readonly string $directory,
         private readonly ProcessExecutionManager $processExecutionManager,
         int|string|Level $level = Level::Debug,
     ) {
-        parent::__construct($this->directory, $level);
+        // Initialize with php://memory as placeholder - actual file will be set via setFilename()
+        parent::__construct('php://memory', $level);
     }
 
     /**
@@ -40,27 +42,33 @@ class ProcessHandler extends StreamHandler
 
     public function hasFilename(): bool
     {
-        return $this->directory !== $this->url;
+        return $this->filenameSet;
     }
 
     public function setFilename(string $filename): void
     {
+        $this->close();
         $this->url = \sprintf('%s/%s', $this->directory, $filename);
+        $this->filenameSet = true;
     }
 
     public function close(): void
     {
-        $this->url = $this->directory;
         parent::close();
+        $this->filenameSet = false;
     }
 
     public function getFilename(): ?string
     {
-        return $this->url;
+        return $this->filenameSet ? $this->url : null;
     }
 
-    public function write(LogRecord $record): void
+    protected function write(LogRecord $record): void
     {
+        if (!$this->filenameSet) {
+            // Skip writing if no filename has been set yet
+            return;
+        }
         parent::write($record);
         if ($record->level->value >= $this->reportIncrementLevel->value) {
             $this->processExecutionManager->increment($record->level->name);
