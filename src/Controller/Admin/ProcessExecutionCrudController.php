@@ -42,10 +42,14 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 #[IsGranted('ROLE_USER')]
 class ProcessExecutionCrudController extends AbstractCrudController
 {
+    /**
+     * @param AdminContext<object> $context
+     */
     public function __construct(
         private readonly ProcessExecutionRepository $processExecutionRepository,
         private readonly string $logDirectory,
         private readonly TranslatorInterface $translator,
+        private readonly AdminContext $context,
     ) {
     }
 
@@ -133,10 +137,10 @@ class ProcessExecutionCrudController extends AbstractCrudController
         return $this->redirect($url);
     }
 
-    public function downloadLogFile(AdminContext $context): Response
+    public function downloadLogFile(): Response
     {
         /** @var ProcessExecution $processExecution */
-        $processExecution = $context->getEntity()->getInstance();
+        $processExecution = $this->context->getEntity()->getInstance();
         $filepath = $this->getLogFilePath($processExecution);
         $basename = basename($filepath);
         $content = file_get_contents($filepath);

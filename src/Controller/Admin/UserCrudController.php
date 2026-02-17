@@ -40,8 +40,11 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_USER')]
 class UserCrudController extends AbstractCrudController
 {
-    /** @param array<string, string> $roles */
-    public function __construct(private readonly array $roles, private readonly AdminUrlGenerator $adminUrlGenerator)
+    /**
+     * @param array<string, string> $roles
+     * @param AdminContext<object>  $adminContext
+     */
+    public function __construct(private readonly array $roles, private readonly AdminUrlGenerator $adminUrlGenerator, private readonly AdminContext $adminContext)
     {
     }
 
@@ -93,24 +96,24 @@ class UserCrudController extends AbstractCrudController
     public function configureActions(Actions $actions): Actions
     {
         return $actions
-            ->update(Crud::PAGE_INDEX, Action::NEW, fn (Action $action) => $action->setIcon('fa fa-plus')
+            ->update(Crud::PAGE_INDEX, Action::NEW, static fn (Action $action) => $action->setIcon('fa fa-plus')
                 ->setLabel(false)
-                ->addCssClass(''))->update(Crud::PAGE_INDEX, Action::EDIT, fn (Action $action) => $action->setIcon('fa fa-edit')
+                ->addCssClass(''))->update(Crud::PAGE_INDEX, Action::EDIT, static fn (Action $action) => $action->setIcon('fa fa-edit')
                 ->setLabel(false)
-                ->addCssClass('text-warning'))->update(Crud::PAGE_INDEX, Action::DELETE, fn (Action $action) => $action->setIcon('fa fa-trash-o')
+                ->addCssClass('text-warning'))->update(Crud::PAGE_INDEX, Action::DELETE, static fn (Action $action) => $action->setIcon('fa fa-trash-o')
                 ->setLabel(false)
-                ->addCssClass(''))->update(Crud::PAGE_INDEX, Action::BATCH_DELETE, fn (Action $action) => $action->setLabel('Delete')
+                ->addCssClass(''))->update(Crud::PAGE_INDEX, Action::BATCH_DELETE, static fn (Action $action) => $action->setLabel('Delete')
                 ->addCssClass(''))->add(Crud::PAGE_EDIT, Action::new('generateToken')->linkToCrudAction('generateToken'));
     }
 
-    public function generateToken(AdminContext $adminContext): Response
+    public function generateToken(): Response
     {
         /** @var User $user */
-        $user = $adminContext->getEntity()->getInstance();
+        $user = $this->adminContext->getEntity()->getInstance();
         $token = md5(uniqid(date('YmdHis')));
         $user->setToken((new Pbkdf2PasswordHasher())->hash($token));
         $this->persistEntity(
-            $this->container->get('doctrine')->getManagerForClass($adminContext->getEntity()->getFqcn()),
+            $this->container->get('doctrine')->getManagerForClass($this->adminContext->getEntity()->getFqcn()),
             $user
         );
         $this->addFlash('success', 'New token generated '.$token.' (keep it in secured area. This token will never be displayed anymore)');

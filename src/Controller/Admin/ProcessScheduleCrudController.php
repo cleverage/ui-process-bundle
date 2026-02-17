@@ -57,13 +57,13 @@ class ProcessScheduleCrudController extends AbstractCrudController
     public function configureActions(Actions $actions): Actions
     {
         return $actions
-            ->update(Crud::PAGE_INDEX, Action::NEW, fn (Action $action) => $action->setIcon('fa fa-plus')
+            ->update(Crud::PAGE_INDEX, Action::NEW, static fn (Action $action) => $action->setIcon('fa fa-plus')
                 ->setLabel(false)
-                ->addCssClass(''))->update(Crud::PAGE_INDEX, Action::EDIT, fn (Action $action) => $action->setIcon('fa fa-edit')
+                ->addCssClass(''))->update(Crud::PAGE_INDEX, Action::EDIT, static fn (Action $action) => $action->setIcon('fa fa-edit')
                 ->setLabel(false)
-                ->addCssClass('text-warning'))->update(Crud::PAGE_INDEX, Action::DELETE, fn (Action $action) => $action->setIcon('fa fa-trash-o')
+                ->addCssClass('text-warning'))->update(Crud::PAGE_INDEX, Action::DELETE, static fn (Action $action) => $action->setIcon('fa fa-trash-o')
                 ->setLabel(false)
-                ->addCssClass(''))->update(Crud::PAGE_INDEX, Action::BATCH_DELETE, fn (Action $action) => $action->setLabel('Delete')
+                ->addCssClass(''))->update(Crud::PAGE_INDEX, Action::BATCH_DELETE, static fn (Action $action) => $action->setLabel('Delete')
                 ->addCssClass(''));
     }
 
@@ -74,7 +74,7 @@ class ProcessScheduleCrudController extends AbstractCrudController
 
     public function configureFields(string $pageName): iterable
     {
-        $choices = array_map(fn (ProcessConfiguration $configuration) => [$configuration->getCode()], $this->processConfigurationsManager->getPublicProcesses());
+        $choices = array_map(static fn (ProcessConfiguration $configuration) => [$configuration->getCode()], $this->processConfigurationsManager->getPublicProcesses());
 
         return [
             FormField::addTab('General'),
@@ -90,7 +90,7 @@ class ProcessScheduleCrudController extends AbstractCrudController
                 ->setVirtual(true)
                 ->hideOnForm()
                 ->hideOnDetail()
-                ->formatValue(fn ($value, ProcessSchedule $entity) => ProcessScheduleType::CRON === $entity->getType()
+                ->formatValue(static fn ($value, ProcessSchedule $entity) => ProcessScheduleType::CRON === $entity->getType()
                     ? CronExpressionTrigger::fromSpec($entity->getExpression() ?? '')
                         ->getNextRunDate(new \DateTimeImmutable())
                         ?->format('c')

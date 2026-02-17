@@ -40,13 +40,13 @@ final readonly class ProcessConfigurationsManager
     /** @return ProcessConfiguration[] */
     public function getPublicProcesses(): array
     {
-        return array_filter($this->getConfigurations(), fn (ProcessConfiguration $cfg) => $cfg->isPublic());
+        return array_filter($this->getConfigurations(), static fn (ProcessConfiguration $cfg) => $cfg->isPublic());
     }
 
     /** @return ProcessConfiguration[] */
     public function getPrivateProcesses(): array
     {
-        return array_filter($this->getConfigurations(), fn (ProcessConfiguration $cfg) => !$cfg->isPublic());
+        return array_filter($this->getConfigurations(), static fn (ProcessConfiguration $cfg) => !$cfg->isPublic());
     }
 
     /**
@@ -73,7 +73,7 @@ final readonly class ProcessConfigurationsManager
         $resolver = new OptionsResolver();
         $resolver->setDefault('ui', []);
         $resolver->setAllowedTypes('ui', 'array');
-        $resolver->setNormalizer('ui', function (Options $options, array $ui): array {
+        $resolver->setNormalizer('ui', static function (Options $options, array $ui): array {
             $uiResolver = new OptionsResolver();
             $uiResolver->setDefaults(
                 [
@@ -83,9 +83,9 @@ final readonly class ProcessConfigurationsManager
                     'ui_launch_mode' => 'modal',
                     'constraints' => [],
                     'run' => null,
-                    'default' => function (OptionsResolver $defaultResolver) {
+                    'default' => static function (OptionsResolver $defaultResolver) {
                         $defaultResolver->setDefault('input', null);
-                        $defaultResolver->setDefault('context', function (OptionsResolver $contextResolver) {
+                        $defaultResolver->setDefault('context', static function (OptionsResolver $contextResolver) {
                             $contextResolver->setPrototype(true);
                             $contextResolver->setRequired(['key', 'value']);
                         });
@@ -93,7 +93,7 @@ final readonly class ProcessConfigurationsManager
                 ]
             );
             $uiResolver->setAllowedValues('entrypoint_type', ['text', 'file']);
-            $uiResolver->setNormalizer('constraints', fn (Options $options, array $values): array => (new ConstraintLoader())->buildConstraints($values));
+            $uiResolver->setNormalizer('constraints', static fn (Options $options, array $values): array => (new ConstraintLoader())->buildConstraints($values));
             $uiResolver->setAllowedValues('ui_launch_mode', ['modal', null, 'form']);
 
             return $uiResolver->resolve($ui);

@@ -55,20 +55,19 @@ class ProcessExecuteController extends AbstractController
             );
 
             return new JsonResponse('Process has been added to queue. It will start as soon as possible.');
-        } else {
-            try {
-                $this->processManager->execute(
-                    $httpProcessExecution->code ?? '',
-                    $httpProcessExecution->input,
-                    \is_string($httpProcessExecution->context)
-                        ? json_decode($httpProcessExecution->context, true)
-                        : $httpProcessExecution->context
-                );
-            } catch (\Throwable $e) {
-                return new JsonResponse($e->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
-            }
-
-            return new JsonResponse('Process has been proceed well.');
         }
+        try {
+            $this->processManager->execute(
+                $httpProcessExecution->code ?? '',
+                $httpProcessExecution->input,
+                \is_string($httpProcessExecution->context)
+                    ? json_decode($httpProcessExecution->context, true)
+                    : $httpProcessExecution->context
+            );
+        } catch (\Throwable $e) {
+            return new JsonResponse($e->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+
+        return new JsonResponse('Process has been proceed well.');
     }
 }

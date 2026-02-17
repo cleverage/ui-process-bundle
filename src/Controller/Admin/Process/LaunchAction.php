@@ -40,12 +40,14 @@ use Symfony\Component\Uid\Uuid;
 #[IsGranted('ROLE_USER')]
 class LaunchAction extends AbstractController
 {
-    public function __construct(private readonly MessageBusInterface $messageBus, private readonly RequestStack $requestStack, private readonly ProcessConfigurationsManager $processConfigurationsManager)
+    /**
+     * @param AdminContext<object> $context
+     */
+    public function __construct(private readonly MessageBusInterface $messageBus, private readonly RequestStack $requestStack, private readonly ProcessConfigurationsManager $processConfigurationsManager, private readonly AdminContext $context)
     {
     }
 
     public function __invoke(
-        AdminContext $context,
         string $uploadDirectory,
     ): Response {
         $processCode = (string) $this->requestStack->getMainRequest()?->query->get('process');
@@ -102,7 +104,7 @@ class LaunchAction extends AbstractController
 
             return $this->redirectToRoute('process', ['routeName' => 'process_list']);
         }
-        $context->getAssets()->addJsAsset(Asset::fromEasyAdminAssetPackage('field-collection.js')->getAsDto());
+        $this->context->getAssets()->addJsAsset(Asset::fromEasyAdminAssetPackage('field-collection.js')->getAsDto());
 
         return $this->render(
             '@CleverAgeUiProcess/admin/process/launch.html.twig',

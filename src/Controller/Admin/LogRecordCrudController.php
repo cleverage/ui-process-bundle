@@ -89,7 +89,7 @@ class LogRecordCrudController extends AbstractCrudController
     {
         $id = $this->requestStack->getMainRequest()?->query->all('filters')['process']['value'] ?? null;
         $processList = $this->processConfigurationsManager->getPublicProcesses();
-        $processList = array_map(fn (ProcessConfiguration $cfg) => $cfg->getCode(), $processList);
+        $processList = array_map(static fn (ProcessConfiguration $cfg) => $cfg->getCode(), $processList);
 
         return $filters->add(
             LogProcessFilter::new('Process', $processList, $id)
@@ -97,7 +97,7 @@ class LogRecordCrudController extends AbstractCrudController
             ChoiceFilter::new('level')
                 ->setTranslatableChoices(array_combine(
                     Level::VALUES,
-                    array_map(fn ($value) => 'enum.log_level.'.strtolower((string) $value), Level::NAMES)
+                    array_map(static fn ($value) => 'enum.log_level.'.strtolower((string) $value), Level::NAMES)
                 ))
                 ->setFormTypeOption('translation_domain', 'enums'),
         )->add('message')->add('context')->add('createdAt');
