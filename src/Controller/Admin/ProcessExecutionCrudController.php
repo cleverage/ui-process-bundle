@@ -22,7 +22,6 @@ use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
-use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ArrayField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
@@ -42,14 +41,10 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 #[IsGranted('ROLE_USER')]
 class ProcessExecutionCrudController extends AbstractCrudController
 {
-    /**
-     * @param AdminContext<object> $context
-     */
     public function __construct(
         private readonly ProcessExecutionRepository $processExecutionRepository,
         private readonly string $logDirectory,
         private readonly TranslatorInterface $translator,
-        private readonly AdminContext $context,
     ) {
     }
 
@@ -140,7 +135,7 @@ class ProcessExecutionCrudController extends AbstractCrudController
     public function downloadLogFile(): Response
     {
         /** @var ProcessExecution $processExecution */
-        $processExecution = $this->context->getEntity()->getInstance();
+        $processExecution = $this->getContext()->getEntity()->getInstance();
         $filepath = $this->getLogFilePath($processExecution);
         $basename = basename($filepath);
         $content = file_get_contents($filepath);

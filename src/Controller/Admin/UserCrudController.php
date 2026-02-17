@@ -17,7 +17,6 @@ use CleverAge\UiProcessBundle\Entity\User;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
-use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\EmailField;
@@ -42,9 +41,8 @@ class UserCrudController extends AbstractCrudController
 {
     /**
      * @param array<string, string> $roles
-     * @param AdminContext<object>  $adminContext
      */
-    public function __construct(private readonly array $roles, private readonly AdminUrlGenerator $adminUrlGenerator, private readonly AdminContext $adminContext)
+    public function __construct(private readonly array $roles, private readonly AdminUrlGenerator $adminUrlGenerator)
     {
     }
 
@@ -108,12 +106,13 @@ class UserCrudController extends AbstractCrudController
 
     public function generateToken(): Response
     {
+        $adminContext = $this->getContext();
         /** @var User $user */
-        $user = $this->adminContext->getEntity()->getInstance();
+        $user = $adminContext->getEntity()->getInstance();
         $token = md5(uniqid(date('YmdHis')));
         $user->setToken((new Pbkdf2PasswordHasher())->hash($token));
         $this->persistEntity(
-            $this->container->get('doctrine')->getManagerForClass($this->adminContext->getEntity()->getFqcn()),
+            $this->container->get('doctrine')->getManagerForClass($adminContext->getEntity()->getFqcn()),
             $user
         );
         $this->addFlash('success', 'New token generated '.$token.' (keep it in secured area. This token will never be displayed anymore)');

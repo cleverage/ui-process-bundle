@@ -19,7 +19,7 @@ use CleverAge\UiProcessBundle\Form\Type\LaunchType;
 use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
 use CleverAge\UiProcessBundle\Message\ProcessExecuteMessage;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Asset;
-use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
+use EasyCorp\Bundle\EasyAdminBundle\Provider\AdminContextProvider;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -40,10 +40,7 @@ use Symfony\Component\Uid\Uuid;
 #[IsGranted('ROLE_USER')]
 class LaunchAction extends AbstractController
 {
-    /**
-     * @param AdminContext<object> $context
-     */
-    public function __construct(private readonly MessageBusInterface $messageBus, private readonly RequestStack $requestStack, private readonly ProcessConfigurationsManager $processConfigurationsManager, private readonly AdminContext $context)
+    public function __construct(private readonly MessageBusInterface $messageBus, private readonly RequestStack $requestStack, private readonly ProcessConfigurationsManager $processConfigurationsManager, private readonly AdminContextProvider $adminContextProvider)
     {
     }
 
@@ -104,7 +101,7 @@ class LaunchAction extends AbstractController
 
             return $this->redirectToRoute('process', ['routeName' => 'process_list']);
         }
-        $this->context->getAssets()->addJsAsset(Asset::fromEasyAdminAssetPackage('field-collection.js')->getAsDto());
+        $this->adminContextProvider->getContext()?->getAssets()->addJsAsset(Asset::fromEasyAdminAssetPackage('field-collection.js')->getAsDto());
 
         return $this->render(
             '@CleverAgeUiProcess/admin/process/launch.html.twig',
