@@ -65,4 +65,9 @@ class LogRecord
     {
         return [] !== $this->context;
     }
+
+    public function getProcessExecution(): ProcessExecution
+    {
+        return $this->processExecution;
+    }
 }
