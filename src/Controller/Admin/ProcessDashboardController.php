@@ -13,21 +13,19 @@ declare(strict_types=1);
 
 namespace CleverAge\UiProcessBundle\Controller\Admin;
 
-use CleverAge\UiProcessBundle\Entity\LogRecord;
-use CleverAge\UiProcessBundle\Entity\ProcessExecution;
-use CleverAge\UiProcessBundle\Entity\ProcessSchedule;
 use CleverAge\UiProcessBundle\Entity\User;
+use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminDashboard;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Dashboard;
 use EasyCorp\Bundle\EasyAdminBundle\Config\MenuItem;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractDashboardController;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Translation\LocaleSwitcher;
 
 #[IsGranted('ROLE_USER')]
+#[AdminDashboard(routePath: '/process', routeName: 'process')]
 class ProcessDashboardController extends AbstractDashboardController
 {
     public function __construct(
@@ -60,15 +58,15 @@ class ProcessDashboardController extends AbstractDashboardController
         yield MenuItem::subMenu('Process', 'fas fa-gear')->setSubItems(
             [
                 MenuItem::linkToRoute('Process list', 'fas fa-list', 'process_list'),
-                MenuItem::linkToCrud('Executions', 'fas fa-rocket', ProcessExecution::class),
-                MenuItem::linkToCrud('Logs', 'fas fa-pen', LogRecord::class),
-                MenuItem::linkToCrud('Scheduler', 'fas fa-solid fa-clock', ProcessSchedule::class),
+                MenuItem::linkTo(ProcessExecutionCrudController::class, 'Executions', 'fas fa-rocket'),
+                MenuItem::linkTo(LogRecordCrudController::class, 'Logs', 'fas fa-pen'),
+                MenuItem::linkTo(ProcessScheduleCrudController::class, 'Scheduler', 'fas fa-solid fa-clock'),
             ]
         );
         if ($this->isGranted('ROLE_ADMIN')) {
             yield MenuItem::subMenu('Users', 'fas fa-user')->setSubItems(
                 [
-                    MenuItem::linkToCrud('User List', 'fas fa-user', User::class),
+                    MenuItem::linkTo(UserCrudController::class, 'User List', 'fas fa-user'),
                 ]
             );
         }
