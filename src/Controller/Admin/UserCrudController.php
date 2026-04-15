@@ -108,11 +108,11 @@ class UserCrudController extends AbstractCrudController
     {
         $adminContext = $this->getContext();
         /** @var User $user */
-        $user = $adminContext->getEntity()->getInstance();
+        $user = $adminContext?->getEntity()->getInstance();
         $token = md5(uniqid(date('YmdHis')));
         $user->setToken((new Pbkdf2PasswordHasher())->hash($token));
         $this->persistEntity(
-            $this->container->get('doctrine')->getManagerForClass($adminContext->getEntity()->getFqcn()),
+            $this->container->get('doctrine')->getManagerForClass($adminContext?->getEntity()->getFqcn()),
             $user
         );
         $this->addFlash('success', 'New token generated '.$token.' (keep it in secured area. This token will never be displayed anymore)');

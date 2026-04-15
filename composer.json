@@ -46,7 +46,7 @@
     "doctrine/doctrine-migrations-bundle": "^3.7 || ^4",
     "doctrine/orm": "^2.20 || ^3.5",
     "dragonmantank/cron-expression": "^3.6",
-    "easycorp/easyadmin-bundle": "^4.27",
+    "easycorp/easyadmin-bundle": "^5",
     "symfony/doctrine-messenger": "^6.4 || ^7.4 || ^8",
     "symfony/dotenv": "^6.4 || ^7.4 || ^8",
     "symfony/messenger":"^6.4 || ^7.4 || ^8",

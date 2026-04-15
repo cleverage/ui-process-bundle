@@ -135,7 +135,7 @@ class ProcessExecutionCrudController extends AbstractCrudController
     public function downloadLogFile(): Response
     {
         /** @var ProcessExecution $processExecution */
-        $processExecution = $this->getContext()->getEntity()->getInstance();
+        $processExecution = $this->getContext()?->getEntity()->getInstance();
         $filepath = $this->getLogFilePath($processExecution);
         $basename = basename($filepath);
         $content = file_get_contents($filepath);
