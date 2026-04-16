@@ -58,7 +58,7 @@ class LogRecord
         $this->level = $record->level->value;
         $this->message = (string) (new UnicodeString($record->message))->truncate(512);
         $this->context = $record->context;
-        $this->createdAt = \DateTimeImmutable::createFromMutable(new \DateTime());
+        $this->createdAt = $record->datetime;
     }
 
     public function contextIsEmpty(): bool
