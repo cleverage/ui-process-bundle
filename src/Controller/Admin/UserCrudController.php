@@ -47,6 +47,7 @@ class UserCrudController extends AbstractCrudController
     {
     }
 
+    #[\Override]
     public function configureCrud(Crud $crud): Crud
     {
         $crud->showEntityActionsInlined();
@@ -60,6 +61,7 @@ class UserCrudController extends AbstractCrudController
         return User::class;
     }
 
+    #[\Override]
     public function configureFields(string $pageName): iterable
     {
         yield FormField::addTab('Credentials')->setIcon('fa fa-key');
@@ -92,6 +94,7 @@ class UserCrudController extends AbstractCrudController
         yield LocaleField::new('locale');
     }
 
+    #[\Override]
     public function configureActions(Actions $actions): Actions
     {
         return $actions

@@ -69,6 +69,7 @@ class LaunchType extends AbstractType
         $resolver->setRequired('process_code');
     }
 
+    #[\Override]
     public function getParent(): string
     {
         return FormType::class;

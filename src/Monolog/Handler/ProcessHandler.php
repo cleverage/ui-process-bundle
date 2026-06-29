@@ -52,6 +52,7 @@ class ProcessHandler extends StreamHandler
         $this->filenameSet = true;
     }
 
+    #[\Override]
     public function close(): void
     {
         parent::close();
@@ -63,6 +64,7 @@ class ProcessHandler extends StreamHandler
         return $this->filenameSet ? $this->url : null;
     }
 
+    #[\Override]
     protected function write(LogRecord $record): void
     {
         if (!$this->filenameSet) {

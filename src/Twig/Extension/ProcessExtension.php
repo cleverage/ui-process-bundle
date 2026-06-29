@@ -19,6 +19,7 @@ use Twig\TwigFunction;
 
 class ProcessExtension extends AbstractExtension
 {
+    #[\Override]
     public function getFunctions(): array
     {
         return [

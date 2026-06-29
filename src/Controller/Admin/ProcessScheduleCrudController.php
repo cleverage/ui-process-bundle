@@ -47,6 +47,7 @@ class ProcessScheduleCrudController extends AbstractCrudController
     {
     }
 
+    #[\Override]
     public function configureCrud(Crud $crud): Crud
     {
         return parent::configureCrud($crud)
@@ -54,6 +55,7 @@ class ProcessScheduleCrudController extends AbstractCrudController
             ->showEntityActionsInlined();
     }
 
+    #[\Override]
     public function configureActions(Actions $actions): Actions
     {
         return $actions
@@ -72,6 +74,7 @@ class ProcessScheduleCrudController extends AbstractCrudController
         return ProcessSchedule::class;
     }
 
+    #[\Override]
     public function configureFields(string $pageName): iterable
     {
         $choices = array_map(static fn (ProcessConfiguration $configuration) => [$configuration->getCode()], $this->processConfigurationsManager->getPublicProcesses());
@@ -107,6 +110,7 @@ class ProcessScheduleCrudController extends AbstractCrudController
         ];
     }
 
+    #[\Override]
     public function index(AdminContext $context): KeyValueStore|RedirectResponse|Response
     {
         if (false === $this->schedulerIsRunning()) {

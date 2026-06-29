@@ -19,6 +19,7 @@ use Twig\TwigFilter;
 
 class MD5Extension extends AbstractExtension
 {
+    #[\Override]
     public function getFilters(): array
     {
         return [

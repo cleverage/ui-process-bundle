@@ -54,6 +54,7 @@ class ProcessExecutionCrudController extends AbstractCrudController
         return ProcessExecution::class;
     }
 
+    #[\Override]
     public function configureFields(string $pageName): iterable
     {
         return [
@@ -71,6 +72,7 @@ class ProcessExecutionCrudController extends AbstractCrudController
         ];
     }
 
+    #[\Override]
     public function configureCrud(Crud $crud): Crud
     {
         $crud->showEntityActionsInlined();
@@ -79,6 +81,7 @@ class ProcessExecutionCrudController extends AbstractCrudController
         return $crud;
     }
 
+    #[\Override]
     public function configureActions(Actions $actions): Actions
     {
         return Actions::new()
@@ -152,6 +155,7 @@ class ProcessExecutionCrudController extends AbstractCrudController
         return $response;
     }
 
+    #[\Override]
     public function configureFilters(Filters $filters): Filters
     {
         return $filters

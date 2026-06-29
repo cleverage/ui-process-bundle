@@ -34,6 +34,7 @@ class ProcessDashboardController extends AbstractDashboardController
     ) {
     }
 
+    #[\Override]
     public function index(): Response
     {
         $adminUrlGenerator = $this->container->get(AdminUrlGenerator::class);
@@ -41,6 +42,7 @@ class ProcessDashboardController extends AbstractDashboardController
         return $this->redirect($adminUrlGenerator->setController(ProcessExecutionCrudController::class)->generateUrl());
     }
 
+    #[\Override]
     public function configureDashboard(): Dashboard
     {
         return Dashboard::new()
@@ -48,6 +50,7 @@ class ProcessDashboardController extends AbstractDashboardController
             ->setTitle('<img src="'.$this->logoPath.'" />');
     }
 
+    #[\Override]
     public function configureMenuItems(): iterable
     {
         yield MenuItem::linkToDashboard('Dashboard', 'fa fa-home');
@@ -68,6 +71,7 @@ class ProcessDashboardController extends AbstractDashboardController
         }
     }
 
+    #[\Override]
     public function configureCrud(): Crud
     {
         /** @var ?User $user */

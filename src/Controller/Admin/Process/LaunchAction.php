@@ -127,6 +127,7 @@ class LaunchAction extends AbstractController
         $this->messageBus->dispatch($message);
     }
 
+    #[\Override]
     protected function getUser(): ?User
     {
         /** @var User $user */

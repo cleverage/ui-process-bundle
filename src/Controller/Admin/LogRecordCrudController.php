@@ -51,6 +51,7 @@ class LogRecordCrudController extends AbstractCrudController
         return LogRecord::class;
     }
 
+    #[\Override]
     public function configureFields(string $pageName): iterable
     {
         return [
@@ -65,11 +66,13 @@ class LogRecordCrudController extends AbstractCrudController
         ];
     }
 
+    #[\Override]
     public function configureCrud(Crud $crud): Crud
     {
         return $crud->showEntityActionsInlined()->setPaginatorPageSize(250);
     }
 
+    #[\Override]
     public function configureActions(Actions $actions): Actions
     {
         return Actions::new()
@@ -85,6 +88,7 @@ class LogRecordCrudController extends AbstractCrudController
             ->add(Crud::PAGE_DETAIL, 'index');
     }
 
+    #[\Override]
     public function configureFilters(Filters $filters): Filters
     {
         $id = $this->requestStack->getMainRequest()?->query->all('filters')['process']['value'] ?? null;
