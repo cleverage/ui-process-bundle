@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace CleverAge\UiProcessBundle\Controller\Admin;
 
 use CleverAge\UiProcessBundle\Entity\User;
+use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminRoute;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
@@ -104,6 +105,7 @@ class UserCrudController extends AbstractCrudController
                 ->addCssClass(''))->add(Crud::PAGE_EDIT, Action::new('generateToken')->linkToCrudAction('generateToken'));
     }
 
+    #[AdminRoute(path: '{id}/generate-token', name: 'generateToken')]
     public function generateToken(): Response
     {
         $adminContext = $this->getContext();
