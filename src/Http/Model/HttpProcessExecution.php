@@ -20,21 +20,18 @@ use Symfony\Component\Validator\Constraints\NotNull;
 use Symfony\Component\Validator\Constraints\Sequentially;
 use Symfony\Component\Validator\Constraints\Type;
 
-/**
- * PHP 8.2 : Replace by readonly class.
- */
-final class HttpProcessExecution
+final readonly class HttpProcessExecution
 {
     /**
      * @param string|array<string|int, mixed> $context
      */
     public function __construct(
         #[Sequentially(constraints: [new NotNull(message: 'Process code is required.'), new IsValidProcessCode()])]
-        public readonly ?string $code = null,
-        public readonly ?string $input = null,
+        public ?string $code = null,
+        public ?string $input = null,
         #[AtLeastOneOf(constraints: [new Json(), new Type('array')])]
-        public readonly string|array $context = [],
-        public readonly bool $queue = true,
+        public string|array $context = [],
+        public bool $queue = true,
     ) {
     }
 }

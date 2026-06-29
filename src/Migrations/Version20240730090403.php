@@ -21,6 +21,7 @@ use Doctrine\Migrations\AbstractMigration;
  */
 final class Version20240730090403 extends AbstractMigration
 {
+    #[\Override]
     public function getDescription(): string
     {
         return 'Add process_user.token';
@@ -31,6 +32,7 @@ final class Version20240730090403 extends AbstractMigration
         $this->addSql('ALTER TABLE process_user ADD token VARCHAR(255) DEFAULT NULL');
     }
 
+    #[\Override]
     public function down(Schema $schema): void
     {
         $this->addSql('ALTER TABLE process_user DROP token');

@@ -18,11 +18,11 @@ use CleverAge\UiProcessBundle\Admin\Field\EnumField;
 use CleverAge\UiProcessBundle\Admin\Filter\ProcessExecutionDurationFilter;
 use CleverAge\UiProcessBundle\Entity\ProcessExecution;
 use CleverAge\UiProcessBundle\Repository\ProcessExecutionRepository;
+use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminRoute;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
-use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ArrayField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
@@ -54,6 +54,7 @@ class ProcessExecutionCrudController extends AbstractCrudController
         return ProcessExecution::class;
     }
 
+    #[\Override]
     public function configureFields(string $pageName): iterable
     {
         return [
@@ -71,6 +72,7 @@ class ProcessExecutionCrudController extends AbstractCrudController
         ];
     }
 
+    #[\Override]
     public function configureCrud(Crud $crud): Crud
     {
         $crud->showEntityActionsInlined();
@@ -79,6 +81,7 @@ class ProcessExecutionCrudController extends AbstractCrudController
         return $crud;
     }
 
+    #[\Override]
     public function configureActions(Actions $actions): Actions
     {
         return Actions::new()
@@ -109,7 +112,8 @@ class ProcessExecutionCrudController extends AbstractCrudController
             );
     }
 
-    public function showLogs(AdminContext $adminContext): RedirectResponse
+    #[AdminRoute('show-logs', 'show-logs')]
+    public function showLogs(): RedirectResponse
     {
         /** @var AdminUrlGenerator $adminUrlGenerator */
         $adminUrlGenerator = $this->container->get(AdminUrlGenerator::class);
@@ -133,11 +137,11 @@ class ProcessExecutionCrudController extends AbstractCrudController
         return $this->redirect($url);
     }
 
-    public function downloadLogFile(
-        AdminContext $context,
-    ): Response {
+    #[AdminRoute('download-logs', 'download-logs')]
+    public function downloadLogFile(): Response
+    {
         /** @var ProcessExecution $processExecution */
-        $processExecution = $context->getEntity()->getInstance();
+        $processExecution = $this->getContext()?->getEntity()->getInstance();
         $filepath = $this->getLogFilePath($processExecution);
         $basename = basename($filepath);
         $content = file_get_contents($filepath);
@@ -151,6 +155,7 @@ class ProcessExecutionCrudController extends AbstractCrudController
         return $response;
     }
 
+    #[\Override]
     public function configureFilters(Filters $filters): Filters
     {
         return $filters

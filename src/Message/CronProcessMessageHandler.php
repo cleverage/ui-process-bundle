@@ -16,20 +16,17 @@ namespace CleverAge\UiProcessBundle\Message;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Messenger\MessageBusInterface;
 
-/**
- * PHP 8.2 : Replace by readonly class.
- */
 #[AsMessageHandler]
-final class CronProcessMessageHandler
+final readonly class CronProcessMessageHandler
 {
-    public function __construct(private readonly MessageBusInterface $bus)
+    public function __construct(private MessageBusInterface $bus)
     {
     }
 
     public function __invoke(CronProcessMessage $message): void
     {
         $schedule = $message->processSchedule;
-        $context = array_merge(...array_map(fn ($ctx) => [$ctx['key'] => $ctx['value']], $schedule->getContext()));
+        $context = array_merge(...array_map(static fn ($ctx) => [$ctx['key'] => $ctx['value']], $schedule->getContext()));
         $this->bus->dispatch(
             new ProcessExecuteMessage($schedule->getProcess() ?? '', $schedule->getInput(), $context)
         );

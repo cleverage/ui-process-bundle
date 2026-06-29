@@ -51,18 +51,23 @@ class LogRecord
     public function __construct(
         \Monolog\LogRecord $record,
         #[ORM\ManyToOne(targetEntity: ProcessExecution::class, cascade: ['all'])]
-        #[ORM\JoinColumn(name: 'process_execution_id', referencedColumnName: 'id', onDelete: 'CASCADE', nullable: false)]
+        #[ORM\JoinColumn(name: 'process_execution_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
         private readonly ProcessExecution $processExecution,
     ) {
         $this->channel = (string) (new UnicodeString($record->channel))->truncate(64);
         $this->level = $record->level->value;
         $this->message = (string) (new UnicodeString($record->message))->truncate(512);
         $this->context = $record->context;
-        $this->createdAt = \DateTimeImmutable::createFromMutable(new \DateTime());
+        $this->createdAt = $record->datetime;
     }
 
     public function contextIsEmpty(): bool
     {
         return [] !== $this->context;
+    }
+
+    public function getProcessExecution(): ProcessExecution
+    {
+        return $this->processExecution;
     }
 }

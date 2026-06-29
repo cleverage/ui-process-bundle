@@ -18,6 +18,7 @@ use Doctrine\Migrations\AbstractMigration;
 
 final class Version20241009075733 extends AbstractMigration
 {
+    #[\Override]
     public function getDescription(): string
     {
         return 'Add process_user.locale';
@@ -30,6 +31,7 @@ final class Version20241009075733 extends AbstractMigration
         }
     }
 
+    #[\Override]
     public function down(Schema $schema): void
     {
         if ($schema->hasTable('process_user') && $schema->getTable('process_user')->hasColumn('locale')) {

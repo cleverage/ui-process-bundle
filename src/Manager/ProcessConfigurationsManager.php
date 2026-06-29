@@ -21,36 +21,32 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraint;
 
 /**
- * PHP 8.2 : Replace by readonly class.
- */
-/**
  * @phpstan-type UiOptions array{
  *      'source': ?string,
  *      'target': ?string,
  *      'ui_launch_mode': ?string,
- *      'run_confirmation_modal': bool,
  *      'entrypoint_type': string,
  *      'constraints': Constraint[],
  *      'run': 'null|bool',
  *      'default': array{'input': mixed, 'context': array{array{'key': 'int|text', 'value':'int|text'}}}
  *  }
  */
-final class ProcessConfigurationsManager
+final readonly class ProcessConfigurationsManager
 {
-    public function __construct(private readonly ProcessConfigurationRegistry $registry)
+    public function __construct(private ProcessConfigurationRegistry $registry)
     {
     }
 
     /** @return ProcessConfiguration[] */
     public function getPublicProcesses(): array
     {
-        return array_filter($this->getConfigurations(), fn (ProcessConfiguration $cfg) => $cfg->isPublic());
+        return array_filter($this->getConfigurations(), static fn (ProcessConfiguration $cfg) => $cfg->isPublic());
     }
 
     /** @return ProcessConfiguration[] */
     public function getPrivateProcesses(): array
     {
-        return array_filter($this->getConfigurations(), fn (ProcessConfiguration $cfg) => !$cfg->isPublic());
+        return array_filter($this->getConfigurations(), static fn (ProcessConfiguration $cfg) => !$cfg->isPublic());
     }
 
     /**
@@ -75,7 +71,10 @@ final class ProcessConfigurationsManager
     private function resolveUiOptions(array $options): array
     {
         $resolver = new OptionsResolver();
-        $resolver->setDefault('ui', function (OptionsResolver $uiResolver): void {
+        $resolver->setDefault('ui', []);
+        $resolver->setAllowedTypes('ui', 'array');
+        $resolver->setNormalizer('ui', static function (Options $options, array $ui): array {
+            $uiResolver = new OptionsResolver();
             $uiResolver->setDefaults(
                 [
                     'source' => null,
@@ -84,24 +83,20 @@ final class ProcessConfigurationsManager
                     'ui_launch_mode' => 'modal',
                     'constraints' => [],
                     'run' => null,
-                    'default' => function (OptionsResolver $defaultResolver) {
+                    'default' => static function (OptionsResolver $defaultResolver) {
                         $defaultResolver->setDefault('input', null);
-                        $defaultResolver->setDefault('context', function (OptionsResolver $contextResolver) {
+                        $defaultResolver->setDefault('context', static function (OptionsResolver $contextResolver) {
                             $contextResolver->setPrototype(true);
                             $contextResolver->setRequired(['key', 'value']);
                         });
                     },
                 ]
             );
-            $uiResolver->setDeprecated(
-                'run',
-                'cleverage/ui-process-bundle',
-                '2',
-                'run ui option is deprecated. Use public option instead to hide a process from UI'
-            );
             $uiResolver->setAllowedValues('entrypoint_type', ['text', 'file']);
-            $uiResolver->setNormalizer('constraints', fn (Options $options, array $values): array => (new ConstraintLoader())->buildConstraints($values));
+            $uiResolver->setNormalizer('constraints', static fn (Options $options, array $values): array => (new ConstraintLoader())->buildConstraints($values));
             $uiResolver->setAllowedValues('ui_launch_mode', ['modal', null, 'form']);
+
+            return $uiResolver->resolve($ui);
         });
         /**
          * @var array{'ui': UiOptions} $options

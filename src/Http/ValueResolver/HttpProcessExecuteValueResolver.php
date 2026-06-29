@@ -22,14 +22,13 @@ use Symfony\Component\HttpKernel\Controller\ValueResolverInterface;
 use Symfony\Component\HttpKernel\ControllerMetadata\ArgumentMetadata;
 use Symfony\Component\Serializer\SerializerInterface;
 
-/**
- * PHP 8.2 : Replace by readonly class.
- */
 #[AsTargetedValueResolver('http_process_execution')]
-class HttpProcessExecuteValueResolver implements ValueResolverInterface
+readonly class HttpProcessExecuteValueResolver implements ValueResolverInterface
 {
-    public function __construct(private readonly string $storageDir, private readonly SerializerInterface $serializer)
-    {
+    public function __construct(
+        private string $storageDir,
+        private SerializerInterface $serializer,
+    ) {
     }
 
     /**
@@ -37,26 +36,46 @@ class HttpProcessExecuteValueResolver implements ValueResolverInterface
      */
     public function resolve(Request $request, ArgumentMetadata $argument): iterable
     {
-        $all = $request->request->all();
         try {
-            if ([] === $all) {
+            $hasRequestData = $request->request->count() > 0 || $request->files->count() > 0;
+
+            if (!$hasRequestData) {
+                $content = $request->getContent();
+                if (empty($content)) {
+                    return [new HttpProcessExecution()];
+                }
+
                 $httpProcessExecution = $this->serializer->deserialize(
-                    $request->getContent(),
+                    $content,
                     HttpProcessExecution::class,
                     'json'
                 );
             } else {
-                $input = $request->get('input', $request->files->get('input'));
+                $input = $request->request->get('input') ?? $request->query->get('input');
+
+                if (null === $input) {
+                    $input = $request->files->get('input');
+                }
+
                 if ($input instanceof UploadedFile) {
                     $uploadFileName = $this->storageDir.\DIRECTORY_SEPARATOR.date('YmdHis').'_'.uniqid().'_'.$input->getClientOriginalName();
                     (new Filesystem())->dumpFile($uploadFileName, $input->getContent());
                     $input = $uploadFileName;
                 }
+
+                $code = $request->request->get('code') ?? $request->query->get('code');
+                $context = $request->request->all('context');
+                if ([] === $context) {
+                    $context = $request->query->all('context');
+                }
+
+                $queue = $request->request->getBoolean('queue', true);
+
                 $httpProcessExecution = new HttpProcessExecution(
-                    $request->get('code'),
+                    (string) $code,
                     $input,
-                    $request->get('context', []),
-                    $request->request->getBoolean('queue', true),
+                    $context,
+                    $queue
                 );
             }
 

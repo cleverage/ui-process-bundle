@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /*
  * This file is part of the CleverAge/UiProcessBundle package.
  *
@@ -24,9 +26,8 @@ $fileHeaderComment = <<<'EOF'
 
 return (new PhpCsFixer\Config())
     ->setRules([
-        '@PHP71Migration' => true,
-        '@PHP82Migration' => true,
-        '@PHPUnit75Migration:risky' => true,
+        '@PHP8x2Migration' => true,
+        '@PHPUnit7x5Migration:risky' => true,
         '@Symfony' => true,
         '@Symfony:risky' => true,
         '@DoctrineAnnotation' => true,
@@ -35,6 +36,7 @@ return (new PhpCsFixer\Config())
         'header_comment' => ['header' => $fileHeaderComment],
         'modernize_strpos' => true,
         'get_class_to_class_keyword' => true,
+        'declare_strict_types' => true,
     ])
     ->setRiskyAllowed(true)
     ->setFinder(

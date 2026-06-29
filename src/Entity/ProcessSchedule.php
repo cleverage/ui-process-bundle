@@ -87,12 +87,7 @@ class ProcessSchedule
         $this->context = $context;
     }
 
-    /**
-     * PHP 8.1 Fatal error: Null can not be used as a standalone type.
-     *
-     * @phpstan-ignore missingType.return
-     */
-    public function getNextExecution()
+    public function getNextExecution(): null
     {
         return null;
     }
