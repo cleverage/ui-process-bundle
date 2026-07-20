@@ -25,8 +25,7 @@ CleverAge\UiProcessBundle\CleverAgeUiProcessBundle::class => ['all' => true],
 
 ```yaml
 ui-process-bundle:
-  resource: '@CleverAgeUiProcessBundle/src/Controller'
-  type: attribute
+  resource: '@CleverAgeUiProcessBundle/config/routes/*.yaml'
 ```
 
 ### Doctrine ORM Configuration
