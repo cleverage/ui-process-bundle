@@ -53,7 +53,7 @@ class UploadAndExecuteAction extends AbstractController
         $form = $this->createForm(
             ProcessUploadFileType::class,
             null,
-            ['process_code' => $this->requestStack->getMainRequest()?->get('process')]
+            ['process_code' => $this->requestStack->getMainRequest()?->request->get('process')]
         );
         $form->handleRequest($this->requestStack->getMainRequest());
         if ($form->isSubmitted() && $form->isValid()) {
