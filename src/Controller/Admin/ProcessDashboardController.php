@@ -47,7 +47,7 @@ class ProcessDashboardController extends AbstractDashboardController
     {
         return Dashboard::new()
             ->renderContentMaximized()
-            ->setTitle('<img src="'.$this->logoPath.'" />');
+            ->setTitle('<img src="/'.$this->logoPath.'" />');
     }
 
     #[\Override]
