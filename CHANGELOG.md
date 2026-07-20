@@ -14,6 +14,7 @@ v3.0
 
 ## BC break
 
+* [#65](https://github.com/cleverage/ui-process-bundle/issues/65) Remove support for PHP 8.1 and Symfony 7.3
 * Please follow [UPGRADE.md v3.0](UPGRADE.md#v30)
 
 v2.3
