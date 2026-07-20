@@ -65,7 +65,7 @@ class ProcessHandler extends StreamHandler
     }
 
     #[\Override]
-    public function write(LogRecord $record): void
+    protected function write(LogRecord $record): void
     {
         if (!$this->filenameSet) {
             // Skip writing if no filename has been set yet
