@@ -33,9 +33,7 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 /**
- * @phpstan-template TEntity of AbstractCrudController
- *
- * @phpstan-extends AbstractCrudController<LogRecord>
+ * @extends AbstractCrudController<LogRecord>
  */
 #[IsGranted('ROLE_USER')]
 class LogRecordCrudController extends AbstractCrudController

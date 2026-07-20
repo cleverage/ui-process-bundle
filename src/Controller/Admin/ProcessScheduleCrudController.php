@@ -37,9 +37,7 @@ use Symfony\Component\Process\Process;
 use Symfony\Component\Scheduler\Trigger\CronExpressionTrigger;
 
 /**
- * @phpstan-template TEntity of AbstractCrudController
- *
- * @phpstan-extends AbstractCrudController<ProcessSchedule>
+ * @extends AbstractCrudController<ProcessSchedule>
  */
 class ProcessScheduleCrudController extends AbstractCrudController
 {

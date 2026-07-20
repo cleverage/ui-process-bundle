@@ -35,9 +35,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
- * @phpstan-template TEntity of AbstractCrudController
- *
- * @phpstan-extends AbstractCrudController<ProcessExecution>
+ * @extends AbstractCrudController<ProcessExecution>
  */
 #[IsGranted('ROLE_USER')]
 class ProcessExecutionCrudController extends AbstractCrudController

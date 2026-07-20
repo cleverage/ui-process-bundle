@@ -1,3 +1,21 @@
+v3.0
+------
+
+## Changes
+
+* [#65](https://github.com/cleverage/ui-process-bundle/issues/65) Add support for PHP 8.5 and Symfony 8, update dependencies. Update PHPUnit configuration to version 12 schema and adjust coverage settings.
+* [#65](https://github.com/cleverage/ui-process-bundle/issues/65) Mise à jour de la version de doctrine-fixtures-bundle pour inclure la compatibilité avec la version 4
+* [#69](https://github.com/cleverage/ui-process-bundle/issues/69) Upgrade to EasyAdmin V5
+
+## Fixes
+
+* [#63](https://github.com/cleverage/ui-process-bundle/issues/63) Use preprendExtensionConfig instead of loadFromExtension to allow messenger config for execute_process transport
+* [#67](https://github.com/cleverage/ui-process-bundle/issues/67) Fix Incorrect datetime persisted in the database log records
+
+## BC break
+
+* Please follow [UPGRADE.md v3.0](UPGRADE.md#v30)
+
 v2.3
 ------
 
