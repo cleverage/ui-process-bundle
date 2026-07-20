@@ -48,6 +48,7 @@ class ProcessHandler extends StreamHandler
         $this->url = \sprintf('%s/%s', $this->directory, $filename);
     }
 
+    #[\Override]
     public function close(): void
     {
         $this->url = $this->directory;
@@ -59,6 +60,7 @@ class ProcessHandler extends StreamHandler
         return $this->url;
     }
 
+    #[\Override]
     public function write(LogRecord $record): void
     {
         parent::write($record);

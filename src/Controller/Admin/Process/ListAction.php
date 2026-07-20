@@ -24,16 +24,18 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_USER')]
 class ListAction extends AbstractController
 {
-    public function __construct(private readonly IntlFormatterInterface $intlFormatter)
-    {
+    public function __construct(
+        private readonly IntlFormatterInterface $intlFormatter,
+        private readonly ProcessConfigurationsManager $processConfigurationsManager,
+    ) {
     }
 
-    public function __invoke(ProcessConfigurationsManager $processConfigurationsManager): Response
+    public function __invoke(): Response
     {
         return $this->render(
             '@CleverAgeUiProcess/admin/process/list.html.twig',
             [
-                'processes' => $processConfigurationsManager->getPublicProcesses(),
+                'processes' => $this->processConfigurationsManager->getPublicProcesses(),
                 'IntlFormatterService' => $this->intlFormatter,
             ]
         );

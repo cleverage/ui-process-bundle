@@ -21,6 +21,7 @@ use Doctrine\Migrations\AbstractMigration;
  */
 final class Version20241007152613 extends AbstractMigration
 {
+    #[\Override]
     public function getDescription(): string
     {
         return 'Add process_execution.context';
@@ -33,6 +34,7 @@ final class Version20241007152613 extends AbstractMigration
         }
     }
 
+    #[\Override]
     public function down(Schema $schema): void
     {
         if ($schema->hasTable('process_execution') && $schema->getTable('process_execution')->hasColumn('context')) {

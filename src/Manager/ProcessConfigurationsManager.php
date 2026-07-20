@@ -44,13 +44,13 @@ final class ProcessConfigurationsManager
     /** @return ProcessConfiguration[] */
     public function getPublicProcesses(): array
     {
-        return array_filter($this->getConfigurations(), fn (ProcessConfiguration $cfg) => $cfg->isPublic());
+        return array_filter($this->getConfigurations(), static fn (ProcessConfiguration $cfg) => $cfg->isPublic());
     }
 
     /** @return ProcessConfiguration[] */
     public function getPrivateProcesses(): array
     {
-        return array_filter($this->getConfigurations(), fn (ProcessConfiguration $cfg) => !$cfg->isPublic());
+        return array_filter($this->getConfigurations(), static fn (ProcessConfiguration $cfg) => !$cfg->isPublic());
     }
 
     /**
@@ -75,7 +75,7 @@ final class ProcessConfigurationsManager
     private function resolveUiOptions(array $options): array
     {
         $resolver = new OptionsResolver();
-        $resolver->setDefault('ui', function (OptionsResolver $uiResolver): void {
+        $resolver->setDefault('ui', static function (OptionsResolver $uiResolver): void {
             $uiResolver->setDefaults(
                 [
                     'source' => null,
@@ -84,9 +84,9 @@ final class ProcessConfigurationsManager
                     'ui_launch_mode' => 'modal',
                     'constraints' => [],
                     'run' => null,
-                    'default' => function (OptionsResolver $defaultResolver) {
+                    'default' => static function (OptionsResolver $defaultResolver) {
                         $defaultResolver->setDefault('input', null);
-                        $defaultResolver->setDefault('context', function (OptionsResolver $contextResolver) {
+                        $defaultResolver->setDefault('context', static function (OptionsResolver $contextResolver) {
                             $contextResolver->setPrototype(true);
                             $contextResolver->setRequired(['key', 'value']);
                         });
@@ -100,7 +100,7 @@ final class ProcessConfigurationsManager
                 'run ui option is deprecated. Use public option instead to hide a process from UI'
             );
             $uiResolver->setAllowedValues('entrypoint_type', ['text', 'file']);
-            $uiResolver->setNormalizer('constraints', fn (Options $options, array $values): array => (new ConstraintLoader())->buildConstraints($values));
+            $uiResolver->setNormalizer('constraints', static fn (Options $options, array $values): array => (new ConstraintLoader())->buildConstraints($values));
             $uiResolver->setAllowedValues('ui_launch_mode', ['modal', null, 'form']);
         });
         /**

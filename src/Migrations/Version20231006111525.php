@@ -21,6 +21,7 @@ use Doctrine\Migrations\AbstractMigration;
 
 final class Version20231006111525 extends AbstractMigration
 {
+    #[\Override]
     public function getDescription(): string
     {
         return 'Create tables log_record, process_execution and process_user';
@@ -70,6 +71,7 @@ final class Version20231006111525 extends AbstractMigration
         }
     }
 
+    #[\Override]
     public function down(Schema $schema): void
     {
         $this->addSql('ALTER TABLE log_record DROP CONSTRAINT FK_8ECECC333DAC0075');

@@ -19,7 +19,7 @@ use CleverAge\UiProcessBundle\Form\Type\LaunchType;
 use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
 use CleverAge\UiProcessBundle\Message\ProcessExecuteMessage;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Asset;
-use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
+use EasyCorp\Bundle\EasyAdminBundle\Provider\AdminContextProvider;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -40,21 +40,22 @@ use Symfony\Component\Uid\Uuid;
 #[IsGranted('ROLE_USER')]
 class LaunchAction extends AbstractController
 {
-    public function __construct(private readonly MessageBusInterface $messageBus)
-    {
+    public function __construct(
+        private readonly MessageBusInterface $messageBus,
+        private readonly RequestStack $requestStack,
+        private readonly ProcessConfigurationsManager $processConfigurationsManager,
+        private readonly AdminContextProvider $adminContextProvider,
+    ) {
     }
 
     public function __invoke(
-        RequestStack $requestStack,
         string $uploadDirectory,
-        ProcessConfigurationsManager $processConfigurationsManager,
-        AdminContext $context,
     ): Response {
-        $processCode = $requestStack->getMainRequest()?->get('process');
-        if (null === $processCode) {
+        $processCode = (string) $this->requestStack->getMainRequest()?->query->get('process');
+        if ('' === $processCode) {
             throw new MissingProcessException();
         }
-        $uiOptions = $processConfigurationsManager->getUiOptions($processCode);
+        $uiOptions = $this->processConfigurationsManager->getUiOptions($processCode);
         if (null === $uiOptions) {
             throw new \InvalidArgumentException('Missing UI Options');
         }
@@ -84,7 +85,7 @@ class LaunchAction extends AbstractController
             }
             $form->setData($default);
         }
-        $form->handleRequest($requestStack->getMainRequest());
+        $form->handleRequest($this->requestStack->getMainRequest());
         if ($form->isSubmitted() && $form->isValid()) {
             $input = $form->get('input')->getData();
             if ($input instanceof UploadedFile) {
@@ -104,7 +105,7 @@ class LaunchAction extends AbstractController
 
             return $this->redirectToRoute('process', ['routeName' => 'process_list']);
         }
-        $context->getAssets()->addJsAsset(Asset::fromEasyAdminAssetPackage('field-collection.js')->getAsDto());
+        $this->adminContextProvider->getContext()?->getAssets()->addJsAsset(Asset::fromEasyAdminAssetPackage('field-collection.js')->getAsDto());
 
         return $this->render(
             '@CleverAgeUiProcess/admin/process/launch.html.twig',
@@ -130,6 +131,7 @@ class LaunchAction extends AbstractController
         $this->messageBus->dispatch($message);
     }
 
+    #[\Override]
     protected function getUser(): ?User
     {
         /** @var User $user */

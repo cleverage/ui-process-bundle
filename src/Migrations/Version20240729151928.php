@@ -24,6 +24,7 @@ use Doctrine\Migrations\AbstractMigration;
  */
 final class Version20240729151928 extends AbstractMigration
 {
+    #[\Override]
     public function getDescription(): string
     {
         return 'Create table process_schedule';
@@ -41,6 +42,7 @@ final class Version20240729151928 extends AbstractMigration
         }
     }
 
+    #[\Override]
     public function down(Schema $schema): void
     {
         $this->addSql('DROP TABLE process_schedule');
