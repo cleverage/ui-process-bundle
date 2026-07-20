@@ -77,6 +77,26 @@ jobs:
           - php-version: '8.5'
             dependencies: highest
             allowed-to-fail: false
+            symfony-require: 7.4.*
+            variant: symfony/symfony:"7.4.*"
+          - php-version: '8.4'
+            dependencies: highest
+            allowed-to-fail: false
+            symfony-require: 8.*
+            variant: symfony/symfony:"8.*"
+          - php-version: '8.5'
+            dependencies: highest
+            allowed-to-fail: false
+            symfony-require: 6.4.*
+            variant: symfony/symfony:"6.4.*"
+          - php-version: '8.5'
+            dependencies: highest
+            allowed-to-fail: false
+            symfony-require: 7.4.*
+            variant: symfony/symfony:"7.4.*"
+          - php-version: '8.5'
+            dependencies: highest
+            allowed-to-fail: false
             symfony-require: 8.*
             variant: symfony/symfony:"8.*"
     steps:

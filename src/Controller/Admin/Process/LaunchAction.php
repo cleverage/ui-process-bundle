@@ -44,7 +44,7 @@ class LaunchAction extends AbstractController
         private readonly MessageBusInterface $messageBus,
         private readonly RequestStack $requestStack,
         private readonly ProcessConfigurationsManager $processConfigurationsManager,
-        private readonly AdminContextProvider $adminContextProvider,
+        private readonly AdminContextProvider $adminContextProvider
     ) {
     }
 
