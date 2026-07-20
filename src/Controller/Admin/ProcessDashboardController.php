@@ -34,7 +34,6 @@ class ProcessDashboardController extends AbstractDashboardController
     ) {
     }
 
-    #[Route('/process', name: 'process')]
     #[\Override]
     public function index(): Response
     {
