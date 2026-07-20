@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /*
  * This file is part of the CleverAge/UiProcessBundle package.
  *
@@ -35,6 +37,7 @@ return (new PhpCsFixer\Config())
         'header_comment' => ['header' => $fileHeaderComment],
         'modernize_strpos' => true,
         'get_class_to_class_keyword' => true,
+        'declare_strict_types' => true,
     ])
     ->setRiskyAllowed(true)
     ->setFinder(

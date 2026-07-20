@@ -59,8 +59,8 @@ class LaunchType extends AbstractType
             ]
         );
         $builder->get('context')->addModelTransformer(new CallbackTransformer(
-            fn ($data) => $data ?? [],
-            fn ($data) => array_column($data ?? [], 'value', 'key'),
+            static fn ($data) => $data ?? [],
+            static fn ($data) => array_column($data ?? [], 'value', 'key'),
         ));
     }
 
@@ -69,6 +69,7 @@ class LaunchType extends AbstractType
         $resolver->setRequired('process_code');
     }
 
+    #[\Override]
     public function getParent(): string
     {
         return FormType::class;

@@ -29,7 +29,7 @@ final class CronProcessMessageHandler
     public function __invoke(CronProcessMessage $message): void
     {
         $schedule = $message->processSchedule;
-        $context = array_merge(...array_map(fn ($ctx) => [$ctx['key'] => $ctx['value']], $schedule->getContext()));
+        $context = array_merge(...array_map(static fn ($ctx) => [$ctx['key'] => $ctx['value']], $schedule->getContext()));
         $this->bus->dispatch(
             new ProcessExecuteMessage($schedule->getProcess() ?? '', $schedule->getInput(), $context)
         );

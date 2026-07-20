@@ -50,6 +50,7 @@ class DoctrineProcessHandler extends AbstractProcessingHandler
         $this->enabled = false;
     }
 
+    #[\Override]
     public function __destruct()
     {
         $this->flush();
