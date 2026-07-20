@@ -18,6 +18,7 @@ use CleverAge\UiProcessBundle\Admin\Field\EnumField;
 use CleverAge\UiProcessBundle\Admin\Filter\ProcessExecutionDurationFilter;
 use CleverAge\UiProcessBundle\Entity\ProcessExecution;
 use CleverAge\UiProcessBundle\Repository\ProcessExecutionRepository;
+use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminRoute;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
@@ -111,6 +112,7 @@ class ProcessExecutionCrudController extends AbstractCrudController
             );
     }
 
+    #[AdminRoute('show-logs', 'show-logs')]
     public function showLogs(): RedirectResponse
     {
         /** @var AdminUrlGenerator $adminUrlGenerator */
@@ -135,6 +137,7 @@ class ProcessExecutionCrudController extends AbstractCrudController
         return $this->redirect($url);
     }
 
+    #[AdminRoute('download-logs', 'download-logs')]
     public function downloadLogFile(): Response
     {
         /** @var ProcessExecution $processExecution */
