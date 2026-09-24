@@ -51,9 +51,7 @@ readonly class HttpProcessExecuteValueResolver implements ValueResolverInterface
             } else {
                 $input = $request->request->get('input') ?? $request->query->get('input');
 
-                if (null === $input) {
-                    $input = $request->files->get('input');
-                }
+                $input ??= $request->files->get('input');
 
                 if ($input instanceof UploadedFile) {
                     $uploadFileName = $this->storageDir.\DIRECTORY_SEPARATOR.date('YmdHis').'_'.uniqid().'_'.$input->getClientOriginalName();

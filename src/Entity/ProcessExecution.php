@@ -50,7 +50,7 @@ class ProcessExecution implements \Stringable
      * @var array<string|int, mixed>
      */
     #[ORM\Column(type: Types::JSON, nullable: true)]
-    private ?array $context = [];
+    private ?array $context;
 
     public function getId(): ?int
     {
