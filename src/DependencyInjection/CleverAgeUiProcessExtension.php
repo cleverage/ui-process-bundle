@@ -86,7 +86,7 @@ final class CleverAgeUiProcessExtension extends Extension implements PrependExte
         $container->loadFromExtension(
             'doctrine_migrations',
             [
-                'migrations_paths' => ['CleverAge\UiProcessBundle\Migrations' => \dirname(__DIR__).'/Migrations'],
+                'migrations_paths' => ['CleverAge\UiProcessBundle\Migrations' => __DIR__.'/../Migrations'],
             ]
         );
         $container->prependExtensionConfig(
