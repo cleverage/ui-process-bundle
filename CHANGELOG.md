@@ -3,6 +3,7 @@ Latest
 
 ## Changes
 * [#78](https://github.com/cleverage/ui-process-bundle/issues/78) Update quality stack: use Rector `withComposerBased()` sets (removed `SYMFONY_64` / `PHPUNIT_100` sets), declare used Symfony packages and PHPUnit range in composer.json, apply quality tools fixes
+* [#80](https://github.com/cleverage/ui-process-bundle/issues/80) Add missing documentations: reference pages for bundle configuration, process UI options, users & security, process executions & logs, scheduler, HTTP API, console commands and messenger, cookbooks and troubleshooting. Harmonize and fix existing documentation.
 
 v3.0
 ------
