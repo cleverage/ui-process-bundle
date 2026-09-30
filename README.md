@@ -2,7 +2,7 @@ CleverAge/UiProcessBundle
 =======================
 
 This bundle is a part of the [CleverAge/ProcessBundle](https://github.com/cleverage/process-bundle) project. 
-It provides a simple UX using [EasyAdmin](https://symfony.com/bundles/EasyAdminBundle/4.x/index.html) on Process bundle.
+It provides a simple UX using [EasyAdmin](https://symfony.com/bundles/EasyAdminBundle/current/index.html) on Process bundle.
 
 Compatible with [Symfony stable version and latest Long-Term Support (LTS) release](https://symfony.com/releases).
 

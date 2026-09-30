@@ -1,6 +1,40 @@
+## Documentation
+
+- [Prerequisite](#prerequisite)
+- [Installation](#installation)
+- [Quick setup](#quick-setup)
+- Cookbooks
+    - [Launch a CSV import from a form with file upload](cookbooks/form_file_upload.md)
+    - [Schedule a recurring process](cookbooks/scheduled_process.md)
+    - [Launch a process through the HTTP API](cookbooks/http_api_launch.md)
+- Reference
+    - [Bundle configuration](reference/01-bundle_configuration.md)
+    - [Process UI options](reference/02-process_ui_options.md)
+    - [Users & security](reference/03-users_and_security.md)
+    - [Process executions & logs](reference/04-process_executions_and_logs.md)
+    - [Scheduler](reference/05-scheduler.md)
+    - [HTTP API](reference/06-http_api.md)
+    - [Console commands](reference/07-console_commands.md)
+    - [Messenger & asynchronous execution](reference/08-messenger.md)
+- [Troubleshooting](troubleshooting.md)
+- [CleverAge/ProcessBundle documentation](https://github.com/cleverage/process-bundle/blob/main/docs/index.md)
+
 ## Prerequisite
 
-CleverAge/ProcessBundle must be [installed](https://github.com/cleverage/process-bundle/blob/main/docs/01-quick_start.md#installation.
+CleverAge/ProcessBundle must be [installed](https://github.com/cleverage/process-bundle/blob/main/docs/01-quick_start.md#installation).
+
+This bundle provides a web UI, built on [EasyAdmin](https://symfony.com/bundles/EasyAdminBundle/current/index.html),
+on top of the process bundle. It does not provide any process task. Its features are:
+- a process list, where each public process can be launched (with a confirmation modal, a form to set input and
+  context, or directly),
+- the history of every process execution (whatever the way it was launched: UI, console, HTTP, scheduler), with its
+  status, duration, report and logs (stored in database and in a log file),
+- a scheduler to run processes periodically (cron or periodical expressions),
+- user management (login form, roles, API tokens),
+- an HTTP endpoint to launch a process from another application.
+
+It relies on Doctrine ORM (users, executions, logs, schedules), Symfony Messenger (asynchronous execution), Symfony
+Scheduler and Monolog.
 
 ## Installation
 
@@ -19,170 +53,97 @@ Remember to add the following line to `config/bundles.php` (not required if Symf
 CleverAge\UiProcessBundle\CleverAgeUiProcessBundle::class => ['all' => true],
 ```
 
-## Configuration
+## Quick setup
 
 ### Import routes
 
 ```yaml
+# config/routes.yaml
 ui-process-bundle:
-  resource: '@CleverAgeUiProcessBundle/config/routes/*.yaml'
+    resource: '@CleverAgeUiProcessBundle/config/routes/*.yaml'
 ```
 
-### Doctrine ORM Configuration
+This imports the bundle controllers and the EasyAdmin routes (do not import `easyadmin.routes` a second time).
+See [routes](reference/03-users_and_security.md#routes).
 
-* Run doctrine migration
-* Create a user using `cleverage:ui-process:user-create` console.
+### Security
 
-Now you can access UI Process via http://your-domain.com/process
+The bundle automatically configures a user provider and the `main` firewall (login form, logout, API token
+authenticator). You only need a password hasher for the bundle `User` entity, which is the Symfony default:
 
-## Full configuration
+```yaml
+# config/packages/security.yaml
+security:
+    password_hashers:
+        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
+```
+
+See [users & security](reference/03-users_and_security.md).
+
+### Database
+
+The bundle registers its own Doctrine migrations (`CleverAge\UiProcessBundle\Migrations`). Run them, then create a
+first user:
+
+```bash
+bin/console doctrine:migrations:migrate
+bin/console cleverage:ui-process:user-create admin@example.com 'my-password'
+```
+
+### Assets
+
+The default logo is served from the bundle `public/` directory:
+
+```bash
+bin/console assets:install
+```
+
+### Workers
+
+Processes launched from the UI, the HTTP API (queued) or the scheduler are executed asynchronously with Symfony
+Messenger. Keep the following workers running (see [messenger](reference/08-messenger.md)):
+
+```bash
+bin/console messenger:consume execute_process
+bin/console messenger:consume scheduler_cron
+```
+
+Now you can access the UI via http://your-domain.com/process.
+
+### Configuration
+
+The bundle works without configuration. Every option is described in
+[bundle configuration](reference/01-bundle_configuration.md):
 
 ```yaml
 # config/packages/clever_age_ui_process.yaml
-
 clever_age_ui_process:
-  security:
-    roles: ['ROLE_ADMIN'] # Roles displayed inside user edit form
-  logs:
-    store_in_database: true # enable/disable store log in database (log_record table)
-    database_level: Debug (on dev env) or Info # min log level to store log record in database
-    file_level: Debug (on dev env) or Info # min log level to store log record in file
-    report_increment_level: Warning # min log level to increment process execution report
-  design:
-    logo_path: 'bundles/cleverageuiprocess/logo.jpg' # logo displayed in UI navigation toolbar
+    security:
+        roles: ['ROLE_ADMIN']
+    logs:
+        store_in_database: true
+        database_level: Info # Debug on dev environment
+        file_level: Info # Debug on dev environment
+        report_increment_level: Warning
+    design:
+        logo_path: 'bundles/cleverageuiprocess/logo.jpg'
 ```
 
-## Features
+The way each process is displayed and launched from the UI is configured in the process itself, under
+`options.ui` (see [process UI options](reference/02-process_ui_options.md)):
 
-### Launch process via UI
-From UI "Process List" menu entry you can run a process by clicking on "Rocket" action.
-You can manage this behaviour by setting some ui option `ui_launch_mode`
-
-|      Value      |                          UI behaviour                          |
-|:---------------:|:--------------------------------------------------------------:|
-| modal (default) | On click, open confirmation modal to confirm process execution | 
-|      form       |    On click, open a form to set input and context execution    |
-|      null       |              Run process without any confirmation              | 
-
-### Launch process via http request
-You can launch a process via http post request
-First you need to generate a token via UI User edit form. The UiProcess generate for you a auth token (keep it in secured area, it will display once).
-
-That's all, now you can launch a process via http post request
-
-***Curl sample***
-```bash
-curl --location 'http://localhost/http/process/execute' \
---header 'Authorization: Bearer myBearerToken' \
---form 'code="demo.upload_and_run"' \
---form 'input="/path/to/your/file.csv"' \
---form 'context="{\"foo\": \"bar\", \"delimiter\": \";\"}"'
+```yaml
+clever_age_process:
+    configurations:
+        app.import_products:
+            entry_point: read
+            options:
+                ui:
+                    source: ERP
+                    target: Database
+                    ui_launch_mode: form
+                    entrypoint_type: file
+            tasks:
+                read:
+                    # ...
 ```
-
-```bash
-curl --location 'http://localhost/http/process/execute' \
---header 'Content-Type: application/json' \
---header 'Authorization: Bearer d641d254aed12733758a3a4247559868' \
---header 'Cookie: PHPSESSID=m8l9s5sniknv1b0jb798f8sri7; main_auth_profile_token=2f3d24' \
---data '{
-"code": "demo.die",
-"context": {"foo": "bar"}
-}'
-```
-
-```bash
-curl --location 'http://localhost/http/process/execute' \
---header 'Authorization: Bearer myBearerToken' \
---form 'code="demo.dummy"' \
---form 'queue="false"'
-```
-
-* Query string code parameter must be a valid process code
-* Header Authorization: Bearer is the previously generated token
-* input could be string or file representation
-* you can pass multiple context values
-* queue define if the process should be queued (default) or directly run
-
-
-### Scheduler
-You can schedule process execution via UI using cron expression (*/5 * * * *) or periodical triggers (5 seconds)
-For more details about cron expression and periodical triggers visit 
-https://symfony.com/doc/6.4/scheduler.html#cron-expression-triggers and https://symfony.com/doc/6.4/scheduler.html#periodical-triggers
-
-In order to make scheduler process working be sure the following command is running
-```bash
-bin/console messenger:consume scheduler_cron
-```
-See more details about ***messenger:consume*** command in consume message section
-
-## Consume Messages
-Symfony messenger is used in order to run process via UI or schedule process
-
-* To consume process launched via UI make sure the following command is running*
-```bash
-bin/console messenger:consume execute_process
-```
-
-* To consume scheduled process make sure the following command is running*
-```bash
-bin/console messenger:consume scheduler_cron
-```
-You can pass some options to messenger:consume command
-```
-Options:
-  -l, --limit=LIMIT                  Limit the number of received messages
-  -f, --failure-limit=FAILURE-LIMIT  The number of failed messages the worker can consume
-  -m, --memory-limit=MEMORY-LIMIT    The memory limit the worker can consume
-  -t, --time-limit=TIME-LIMIT        The time limit in seconds the worker can handle new messages
-      --sleep=SLEEP                  Seconds to sleep before asking for new messages after no messages were found [default: 1]
-  -b, --bus=BUS                      Name of the bus to which received messages should be dispatched (if not passed, bus is determined automatically)
-      --queues=QUEUES                Limit receivers to only consume from the specified queues (multiple values allowed)
-      --no-reset                     Do not reset container services after each message
-```
-
-It's recommended to use supervisor app or equivalent to keep command alive
-
-***Sample supervisor configuration***
-```
-[program:scheduler]
-command=php /var/www/html/bin/console messenger:consume scheduler_cron
-autostart=false
-autorestart=true
-startretries=1
-startsecs=1
-redirect_stderr=true
-stderr_logfile=/var/log/supervisor.scheduler-err.log
-stdout_logfile=/var/log/supervisor.scheduler-out.log
-user=www-data
-killasgroup=true
-stopasgroup=true
-
-[program:process]
-command=php /var/www/html/bin/console messenger:consume execute_process
-autostart=false
-autorestart=true
-startretries=1
-startsecs=1
-redirect_stderr=true
-stderr_logfile=/var/log/supervisor.process-err.log
-stdout_logfile=/var/log/supervisor.process-out.log
-user=www-data
-killasgroup=true
-stopasgroup=true
-``` 
-
-## Troubleshooting
-
-### PHP Fatal error: Allowed memory size of xxx bytes exhausted
-
-When `store_in_database` option is set, with lower value of `database_level` option, the process may generate many LogRecord.
-On debug environment, profiling too much queries cause memory exhaustion. So, you can :
-- Set `doctrine.dbal.profiling_collect_backtrace: false`
-- Increase `memory_limit` in php.ini
-- Set `clever_age_ui_process.logs.store_in_database: false` or improve value of `clever_age_ui_process.logs.database_level`
-- Use `--no-debug` flag for `cleverage:process:execute`
-
-### {"message":"Missing auth token."} Response when launch process via http request
-
-If you use apache2 webserver, `SetEnvIfNoCase ^Authorization$ "(.+)" HTTP_AUTHORIZATION=$1` VirtualHost directive must be 
-uncomment to "force Apache to pass the Authorization header to PHP: required for "basic_auth" under PHP-FPM and FastCGI"
