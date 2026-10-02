@@ -1,0 +1,98 @@
+parameters:
+    upload_directory: '%kernel.cache_dir%/uploads'
+
+framework:
+    secret: 'test'
+    test: true
+    http_method_override: false
+    session:
+        storage_factory_id: session.storage.factory.mock_file
+    router:
+        utf8: true
+    messenger:
+        transports:
+            execute_process: 'in-memory://'
+            scheduler_cron: 'in-memory://'
+    validation:
+        email_validation_mode: html5
+
+security:
+    password_hashers:
+        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface:
+            algorithm: plaintext
+    firewalls:
+        main:
+            lazy: true
+
+doctrine:
+    dbal:
+        url: 'sqlite:///%kernel.cache_dir%/test.db'
+    orm:
+        auto_mapping: true
+        # As the Symfony recipe: the indexes of the bundle entities use snake_case column names
+        naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
+        mappings:
+            CleverAgeUiProcessBundle:
+                type: attribute
+                is_bundle: true
+
+monolog:
+    handlers:
+        main:
+            type: 'null'
+
+twig:
+    default_path: '%kernel.project_dir%/templates'
+
+clever_age_process:
+    configurations:
+        test.process:
+            description: 'Process used by the functional tests'
+            tasks:
+                data:
+                    service: '@CleverAge\ProcessBundle\Task\DummyTask'
+        test.form:
+            description: 'Process launched with the UI form, text input'
+            entry_point: data
+            options:
+                ui:
+                    ui_launch_mode: form
+                    entrypoint_type: text
+                    default:
+                        input: 'default input'
+                        context:
+                            - key: 'key1'
+                              value: 'value1'
+            tasks:
+                data:
+                    service: '@CleverAge\ProcessBundle\Task\DummyTask'
+        test.upload:
+            description: 'Process launched with the UI form, file input'
+            entry_point: data
+            options:
+                ui:
+                    ui_launch_mode: form
+                    entrypoint_type: file
+                    # Required with Symfony 8: without it, ProcessConfigurationsManager returns the `default` nested
+                    # options closure (nested options defined with setDefault() are no longer supported)
+                    default:
+                        input: 'not used by a file input'
+                        context: []
+            tasks:
+                data:
+                    service: '@CleverAge\ProcessBundle\Task\DummyTask'
+        test.private:
+            public: false
+            tasks:
+                data:
+                    service: '@CleverAge\ProcessBundle\Task\DummyTask'
+        test.failing:
+            description: 'Process failing on initialization (missing required option)'
+            tasks:
+                data:
+                    service: '@CleverAge\ProcessBundle\Task\ConstantOutputTask'
+
+twig_component:
+    anonymous_template_directory: 'components/'
+    defaults:
+        App\Twig\Components\: 'components/'

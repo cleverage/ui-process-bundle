@@ -1,0 +1,3 @@
+cleverage_ui_process:
+    resource: '@CleverAgeUiProcessBundle/config/routes'
+    type: directory

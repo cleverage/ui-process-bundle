@@ -46,6 +46,19 @@ class LogRecordTest extends TestCase
         self::assertFalse($this->createLogRecord([])->contextIsEmpty());
     }
 
+    public function testAccessors(): void
+    {
+        $execution = new ProcessExecution('demo.process', 'demo.process.log');
+        $record = new LogRecord(new \Monolog\LogRecord(new \DateTimeImmutable('2026-01-01 10:00:00'), 'cleverage_process', Level::Warning, 'message', []), $execution);
+
+        self::assertNull($record->getId());
+        self::assertSame($execution, $record->getProcessExecution());
+        self::assertSame('cleverage_process', $record->channel);
+        self::assertSame(Level::Warning->value, $record->level);
+        self::assertSame('message', $record->message);
+        self::assertSame('2026-01-01 10:00:00', $record->createdAt->format('Y-m-d H:i:s'));
+    }
+
     /**
      * @param array<mixed> $context
      */
