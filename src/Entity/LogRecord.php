@@ -61,9 +61,17 @@ class LogRecord
         $this->createdAt = $record->datetime;
     }
 
-    public function contextIsEmpty(): bool
+    public function hasContext(): bool
     {
         return [] !== $this->context;
+    }
+
+    /**
+     * @deprecated misnamed, returns true when the context is NOT empty: use hasContext() instead
+     */
+    public function contextIsEmpty(): bool
+    {
+        return $this->hasContext();
     }
 
     public function getProcessExecution(): ProcessExecution

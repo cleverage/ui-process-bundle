@@ -20,7 +20,7 @@ use Monolog\LogRecord;
 
 class ProcessHandler extends StreamHandler
 {
-    private Level $reportIncrementLevel = Level::Error;
+    private Level $reportIncrementLevel = Level::Warning;
     private bool $filenameSet = false;
 
     public function __construct(
