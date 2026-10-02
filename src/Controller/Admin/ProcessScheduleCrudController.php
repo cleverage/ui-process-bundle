@@ -120,6 +120,11 @@ class ProcessScheduleCrudController extends AbstractCrudController
         return parent::index($context);
     }
 
+    /**
+     * Only detects a worker running on the same host as the web server (it looks for it in the local processes): with
+     * workers on another host or container, the warning is displayed although the scheduler runs (see
+     * docs/reference/05-scheduler.md).
+     */
     private function schedulerIsRunning(): bool
     {
         $process = Process::fromShellCommandline('ps -faux');
