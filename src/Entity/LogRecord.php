@@ -61,17 +61,20 @@ class LogRecord
         $this->createdAt = $record->datetime;
     }
 
-    public function hasContext(): bool
+    /**
+     * Not named hasContext(): the PropertyAccessor would use it to read the "context" property (e.g. in EasyAdmin).
+     */
+    public function hasContextInfo(): bool
     {
         return [] !== $this->context;
     }
 
     /**
-     * @deprecated misnamed, returns true when the context is NOT empty: use hasContext() instead
+     * @deprecated misnamed, returns true when the context is NOT empty: use hasContextInfo() instead
      */
     public function contextIsEmpty(): bool
     {
-        return $this->hasContext();
+        return $this->hasContextInfo();
     }
 
     public function getProcessExecution(): ProcessExecution
