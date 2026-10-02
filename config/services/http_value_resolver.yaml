@@ -6,10 +6,3 @@ services:
         arguments:
             - '%upload_directory%'
             - '@serializer'
-
-    cleverage_ui_process.http_value_resolver.process_configuration:
-        class: CleverAge\UiProcessBundle\Http\ValueResolver\ProcessConfigurationValueResolver
-        autoconfigure: true
-        public: false
-        arguments:
-            - '@cleverage_process.registry.process_configuration'
