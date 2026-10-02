@@ -1,6 +1,14 @@
 Latest
 ------
 
+v3.0.2                                                                                                                                           
+------                                                                                                                                           
+                                                                                                                                                   
+## Fixes                                                                                                                                         
+* [GHSA-r3m7-69c2-2vmp](…/security/advisories/GHSA-r3m7-69c2-2vmp) ProcessScheduleCrudController: require `ROLE_USER`, so that the scheduler     
+pages require an authenticated user again (since EasyAdmin 5, the `#[IsGranted]` of the dashboard does not apply to the CRUD routes);            
+ProcessExecuteController: same attribute, as defense in depth. Add a test checking that every controller is protected.
+
 v3.0.1
 ------
 
