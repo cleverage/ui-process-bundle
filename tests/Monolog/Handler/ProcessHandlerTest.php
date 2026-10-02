@@ -77,6 +77,18 @@ class ProcessHandlerTest extends TestCase
         self::assertSame([], glob($this->directory.'/*'));
     }
 
+    public function testFilename(): void
+    {
+        $handler = new ProcessHandler($this->directory, $this->createStub(ProcessExecutionManager::class));
+        self::assertNull($handler->getFilename());
+
+        $handler->setFilename('process.log');
+        self::assertSame($this->directory.'/process.log', $handler->getFilename());
+
+        $handler->close();
+        self::assertNull($handler->getFilename());
+    }
+
     private function createRecord(Level $level): LogRecord
     {
         return new LogRecord(new \DateTimeImmutable(), 'cleverage_process', $level, strtolower($level->name).' message');

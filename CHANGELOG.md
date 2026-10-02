@@ -2,6 +2,7 @@ Latest
 ------
 
 ## Changes
+* [#81](https://github.com/cleverage/ui-process-bundle/issues/81) Add missing tests: functional tests of the UI and the HTTP API on a test application (SQLite, in-memory Messenger), unit tests of every class (DI, command, migrations, entities, managers, message handlers, scheduler, Monolog handlers, forms, EasyAdmin fields and filters, Twig, validators); `memory_limit` set to 512M for the test suite.
 * [#83](https://github.com/cleverage/ui-process-bundle/issues/83) Remove `UploadAndExecuteAction` (route `process_upload_and_execute`), `ProcessUploadFileType` and `ProcessConfigurationValueResolver`: the action was broken and unreachable, file uploads are handled by `LaunchAction` (`entrypoint_type: file`).
 * [#84](https://github.com/cleverage/ui-process-bundle/issues/84) Add `LogRecord::hasContextInfo()`, deprecate the misnamed `LogRecord::contextIsEmpty()` (it returns `true` when the context is not empty). Add tests.
 * [#85](https://github.com/cleverage/ui-process-bundle/issues/85) `ProcessHandler`: default report increment level aligned on the bundle configuration (`Warning`); declare the `symfony/ux-twig-component` dependency. Add tests.
