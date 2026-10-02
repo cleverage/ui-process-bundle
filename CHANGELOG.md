@@ -6,13 +6,11 @@ Latest
 * [#84](https://github.com/cleverage/ui-process-bundle/issues/84) Add `LogRecord::hasContext()`, deprecate the misnamed `LogRecord::contextIsEmpty()` (it returns `true` when the context is not empty). Add tests.
 * [#85](https://github.com/cleverage/ui-process-bundle/issues/85) `ProcessHandler`: default report increment level aligned on the bundle configuration (`Warning`); declare the `symfony/ux-twig-component` dependency. Add tests.
 
-v3.0.2                                                                                                                                           
-------                                                                                                                                           
-                                                                                                                                                   
-## Fixes                                                                                                                                         
-* [GHSA-r3m7-69c2-2vmp](…/security/advisories/GHSA-r3m7-69c2-2vmp) ProcessScheduleCrudController: require `ROLE_USER`, so that the scheduler     
-pages require an authenticated user again (since EasyAdmin 5, the `#[IsGranted]` of the dashboard does not apply to the CRUD routes);            
-ProcessExecuteController: same attribute, as defense in depth. Add a test checking that every controller is protected.
+v3.0.2
+------
+
+## Fixes
+* [GHSA-r3m7-69c2-2vmp](https://github.com/cleverage/ui-process-bundle/security/advisories/GHSA-r3m7-69c2-2vmp) ProcessScheduleCrudController: require `ROLE_USER`, so that the scheduler pages require an authenticated user again (since EasyAdmin 5, the `#[IsGranted]` of the dashboard does not apply to the CRUD routes); ProcessExecuteController: same attribute, as defense in depth. Add a test checking that every controller is protected.
 
 v3.0.1
 ------
