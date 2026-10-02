@@ -58,7 +58,7 @@ class LogRecordCrudController extends AbstractCrudController
             DateTimeField::new('createdAt')->setFormat('short', 'medium'),
             ContextField::new('context')
                 ->onlyOnDetail(),
-            BooleanField::new('hasContext', 'Has context info ?')
+            BooleanField::new('hasContextInfo', 'Has context info ?')
                 ->onlyOnIndex()
                 ->renderAsSwitch(false),
         ];

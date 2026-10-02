@@ -3,7 +3,7 @@ Latest
 
 ## Changes
 * [#83](https://github.com/cleverage/ui-process-bundle/issues/83) Remove `UploadAndExecuteAction` (route `process_upload_and_execute`), `ProcessUploadFileType` and `ProcessConfigurationValueResolver`: the action was broken and unreachable, file uploads are handled by `LaunchAction` (`entrypoint_type: file`).
-* [#84](https://github.com/cleverage/ui-process-bundle/issues/84) Add `LogRecord::hasContext()`, deprecate the misnamed `LogRecord::contextIsEmpty()` (it returns `true` when the context is not empty). Add tests.
+* [#84](https://github.com/cleverage/ui-process-bundle/issues/84) Add `LogRecord::hasContextInfo()`, deprecate the misnamed `LogRecord::contextIsEmpty()` (it returns `true` when the context is not empty). Add tests.
 * [#85](https://github.com/cleverage/ui-process-bundle/issues/85) `ProcessHandler`: default report increment level aligned on the bundle configuration (`Warning`); declare the `symfony/ux-twig-component` dependency. Add tests.
 
 v3.0.2

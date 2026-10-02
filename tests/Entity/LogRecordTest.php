@@ -19,15 +19,24 @@ use Monolog\Level;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\PropertyAccess\PropertyAccess;
 
 #[CoversClass(LogRecord::class)]
 #[UsesClass(ProcessExecution::class)]
 class LogRecordTest extends TestCase
 {
-    public function testHasContext(): void
+    public function testHasContextInfo(): void
     {
-        self::assertTrue($this->createLogRecord(['file' => 'a.txt'])->hasContext());
-        self::assertFalse($this->createLogRecord([])->hasContext());
+        self::assertTrue($this->createLogRecord(['file' => 'a.txt'])->hasContextInfo());
+        self::assertFalse($this->createLogRecord([])->hasContextInfo());
+    }
+
+    public function testContextIsReadableByThePropertyAccessor(): void
+    {
+        // EasyAdmin reads the fields with the PropertyAccessor: a hasContext() method would be returned for "context"
+        $context = PropertyAccess::createPropertyAccessor()->getValue($this->createLogRecord(['file' => 'a.txt']), 'context');
+
+        self::assertSame(['file' => 'a.txt'], $context);
     }
 
     public function testDeprecatedContextIsEmptyIsUnchanged(): void
