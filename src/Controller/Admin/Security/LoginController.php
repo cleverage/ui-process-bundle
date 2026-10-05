@@ -16,17 +16,20 @@ namespace CleverAge\UiProcessBundle\Controller\Admin\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
 class LoginController extends AbstractController
 {
     #[Route('/process/login', name: 'process_login')]
-    public function __invoke(): Response
+    public function __invoke(AuthenticationUtils $authenticationUtils): Response
     {
         return $this->render(
             '@CleverAgeUiProcess/admin/login.html.twig',
             [
                 'page_title' => 'Login',
                 'target_path' => '/process',
+                'error' => $authenticationUtils->getLastAuthenticationError(),
+                'last_username' => $authenticationUtils->getLastUsername(),
             ]
         );
     }

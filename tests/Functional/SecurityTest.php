@@ -125,6 +125,10 @@ class SecurityTest extends FunctionalTestCase
         $this->client->submit($form);
 
         self::assertResponseRedirects('http://localhost/process/login');
+        $crawler = $this->client->followRedirect();
+        self::assertSelectorTextContains('.alert-danger', 'Invalid credentials.');
+        self::assertSame('admin@example.com', $crawler->filter('#username')->attr('value'));
+
         $this->client->request('GET', '/process');
         self::assertResponseRedirects('http://localhost/process/login');
     }
