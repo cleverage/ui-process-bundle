@@ -43,6 +43,13 @@ class DoctrineProcessHandlerTest extends TestCase
                 $persisted[] = $entity;
             });
         $entityManager->expects(self::exactly(2))->method('flush');
+        /** @var \ArrayObject<int, object> $detached */
+        $detached = new \ArrayObject();
+        $entityManager->expects(self::exactly(2))
+            ->method('detach')
+            ->willReturnCallback(static function (object $entity) use ($detached): void {
+                $detached[] = $entity;
+            });
 
         $handler = $this->createHandler($entityManager, $processExecution);
         $handler->handle($this->createRecord(Level::Info, 'first'));
@@ -57,6 +64,8 @@ class DoctrineProcessHandlerTest extends TestCase
         self::assertSame($processExecution, $first->getProcessExecution());
         self::assertSame('second', $second->message);
         self::assertSame(Level::Error->value, $second->level);
+        // Only the persisted log entities are detached after the flush
+        self::assertSame($persisted->getArrayCopy(), $detached->getArrayCopy());
 
         // Records are flushed only once
         $handler->flush();
@@ -93,6 +102,7 @@ class DoctrineProcessHandlerTest extends TestCase
         $entityManager = $this->createMock(EntityManagerInterface::class);
         $entityManager->expects(self::never())->method('persist');
         $entityManager->expects(self::once())->method('flush');
+        $entityManager->expects(self::never())->method('detach');
 
         $handler = $this->createHandler($entityManager, null);
         $handler->handle($this->createRecord(Level::Info, 'message'));

@@ -62,15 +62,19 @@ class DoctrineProcessHandler extends AbstractProcessingHandler
         if (!$this->enabled) {
             return;
         }
+        $entities = [];
         foreach ($this->records as $record) {
             if (($currentProcessExecution = $this->processExecutionManager?->getCurrentProcessExecution()) instanceof ProcessExecution) {
                 $entity = new \CleverAge\UiProcessBundle\Entity\LogRecord($record, $currentProcessExecution);
                 $this->em?->persist($entity);
+                $entities[] = $entity;
             }
         }
         $this->em?->flush();
-        foreach ($this->records as $record) {
-            $this->em?->detach($record);
+        // Written log records are no longer needed: detached so that the identity map does not grow during long
+        // processes (detach is not cascaded to the process execution, see LogRecord::$processExecution)
+        foreach ($entities as $entity) {
+            $this->em?->detach($entity);
         }
         $this->records = new ArrayCollection();
     }
