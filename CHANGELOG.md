@@ -12,6 +12,7 @@ Latest
 * [#91](https://github.com/cleverage/ui-process-bundle/issues/91) `LoginController`: pass `error` and `last_username` (`AuthenticationUtils`) to the login template, so that a failed login displays the error message and keeps the email. Test updated.
 * [#95](https://github.com/cleverage/ui-process-bundle/issues/95) `DoctrineProcessHandler`: detach the written `LogRecord` entities after each flush (the Monolog records were detached instead), so that the identity map no longer grows during long processes; `LogRecord::$processExecution` cascade reduced from `all` to `persist`, so that detaching a log record does not detach the current process execution (which would then be inserted again). Add tests.
 * [#97](https://github.com/cleverage/ui-process-bundle/issues/97) Align the mapping and the schema created by the migrations: `ProcessSchedule::$input` mapped as `VARCHAR(255)` as created by the migrations (was `TEXT`); `Version20261005120000` migration (MySQL / MariaDB, PostgreSQL) making `log_record.process_execution_id` `NOT NULL` as in the mapping (log records without process execution are deleted).
+* [#99](https://github.com/cleverage/ui-process-bundle/issues/99) Fix the migrations on PostgreSQL (they could not create a working schema): id columns created as identity columns (the sequences were not used: inserts failed with the IDENTITY generation), `process_schedule` created with the PostgreSQL syntax (`AUTO_INCREMENT` failed). PostgreSQL support documented.
 
 v3.0.2
 ------
