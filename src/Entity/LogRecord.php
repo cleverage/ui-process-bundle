@@ -50,7 +50,7 @@ class LogRecord
 
     public function __construct(
         \Monolog\LogRecord $record,
-        #[ORM\ManyToOne(targetEntity: ProcessExecution::class, cascade: ['all'])]
+        #[ORM\ManyToOne(targetEntity: ProcessExecution::class, cascade: ['persist'])]
         #[ORM\JoinColumn(name: 'process_execution_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
         private readonly ProcessExecution $processExecution,
     ) {
