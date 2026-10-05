@@ -82,11 +82,10 @@ See [users & security](reference/03-users_and_security.md).
 
 ### Database
 
-Supported databases: **MySQL / MariaDB** and **PostgreSQL**.
+Supported databases: **MySQL / MariaDB** and **PostgreSQL** (maintained versions).
 
-The bundle registers its own Doctrine migrations (`CleverAge\UiProcessBundle\Migrations`), written for these two
-platforms (on another platform, e.g. SQLite, they do nothing: create the schema with `doctrine:schema:update`). Run
-them, then create a first user:
+The bundle registers its own Doctrine migrations (`CleverAge\UiProcessBundle\Migrations`). Run them, then create a
+first user:
 
 ```bash
 bin/console doctrine:migrations:migrate
