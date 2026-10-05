@@ -68,6 +68,7 @@
     "symfony/scheduler": "^6.4 || ^7.4 || ^8",
     "symfony/security-bundle": "^6.4 || ^7.4 || ^8",
     "symfony/security-core": "^6.4 || ^7.4 || ^8",
+    "symfony/security-csrf": "^6.4 || ^7.4 || ^8",
     "symfony/security-http": "^6.4 || ^7.4 || ^8",
     "symfony/serializer": "^6.4 || ^7.4 || ^8",
     "symfony/string": "^6.4 || ^7.4 || ^8",

@@ -133,6 +133,23 @@ class SecurityTest extends FunctionalTestCase
         self::assertResponseRedirects('http://localhost/process/login');
     }
 
+    public function testLoginWithAnInvalidCsrfToken(): void
+    {
+        $this->createUser('admin@example.com', ['ROLE_ADMIN'], 'secret');
+
+        $crawler = $this->client->request('GET', '/process/login');
+        self::assertCount(1, $crawler->filter('input[type="hidden"][name="_csrf_token"]'));
+        $form = $crawler->filter('form')->form(['_username' => 'admin@example.com', '_password' => 'secret']);
+        $form['_csrf_token'] = 'invalid';
+        $this->client->submit($form);
+
+        self::assertResponseRedirects('http://localhost/process/login');
+        $this->client->followRedirect();
+        self::assertSelectorTextContains('.alert-danger', 'Invalid CSRF token.');
+        $this->client->request('GET', '/process');
+        self::assertResponseRedirects('http://localhost/process/login');
+    }
+
     public function testLogout(): void
     {
         $this->login();

@@ -124,6 +124,7 @@ final class CleverAgeUiProcessExtension extends Extension implements PrependExte
                         'form_login' => [
                             'login_path' => 'process_login',
                             'check_path' => 'process_login',
+                            'enable_csrf' => true,
                         ],
                         'logout' => [
                             'path' => 'process_logout',

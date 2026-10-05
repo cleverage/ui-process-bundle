@@ -20,6 +20,7 @@ security:
             form_login:
                 login_path: process_login
                 check_path: process_login
+                enable_csrf: true
             logout:
                 path: process_logout
                 target: process_login
@@ -37,6 +38,10 @@ security:
 ```
 
 The UI pages are protected by `#[IsGranted]` attributes, no `access_control` rule is required.
+
+The login form is protected by a CSRF token (token id `authenticate`, parameter `_csrf_token`): the Symfony CSRF
+protection must be enabled (`framework.csrf_protection`, enabled by default when the session is). If you override the
+login template, keep the `_csrf_token` field (the `csrf_token_intention` variable passed by `LoginController`).
 
 Roles
 -----

@@ -11,6 +11,10 @@ Latest
 * [#89](https://github.com/cleverage/ui-process-bundle/issues/89) `ProcessConfigurationsManager`: resolve the `ui.default` option with a normalizer instead of nested options defined with `setDefault()` (deprecated since symfony/options-resolver 7.3, removed in 8.0). With Symfony 8, a process launched with the UI form (`ui_launch_mode: form`) without `ui.default` no longer fails (`Cannot use object of type Closure as array`), and `ui.default` is validated again. Add tests.
 * [#91](https://github.com/cleverage/ui-process-bundle/issues/91) `LoginController`: pass `error` and `last_username` (`AuthenticationUtils`) to the login template, so that a failed login displays the error message and keeps the email. Test updated.
 
+## BC break
+* [#93](https://github.com/cleverage/ui-process-bundle/issues/93) Protect the login form against CSRF: `enable_csrf` on the prepended `form_login` configuration, `csrf_token_intention` passed to the login template, `symfony/security-csrf` declared. Add tests.
+* Please follow [UPGRADE.md v4.0](UPGRADE.md#v40)
+
 v3.0.2
 ------
 
