@@ -14,7 +14,7 @@ Schedules are stored in the `process_schedule` table (`CleverAge\UiProcessBundle
 | `process`    | Code of the process to run. Only public processes can be selected, and the code is validated.                                                         |
 | `type`       | `cron` or `every`.                                                                                                                                      |
 | `expression` | `cron`: a cron expression, e.g. `*/5 * * * *` or `@daily` (see [cron expression triggers](https://symfony.com/doc/current/scheduler.html#cron-expression-triggers)). `every`: a relative time, e.g. `5 seconds`, `1 hour`, `1 day` (see [periodical triggers](https://symfony.com/doc/current/scheduler.html#periodical-triggers)); it must be parsable by `strtotime()`. |
-| `input`      | Optional process input (string), e.g. a file path.                                                                                                    |
+| `input`      | Optional process input (string, 255 characters max), e.g. a file path.                                                                                  |
 | `context`    | Optional list of key/value pairs, passed as process context.                                                                                           |
 
 The schedules list displays the next execution date of `cron` schedules.

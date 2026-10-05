@@ -45,7 +45,7 @@ class ProcessSchedule
     )]
     private string $expression;
 
-    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[ORM\Column(length: 255, nullable: true)]
     private ?string $input = null;
 
     /**
