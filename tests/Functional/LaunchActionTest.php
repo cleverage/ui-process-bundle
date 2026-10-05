@@ -121,8 +121,10 @@ class LaunchActionTest extends FunctionalTestCase
         $file = tempnam(sys_get_temp_dir(), 'upload');
         file_put_contents((string) $file, 'line1');
 
+        // test.upload has no "default" UI option: the form must be displayed with empty default values
         $crawler = $this->client->request('GET', '/process?routeName=process_launch&process=test.upload');
         self::assertResponseIsSuccessful();
+        self::assertCount(0, $crawler->filter('input[name^="launch[context]"]'));
         self::assertCount(1, $crawler->filter('input[type="file"][name="launch[input]"]'));
 
         $form = $crawler->selectButton('Launch')->form();
