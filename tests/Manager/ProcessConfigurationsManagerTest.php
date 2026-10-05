@@ -17,8 +17,12 @@ use CleverAge\ProcessBundle\Configuration\ProcessConfiguration;
 use CleverAge\ProcessBundle\Registry\ProcessConfigurationRegistry;
 use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\OptionsResolver\Exception\ExceptionInterface as OptionsResolverException;
 use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
+use Symfony\Component\OptionsResolver\Exception\MissingOptionsException;
+use Symfony\Component\OptionsResolver\Exception\UndefinedOptionsException;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
@@ -59,9 +63,7 @@ class ProcessConfigurationsManagerTest extends TestCase
         /** @var mixed $run the PHPDoc type of the option is wrong */
         $run = $options['run'];
         self::assertNull($run);
-        // The "default" nested option is not asserted: defined with setDefault() and a closure, it is not resolved as
-        // a nested option with symfony/options-resolver 8 (the closure itself is returned)
-        self::assertArrayHasKey('default', $options);
+        self::assertSame(['input' => null, 'context' => []], $options['default']);
     }
 
     public function testConfiguredUiOptions(): void
@@ -98,6 +100,54 @@ class ProcessConfigurationsManagerTest extends TestCase
         self::assertInstanceOf(NotBlank::class, $options['constraints'][0]);
         self::assertInstanceOf(Length::class, $options['constraints'][1]);
         self::assertSame(10, $options['constraints'][1]->max);
+    }
+
+    public function testDefaultWithoutContext(): void
+    {
+        $manager = $this->createManager([
+            'test.process' => $this->rawProcess(['ui' => ['default' => ['input' => 'data.csv']]]),
+        ]);
+
+        $options = $manager->getUiOptions('test.process');
+
+        self::assertNotNull($options);
+        self::assertSame(['input' => 'data.csv', 'context' => []], $options['default']);
+    }
+
+    /**
+     * @param array<string, mixed>                   $default
+     * @param class-string<OptionsResolverException> $exception
+     */
+    #[DataProvider('provideInvalidDefault')]
+    public function testInvalidDefault(array $default, string $exception): void
+    {
+        $manager = $this->createManager(['test.process' => $this->rawProcess(['ui' => ['default' => $default]])]);
+
+        $this->expectException($exception);
+        $manager->getUiOptions('test.process');
+    }
+
+    /**
+     * @return iterable<string, array{array<string, mixed>, class-string<OptionsResolverException>}>
+     */
+    public static function provideInvalidDefault(): iterable
+    {
+        yield 'unknown option' => [['inputs' => 'data.csv'], UndefinedOptionsException::class];
+        yield 'context is not an array' => [['context' => 'foo'], InvalidOptionsException::class];
+        yield 'context item is not an array' => [['context' => ['foo']], InvalidOptionsException::class];
+        yield 'context item without value' => [['context' => [['key' => 'foo']]], MissingOptionsException::class];
+        yield 'context item with an unknown option' => [
+            ['context' => [['key' => 'foo', 'value' => 'bar', 'type' => 'string']]],
+            UndefinedOptionsException::class,
+        ];
+    }
+
+    public function testDefaultIsNotAnArray(): void
+    {
+        $manager = $this->createManager(['test.process' => $this->rawProcess(['ui' => ['default' => 'data.csv']])]);
+
+        $this->expectException(InvalidOptionsException::class);
+        $manager->getUiOptions('test.process');
     }
 
     public function testInvalidEntrypointType(): void

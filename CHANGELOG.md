@@ -7,6 +7,9 @@ Latest
 * [#84](https://github.com/cleverage/ui-process-bundle/issues/84) Add `LogRecord::hasContextInfo()`, deprecate the misnamed `LogRecord::contextIsEmpty()` (it returns `true` when the context is not empty). Add tests.
 * [#85](https://github.com/cleverage/ui-process-bundle/issues/85) `ProcessHandler`: default report increment level aligned on the bundle configuration (`Warning`); declare the `symfony/ux-twig-component` dependency. Add tests.
 
+## Fixes
+* [#89](https://github.com/cleverage/ui-process-bundle/issues/89) `ProcessConfigurationsManager`: resolve the `ui.default` option with a normalizer instead of nested options defined with `setDefault()` (deprecated since symfony/options-resolver 7.3, removed in 8.0). With Symfony 8, a process launched with the UI form (`ui_launch_mode: form`) without `ui.default` no longer fails (`Cannot use object of type Closure as array`), and `ui.default` is validated again. Add tests.
+
 v3.0.2
 ------
 

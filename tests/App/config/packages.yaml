@@ -73,11 +73,6 @@ clever_age_process:
                 ui:
                     ui_launch_mode: form
                     entrypoint_type: file
-                    # Required with Symfony 8: without it, ProcessConfigurationsManager returns the `default` nested
-                    # options closure (nested options defined with setDefault() are no longer supported)
-                    default:
-                        input: 'not used by a file input'
-                        context: []
             tasks:
                 data:
                     service: '@CleverAge\ProcessBundle\Task\DummyTask'

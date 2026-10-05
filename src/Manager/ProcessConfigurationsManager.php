@@ -83,16 +83,26 @@ final readonly class ProcessConfigurationsManager
                     'ui_launch_mode' => 'modal',
                     'constraints' => [],
                     'run' => null,
-                    'default' => static function (OptionsResolver $defaultResolver) {
-                        $defaultResolver->setDefault('input', null);
-                        $defaultResolver->setDefault('context', static function (OptionsResolver $contextResolver) {
-                            $contextResolver->setPrototype(true);
-                            $contextResolver->setRequired(['key', 'value']);
-                        });
-                    },
+                    'default' => [],
                 ]
             );
             $uiResolver->setAllowedValues('entrypoint_type', ['text', 'file']);
+            // Resolved by a normalizer rather than as nested options: nested options defined with setDefault() are
+            // deprecated since symfony/options-resolver 7.3 and removed in 8.0, setOptions() does not exist before 7.3
+            $uiResolver->setAllowedTypes('default', 'array');
+            $uiResolver->setNormalizer('default', static function (Options $options, array $default): array {
+                $defaultResolver = new OptionsResolver();
+                $defaultResolver->setDefaults(['input' => null, 'context' => []]);
+                $defaultResolver->setAllowedTypes('context', 'array[]');
+                $defaultResolver->setNormalizer('context', static function (Options $options, array $context): array {
+                    $contextResolver = new OptionsResolver();
+                    $contextResolver->setRequired(['key', 'value']);
+
+                    return array_map($contextResolver->resolve(...), $context);
+                });
+
+                return $defaultResolver->resolve($default);
+            });
             $uiResolver->setNormalizer('constraints', static fn (Options $options, array $values): array => (new ConstraintLoader())->buildConstraints($values));
             $uiResolver->setAllowedValues('ui_launch_mode', ['modal', null, 'form']);
 
