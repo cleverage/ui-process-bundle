@@ -30,6 +30,7 @@ use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\RepeatedType;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\Pbkdf2PasswordHasher;
+use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 /**
@@ -103,16 +104,28 @@ class UserCrudController extends AbstractCrudController
                 ->addCssClass('text-warning'))->update(Crud::PAGE_INDEX, Action::DELETE, static fn (Action $action) => $action->setIcon('fa fa-trash-o')
                 ->setLabel(false)
                 ->addCssClass(''))->update(Crud::PAGE_INDEX, Action::BATCH_DELETE, static fn (Action $action) => $action->setLabel('Delete')
-                ->addCssClass(''))->add(Crud::PAGE_EDIT, Action::new('generateToken')->linkToCrudAction('generateToken'));
+                ->addCssClass(''))->add(Crud::PAGE_EDIT, Action::new('generateToken')
+                // POST form with a CSRF token: the token of the user is replaced
+                ->linkToUrl(fn (User $user): string => $this->adminUrlGenerator->unsetAll()
+                    ->setController(self::class)
+                    ->setAction('generateToken')
+                    ->setEntityId($user->getId())
+                    ->set('csrfToken', $this->getGenerateTokenCsrfToken($user))
+                    ->generateUrl())
+                ->renderAsForm()
+                ->askConfirmation('The current API token of this user will no longer work.'));
     }
 
-    #[AdminRoute(path: '{id}/generate-token', name: 'generateToken')]
+    #[AdminRoute(path: '{id}/generate-token', name: 'generateToken', options: ['methods' => ['POST']])]
     public function generateToken(): Response
     {
         $adminContext = $this->getContext();
         /** @var User $user */
         $user = $adminContext?->getEntity()->getInstance();
-        $token = md5(uniqid(date('YmdHis')));
+        if (!$this->isCsrfTokenValid($this->generateTokenCsrfTokenId($user), (string) $adminContext?->getRequest()->query->get('csrfToken'))) {
+            throw $this->createAccessDeniedException('Invalid CSRF token.');
+        }
+        $token = bin2hex(random_bytes(16));
         $user->setToken((new Pbkdf2PasswordHasher())->hash($token));
         $this->persistEntity(
             $this->container->get('doctrine')->getManagerForClass($adminContext?->getEntity()->getFqcn()),
@@ -127,5 +140,18 @@ class UserCrudController extends AbstractCrudController
                 ->setEntityId($user->getId())
                 ->generateUrl()
         );
+    }
+
+    private function getGenerateTokenCsrfToken(User $user): string
+    {
+        /** @var CsrfTokenManagerInterface $csrfTokenManager */
+        $csrfTokenManager = $this->container->get('security.csrf.token_manager');
+
+        return $csrfTokenManager->getToken($this->generateTokenCsrfTokenId($user))->getValue();
+    }
+
+    private function generateTokenCsrfTokenId(User $user): string
+    {
+        return 'generate-token-'.$user->getId();
     }
 }

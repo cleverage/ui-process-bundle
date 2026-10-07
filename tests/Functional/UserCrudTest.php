@@ -128,17 +128,31 @@ class UserCrudTest extends FunctionalTestCase
     {
         $admin = $this->login(['ROLE_ADMIN']);
 
-        $crawler = $this->client->request('GET', '/process/user/'.$admin->getId().'/edit');
-        self::assertResponseIsSuccessful();
-        self::assertCount(1, $crawler->filter('a[href*="generate-token"]'));
-
-        $this->client->request('GET', '/process/user/'.$admin->getId().'/generate-token');
-        self::assertResponseRedirects();
-        self::assertStringContainsString('/process/user/'.$admin->getId().'/edit', (string) $this->client->getResponse()->headers->get('Location'));
-        $crawler = $this->client->followRedirect();
-        $token = $this->getGeneratedToken($crawler->filter('.alert-success')->text());
+        $token = $this->generateTokenInTheUi($admin);
+        self::assertMatchesRegularExpression('/^[0-9a-f]{32}$/', $token);
         $this->getEntityManager()->clear();
         // Only the hash of the token is stored
         self::assertSame((new Pbkdf2PasswordHasher())->hash($token), $this->getEntityManager()->find(User::class, $admin->getId())?->getToken());
+    }
+
+    /**
+     * The token is replaced only by a POST request with a valid CSRF token (e.g. not by a link or an image).
+     */
+    public function testGenerateTokenRequiresAPostRequestWithACsrfToken(): void
+    {
+        $admin = $this->login(['ROLE_ADMIN']);
+        $url = '/process/user/'.$admin->getId().'/generate-token';
+
+        $this->client->request('GET', $url);
+        self::assertResponseStatusCodeSame(405);
+
+        $this->client->request('POST', $url);
+        self::assertResponseStatusCodeSame(403);
+
+        $this->client->request('POST', $url.'?csrfToken=invalid');
+        self::assertResponseStatusCodeSame(403);
+
+        $this->getEntityManager()->clear();
+        self::assertNull($this->getEntityManager()->find(User::class, $admin->getId())?->getToken());
     }
 }

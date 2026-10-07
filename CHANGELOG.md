@@ -17,6 +17,10 @@ Latest
 * [#105](https://github.com/cleverage/ui-process-bundle/issues/105) `LogProcessFilter` ("Process" filter of the logs): the process codes condition is added with `andWhere()` (`where()` replaced the search clause, whose parameters stayed bound: 500 when searching with this filter), and the "is not" comparison is applied (it was ignored: the logs of the process were displayed). Add tests.
 * [#107](https://github.com/cleverage/ui-process-bundle/issues/107) `CronScheduler`: an error on a process schedule (e.g. `every 0 seconds`, accepted by the validator but not by the Symfony Scheduler) is logged and the schedule skipped; it skipped all the next schedules. Add tests.
 
+## BC break
+* [#115](https://github.com/cleverage/ui-process-bundle/issues/115) Users: the "generateToken" action is a POST form with a CSRF token and a confirmation (it was a link: a simple GET request replaced the API token); the token is generated with `random_bytes()`. Add tests.
+* Please follow [UPGRADE.md v4.0](UPGRADE.md#v40)
+
 v3.0.2
 ------
 

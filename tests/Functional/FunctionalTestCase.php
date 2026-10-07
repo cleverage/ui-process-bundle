@@ -101,6 +101,23 @@ abstract class FunctionalTestCase extends WebTestCase
     }
 
     /**
+     * Submits the "generateToken" action of the edit page of the user (POST form with a CSRF token), returns the new
+     * API token displayed in the flash message.
+     */
+    protected function generateTokenInTheUi(User $user): string
+    {
+        $crawler = $this->client->request('GET', '/process/user/'.$user->getId().'/edit');
+        $action = $crawler->filter('form[action*="generate-token"]');
+        self::assertCount(1, $action);
+        $this->client->request('POST', (string) $action->attr('action'));
+        self::assertResponseRedirects();
+        self::assertStringContainsString('/process/user/'.$user->getId().'/edit', (string) $this->client->getResponse()->headers->get('Location'));
+        $crawler = $this->client->followRedirect();
+
+        return $this->getGeneratedToken($crawler->filter('.alert-success')->text());
+    }
+
+    /**
      * Token displayed in the flash message of the "generateToken" action.
      */
     protected function getGeneratedToken(string $flashMessage): string
