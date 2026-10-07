@@ -63,8 +63,9 @@ class DoctrineProcessHandler extends AbstractProcessingHandler
             return;
         }
         $entities = [];
+        $currentProcessExecution = $this->records->isEmpty() ? null : $this->processExecutionManager?->getManagedProcessExecution();
         foreach ($this->records as $record) {
-            if (($currentProcessExecution = $this->processExecutionManager?->getCurrentProcessExecution()) instanceof ProcessExecution) {
+            if ($currentProcessExecution instanceof ProcessExecution) {
                 $entity = new \CleverAge\UiProcessBundle\Entity\LogRecord($record, $currentProcessExecution);
                 $this->em?->persist($entity);
                 $entities[] = $entity;

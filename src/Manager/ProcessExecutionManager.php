@@ -38,6 +38,18 @@ class ProcessExecutionManager
         return $this->currentProcessExecution;
     }
 
+    /**
+     * The current process execution, attached again to the entity manager if it has been detached.
+     */
+    public function getManagedProcessExecution(): ?ProcessExecution
+    {
+        if ($this->currentProcessExecution instanceof ProcessExecution) {
+            $this->currentProcessExecution = $this->processExecutionRepository->getManaged($this->currentProcessExecution);
+        }
+
+        return $this->currentProcessExecution;
+    }
+
     public function unsetProcessExecution(string $processCode): self
     {
         if ($this->currentProcessExecution?->code === $processCode) {
@@ -49,8 +61,8 @@ class ProcessExecutionManager
 
     public function save(): self
     {
-        if ($this->currentProcessExecution instanceof ProcessExecution) {
-            $this->processExecutionRepository->save($this->currentProcessExecution);
+        if (($processExecution = $this->getManagedProcessExecution()) instanceof ProcessExecution) {
+            $this->processExecutionRepository->save($processExecution);
         }
 
         return $this;

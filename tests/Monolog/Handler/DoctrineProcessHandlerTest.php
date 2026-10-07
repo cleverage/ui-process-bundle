@@ -134,7 +134,7 @@ class DoctrineProcessHandlerTest extends TestCase
 
     private function createHandler(EntityManagerInterface $entityManager, ?ProcessExecution $processExecution): DoctrineProcessHandler
     {
-        $processExecutionManager = new ProcessExecutionManager($this->createStub(ProcessExecutionRepository::class));
+        $processExecutionManager = new ProcessExecutionManager($this->createRepositoryStub());
         if ($processExecution instanceof ProcessExecution) {
             $processExecutionManager->setCurrentProcessExecution($processExecution);
         }
@@ -149,5 +149,16 @@ class DoctrineProcessHandlerTest extends TestCase
     private function createRecord(Level $level, string $message): \Monolog\LogRecord
     {
         return new \Monolog\LogRecord(new \DateTimeImmutable(), 'cleverage_process', $level, $message);
+    }
+
+    /**
+     * Repository returning the given process execution as the managed one (never detached in these tests).
+     */
+    private function createRepositoryStub(): ProcessExecutionRepository
+    {
+        $repository = $this->createStub(ProcessExecutionRepository::class);
+        $repository->method('getManaged')->willReturnArgument(0);
+
+        return $repository;
     }
 }

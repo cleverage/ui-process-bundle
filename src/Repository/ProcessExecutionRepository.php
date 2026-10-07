@@ -39,6 +39,31 @@ class ProcessExecutionRepository extends EntityRepository
         $this->getEntityManager()->flush();
     }
 
+    /**
+     * The process execution managed by the entity manager: the given one, or the persisted one, updated with the state
+     * of the given one, when it has been detached (e.g. the entity manager, shared with the process tasks, has been
+     * cleared). Persisting a detached process execution would insert it again.
+     */
+    public function getManaged(ProcessExecution $processExecution): ProcessExecution
+    {
+        $id = $processExecution->getId();
+        if (null === $id || $this->getEntityManager()->contains($processExecution)) {
+            return $processExecution;
+        }
+        $managed = $this->find($id);
+        if (!$managed instanceof ProcessExecution) {
+            return $processExecution;
+        }
+        $managed->status = $processExecution->status;
+        $managed->endDate = $processExecution->endDate;
+        foreach ($processExecution->getReport() as $key => $value) {
+            $managed->addReport($key, $value);
+        }
+        $managed->setContext($processExecution->getContext() ?? []);
+
+        return $managed;
+    }
+
     public function getLastProcessExecution(string $code): ?ProcessExecution
     {
         $qb = $this->createQueryBuilder('pe');

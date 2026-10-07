@@ -53,6 +53,7 @@ class ProcessEventSubscriberTest extends TestCase
     public function testProcessStartCreatesTheProcessExecution(): void
     {
         $repository = $this->createMock(ProcessExecutionRepository::class);
+        $repository->method('getManaged')->willReturnArgument(0);
         $repository->expects(self::once())->method('save')->with(self::isInstanceOf(ProcessExecution::class));
         $processExecutionManager = new ProcessExecutionManager($repository);
         $processHandler = new ProcessHandler('/var/log/process', $processExecutionManager);
@@ -76,7 +77,7 @@ class ProcessEventSubscriberTest extends TestCase
 
     public function testProcessStartKeepsTheCurrentLogFile(): void
     {
-        $processExecutionManager = new ProcessExecutionManager($this->createStub(ProcessExecutionRepository::class));
+        $processExecutionManager = new ProcessExecutionManager($this->createRepositoryStub());
         $processHandler = new ProcessHandler('/var/log/process', $processExecutionManager);
         $processHandler->setFilename('parent.process/parent.log');
 
@@ -90,6 +91,7 @@ class ProcessEventSubscriberTest extends TestCase
     public function testSubProcessStartKeepsTheCurrentProcessExecution(): void
     {
         $repository = $this->createMock(ProcessExecutionRepository::class);
+        $repository->method('getManaged')->willReturnArgument(0);
         $repository->expects(self::never())->method('save');
         $processExecutionManager = new ProcessExecutionManager($repository);
         $parent = new ProcessExecution('parent.process', 'parent.log');
@@ -118,6 +120,7 @@ class ProcessEventSubscriberTest extends TestCase
     {
         $processExecution = new ProcessExecution('test.process', 'test.log');
         $repository = $this->createMock(ProcessExecutionRepository::class);
+        $repository->method('getManaged')->willReturnArgument(0);
         $repository->expects(self::once())->method('save')->with($processExecution);
         $processExecutionManager = new ProcessExecutionManager($repository);
         $processExecutionManager->setCurrentProcessExecution($processExecution);
@@ -141,6 +144,7 @@ class ProcessEventSubscriberTest extends TestCase
     {
         $processExecution = new ProcessExecution('parent.process', 'parent.log');
         $repository = $this->createMock(ProcessExecutionRepository::class);
+        $repository->method('getManaged')->willReturnArgument(0);
         $repository->expects(self::never())->method('save');
         $processExecutionManager = new ProcessExecutionManager($repository);
         $processExecutionManager->setCurrentProcessExecution($processExecution);
@@ -157,7 +161,7 @@ class ProcessEventSubscriberTest extends TestCase
 
     public function testFlushDoctrineLogs(): void
     {
-        $processExecutionManager = new ProcessExecutionManager($this->createStub(ProcessExecutionRepository::class));
+        $processExecutionManager = new ProcessExecutionManager($this->createRepositoryStub());
         $processExecutionManager->setCurrentProcessExecution(new ProcessExecution('test.process', 'test.log'));
 
         $entityManager = $this->createMock(EntityManagerInterface::class);
@@ -187,5 +191,16 @@ class ProcessEventSubscriberTest extends TestCase
         $doctrineProcessHandler->disable();
 
         return new ProcessEventSubscriber($processHandler, $doctrineProcessHandler, $processExecutionManager);
+    }
+
+    /**
+     * Repository returning the given process execution as the managed one (never detached in these tests).
+     */
+    private function createRepositoryStub(): ProcessExecutionRepository
+    {
+        $repository = $this->createStub(ProcessExecutionRepository::class);
+        $repository->method('getManaged')->willReturnArgument(0);
+
+        return $repository;
     }
 }
