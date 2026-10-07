@@ -44,7 +44,7 @@ Responses
 |--------|---------------------------------------------------------------------------------|-----------------------------------------------------------------------------------|
 | `200`  | `"Process has been added to queue. It will start as soon as possible."`       | `queue` is `true`.                                                                |
 | `200`  | `"Process has been proceed well."`                                              | `queue` is `false` and the process succeeded.                                    |
-| `500`  | The exception message, as a JSON string                                         | `queue` is `false` and the process failed.                                       |
+| `500`  | The exception message and `(process execution: <id>)`, as a JSON string         | `queue` is `false` and the process failed.                                       |
 | `422`  | Violation messages, e.g. `Process code is required.`, `The process "foo" does not exist.`, `The process "foo" is not public.` | Invalid parameters. A request body that cannot be parsed is handled as an empty request. |
 
 Once the process has started, its execution is recorded in the [executions list](04-process_executions_and_logs.md), like any

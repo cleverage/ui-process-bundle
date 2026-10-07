@@ -16,6 +16,7 @@ Latest
 * [#103](https://github.com/cleverage/ui-process-bundle/issues/103) When a process task clears the entity manager (shared with the UI bundle, e.g. `ClearEntityManagerTask`), the current process execution is attached again before being saved and before writing the logs: it was inserted again (an execution left `started` without logs, a duplicate one with the final status and all the logs). Add `ProcessExecutionManager::getManagedProcessExecution()` and `ProcessExecutionRepository::getManaged()`. Add tests.
 * [#105](https://github.com/cleverage/ui-process-bundle/issues/105) `LogProcessFilter` ("Process" filter of the logs): the process codes condition is added with `andWhere()` (`where()` replaced the search clause, whose parameters stayed bound: 500 when searching with this filter), and the "is not" comparison is applied (it was ignored: the logs of the process were displayed). Add tests.
 * [#107](https://github.com/cleverage/ui-process-bundle/issues/107) `CronScheduler`: an error on a process schedule (e.g. `every 0 seconds`, accepted by the validator but not by the Symfony Scheduler) is logged and the schedule skipped; it skipped all the next schedules. Add tests.
+* [#113](https://github.com/cleverage/ui-process-bundle/issues/113) HTTP API, synchronous execution: the error message is followed by the id of the process execution (`(process execution: <id>)`), to find its logs in the UI; add `ProcessExecutionManager::getLastProcessExecution()`. Add tests.
 
 v3.0.2
 ------
