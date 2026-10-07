@@ -27,6 +27,7 @@ class ProcessExecutionManagerTest extends TestCase
     public function testNoCurrentProcessExecutionByDefault(): void
     {
         $repository = $this->createMock(ProcessExecutionRepository::class);
+        $repository->method('getManaged')->willReturnArgument(0);
         $repository->expects(self::never())->method('save');
 
         $manager = new ProcessExecutionManager($repository);
@@ -41,7 +42,7 @@ class ProcessExecutionManagerTest extends TestCase
     public function testTheFirstProcessExecutionIsKept(): void
     {
         $first = new ProcessExecution('first', 'first.log');
-        $manager = new ProcessExecutionManager($this->createStub(ProcessExecutionRepository::class));
+        $manager = new ProcessExecutionManager($this->createRepositoryStub());
 
         self::assertSame($manager, $manager->setCurrentProcessExecution($first));
         $manager->setCurrentProcessExecution(new ProcessExecution('second', 'second.log'));
@@ -52,7 +53,7 @@ class ProcessExecutionManagerTest extends TestCase
     public function testUnsetProcessExecutionOnlyForItsCode(): void
     {
         $processExecution = new ProcessExecution('test.process', 'test.log');
-        $manager = new ProcessExecutionManager($this->createStub(ProcessExecutionRepository::class));
+        $manager = new ProcessExecutionManager($this->createRepositoryStub());
         $manager->setCurrentProcessExecution($processExecution);
 
         $manager->unsetProcessExecution('other.process');
@@ -70,6 +71,7 @@ class ProcessExecutionManagerTest extends TestCase
     {
         $processExecution = new ProcessExecution('test.process', 'test.log');
         $repository = $this->createMock(ProcessExecutionRepository::class);
+        $repository->method('getManaged')->willReturnArgument(0);
         $repository->expects(self::once())->method('save')->with($processExecution);
 
         $manager = new ProcessExecutionManager($repository);
@@ -81,7 +83,7 @@ class ProcessExecutionManagerTest extends TestCase
     public function testReports(): void
     {
         $processExecution = new ProcessExecution('test.process', 'test.log');
-        $manager = new ProcessExecutionManager($this->createStub(ProcessExecutionRepository::class));
+        $manager = new ProcessExecutionManager($this->createRepositoryStub());
         $manager->setCurrentProcessExecution($processExecution);
 
         $manager->increment('Warning');
@@ -90,5 +92,16 @@ class ProcessExecutionManagerTest extends TestCase
         $manager->setReport('file', 'data.csv');
 
         self::assertSame(['Warning' => 2, 'Error' => 5, 'file' => 'data.csv'], $processExecution->getReport());
+    }
+
+    /**
+     * Repository returning the given process execution as the managed one (never detached in these tests).
+     */
+    private function createRepositoryStub(): ProcessExecutionRepository
+    {
+        $repository = $this->createStub(ProcessExecutionRepository::class);
+        $repository->method('getManaged')->willReturnArgument(0);
+
+        return $repository;
     }
 }
