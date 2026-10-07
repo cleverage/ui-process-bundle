@@ -50,14 +50,16 @@ class LogProcessFilter implements FilterInterface
     public function apply(QueryBuilder $queryBuilder, FilterDataDto $filterDataDto, ?FieldDto $fieldDto, EntityDto $entityDto): void
     {
         $value = $filterDataDto->getValue();
+        $notEqual = ComparisonType::NEQ === $filterDataDto->getComparison();
         $queryBuilder->join('entity.processExecution', 'pe');
         if (is_numeric($value)) {
-            $queryBuilder->andWhere($queryBuilder->expr()->eq('pe.id', ':id'));
+            $queryBuilder->andWhere($notEqual ? $queryBuilder->expr()->neq('pe.id', ':id') : $queryBuilder->expr()->eq('pe.id', ':id'));
             $queryBuilder->setParameter('id', $value);
 
             return;
         }
-        $queryBuilder->where('pe.code IN (:codes)');
-        $queryBuilder->setParameter('codes', $filterDataDto->getValue());
+        // andWhere(): the search clause and the previous filters are added to the query builder before this filter
+        $queryBuilder->andWhere($notEqual ? 'pe.code NOT IN (:codes)' : 'pe.code IN (:codes)');
+        $queryBuilder->setParameter('codes', $value);
     }
 }
