@@ -94,6 +94,28 @@ class LogRecordCrudTest extends FunctionalTestCase
         self::assertResponseIsSuccessful();
     }
 
+    public function testProcessFilterWithSearchAndComparison(): void
+    {
+        $this->login();
+        $first = $this->createExecution('test.process');
+        $second = $this->createExecution('test.form');
+        $this->createLogRecord($first, 'First process message', []);
+        $this->createLogRecord($first, 'Other message', []);
+        $this->createLogRecord($second, 'Second process message', []);
+
+        // The search is kept with the process filter (it was replaced, with its parameters still bound: 500)
+        $crawler = $this->client->request('GET', '/process/log-record?query=First&filters[process][comparison]==&filters[process][value]=test.process');
+        self::assertResponseIsSuccessful();
+        self::assertCount(1, $crawler->filter('table tbody tr'));
+        self::assertStringContainsString('First process message', $crawler->filter('table')->text());
+
+        // "is not"
+        $crawler = $this->client->request('GET', '/process/log-record?filters[process][comparison]=!%3D&filters[process][value]=test.process');
+        self::assertResponseIsSuccessful();
+        self::assertCount(1, $crawler->filter('table tbody tr'));
+        self::assertStringContainsString('Second process message', $crawler->filter('table')->text());
+    }
+
     public function testDetail(): void
     {
         $this->login();
