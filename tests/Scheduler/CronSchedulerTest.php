@@ -118,6 +118,57 @@ class CronSchedulerTest extends TestCase
     }
 
     /**
+     * "every 0 seconds" is accepted by the validator (strtotime()) but not by PeriodicalTrigger.
+     */
+    public function testScheduleErrorDoesNotSkipTheNextSchedules(): void
+    {
+        $first = $this->createSchedule(ProcessScheduleType::CRON, '0 3 * * *');
+        $failing = $this->createSchedule(ProcessScheduleType::EVERY, '0 seconds');
+        $last = $this->createSchedule(ProcessScheduleType::EVERY, '1 hour');
+
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::once())
+            ->method('critical')
+            ->with(
+                'The "$interval" argument must be greater than zero.',
+                ['process_schedule' => null, 'process' => 'test.process', 'expression' => '0 seconds']
+            );
+
+        $scheduler = new CronScheduler($this->createRepository([$first, $failing, $last]), $this->createValidator(), $logger);
+        $messages = array_values($scheduler->getSchedule()->getRecurringMessages());
+
+        self::assertCount(2, $messages);
+        self::assertSame($first, $this->getScheduledMessage($messages[0])->processSchedule);
+        self::assertSame($last, $this->getScheduledMessage($messages[1])->processSchedule);
+    }
+
+    /**
+     * The validator itself may fail, e.g. on a "hashed" cron expression.
+     */
+    public function testValidationErrorDoesNotSkipTheNextSchedules(): void
+    {
+        $failing = $this->createSchedule(ProcessScheduleType::CRON, '#midnight');
+        $last = $this->createSchedule(ProcessScheduleType::EVERY, '1 hour');
+
+        $validator = $this->createStub(ValidatorInterface::class);
+        $validator->method('validate')->willReturnCallback(static function (mixed $value) use ($failing): ConstraintViolationList {
+            if ($value === $failing) {
+                throw new \LogicException('A context must be provided to use "hashed" cron expressions.');
+            }
+
+            return new ConstraintViolationList();
+        });
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::once())->method('critical')->with('A context must be provided to use "hashed" cron expressions.');
+
+        $scheduler = new CronScheduler($this->createRepository([$failing, $last]), $validator, $logger);
+        $messages = array_values($scheduler->getSchedule()->getRecurringMessages());
+
+        self::assertCount(1, $messages);
+        self::assertSame($last, $this->getScheduledMessage($messages[0])->processSchedule);
+    }
+
+    /**
      * @param list<ProcessSchedule> $schedules
      */
     private function createRepository(array $schedules): ProcessScheduleRepository
