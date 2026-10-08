@@ -166,4 +166,20 @@ class LaunchActionTest extends FunctionalTestCase
         self::assertResponseStatusCodeSame(500);
         self::assertSame([], $this->getDispatchedMessages());
     }
+
+    /**
+     * Accessed directly, not through the dashboard: redirected to the dashboard with the query parameters (the
+     * template of the form needs the EasyAdmin context, it was a 500).
+     */
+    public function testDirectAccessRedirectsToTheDashboard(): void
+    {
+        $this->login();
+
+        $this->client->request('GET', '/process/launch?process=test.form');
+
+        self::assertResponseRedirects('/process?routeName=process_launch&process=test.form');
+        $crawler = $this->client->followRedirect();
+        self::assertResponseIsSuccessful();
+        self::assertCount(1, $crawler->filter('input[name="launch[input]"]'));
+    }
 }
