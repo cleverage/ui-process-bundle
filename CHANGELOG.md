@@ -26,6 +26,10 @@ Latest
 * [#125](https://github.com/cleverage/ui-process-bundle/issues/125) `ProcessSchedule::getContext()` decodes a JSON string as an array; `User::getRoles()` no longer duplicates `ROLE_USER`; `symfony/expression-language` declared (used by `Assert\When`); the `underscore_number_aware` Doctrine naming strategy prerequisite is documented. Add tests.
 * [#127](https://github.com/cleverage/ui-process-bundle/issues/127) `Version20261008120000` migration (MySQL / MariaDB, PostgreSQL): remove the `(DC2Type:...)` column comments created by the migrations when the type comments are not used (always with DBAL 4, `disable_type_comments` with DBAL 3): the schema was always reported as out of sync; with DBAL 3 using the type comments, they are kept. `UiOptions` PHPDoc: types instead of string literals (`'run': ?bool`, context rows `int|string`).
 
+## BC break
+* [#93](https://github.com/cleverage/ui-process-bundle/issues/93) Protect the login form and the logout against CSRF: `enable_csrf` on the prepended `form_login` and `logout` configurations, `csrf_token_intention` passed to the login template, `symfony/security-csrf` declared. Add tests.
+* Please follow [UPGRADE.md v4.0](UPGRADE.md#v40)
+
 v3.0.2
 ------
 

@@ -30,6 +30,8 @@ class LoginController extends AbstractController
                 'target_path' => '/process',
                 'error' => $authenticationUtils->getLastAuthenticationError(),
                 'last_username' => $authenticationUtils->getLastUsername(),
+                // Token id checked by the form_login authenticator (enable_csrf, see CleverAgeUiProcessExtension)
+                'csrf_token_intention' => 'authenticate',
             ]
         );
     }
