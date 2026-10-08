@@ -37,22 +37,23 @@ class ProcessExecutionDurationFilter implements FilterInterface
 
     public function apply(QueryBuilder $queryBuilder, FilterDataDto $filterDataDto, ?FieldDto $fieldDto, EntityDto $entityDto): void
     {
-        if (\in_array($filterDataDto->getComparison(), ['=', '>', '>=', '<', '<=', '!='])) {
+        $parameter = $filterDataDto->getParameterName();
+        if (\in_array($filterDataDto->getComparison(), ['=', '>', '>=', '<', '<=', '!='], true)) {
             $queryBuilder->andWhere(
-                \sprintf(
-                    'entity.endDate %s date_add(entity.startDate, %s, \'SECOND\')',
-                    $filterDataDto->getComparison(),
-                    $filterDataDto->getValue()
-                )
+                \sprintf('entity.endDate %s date_add(entity.startDate, :%s, \'SECOND\')', $filterDataDto->getComparison(), $parameter)
             );
+            $queryBuilder->setParameter($parameter, $filterDataDto->getValue());
         } elseif ('between' === $filterDataDto->getComparison()) {
+            $parameter2 = $filterDataDto->getParameter2Name();
             $queryBuilder->andWhere(
                 \sprintf(
-                    'entity.endDate BETWEEN date_add(entity.startDate, %s, \'SECOND\') and date_add(entity.startDate, %s, \'SECOND\')',
-                    $filterDataDto->getValue(),
-                    $filterDataDto->getValue2()
+                    'entity.endDate BETWEEN date_add(entity.startDate, :%s, \'SECOND\') and date_add(entity.startDate, :%s, \'SECOND\')',
+                    $parameter,
+                    $parameter2
                 )
             );
+            $queryBuilder->setParameter($parameter, $filterDataDto->getValue());
+            $queryBuilder->setParameter($parameter2, $filterDataDto->getValue2());
         }
     }
 }
