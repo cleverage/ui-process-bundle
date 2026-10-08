@@ -106,6 +106,18 @@ class HttpProcessExecuteTest extends FunctionalTestCase
         self::assertSame([], $this->getDispatchedMessages());
     }
 
+    /**
+     * Parameters in the query string only, without body (they were ignored: 422 "Process code is required").
+     */
+    public function testQueryStringWithoutBody(): void
+    {
+        $this->client->request('POST', '/http/process/execute?code=test.process&queue=0', server: ['HTTP_AUTHORIZATION' => 'Bearer '.self::TOKEN]);
+
+        self::assertResponseIsSuccessful();
+        self::assertSame('"Process has been proceed well."', $this->client->getResponse()->getContent());
+        self::assertSame([], $this->getDispatchedMessages());
+    }
+
     public function testFailingSynchronousExecution(): void
     {
         $this->execute(['code' => 'test.failing', 'queue' => '0']);

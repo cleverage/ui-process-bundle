@@ -22,6 +22,7 @@ Latest
 * [#117](https://github.com/cleverage/ui-process-bundle/issues/117) Schedule validators: `every` expressions checked as the Symfony Scheduler does (`PeriodicalTrigger`): expressions such as `0 seconds`, `yesterday` or `monday` were accepted but stopped the `scheduler_cron` worker, ISO 8601 durations (`PT1H`) were refused; message fixed ("is not a valid \"every\" expression"). A "hashed" cron expression is refused (500). No `TypeError` on `null`. Add tests.
 * [#119](https://github.com/cleverage/ui-process-bundle/issues/119) Launch form: a context row without key is left out of the context (reported by its `NotBlank` constraint): it gave a 500 when the process has constraints on the context, and a PHP 8.5 deprecation (`null` array offset). Add tests.
 * [#121](https://github.com/cleverage/ui-process-bundle/issues/121) `ListAction` / `LaunchAction`: accessed directly (`/process/list`, `/process/launch`), redirected to the dashboard (`/process?routeName=...`) instead of a 500. Add tests.
+* [#123](https://github.com/cleverage/ui-process-bundle/issues/123) HTTP API: the parameters of the query string are also read without body, and `queue` is read from the query string (the form data takes precedence). Add tests.
 
 v3.0.2
 ------
