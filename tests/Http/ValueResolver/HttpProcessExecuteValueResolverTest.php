@@ -107,6 +107,30 @@ class HttpProcessExecuteValueResolverTest extends TestCase
         );
     }
 
+    public function testQueryParametersWithoutBody(): void
+    {
+        $request = Request::create('/http/process/execute?code=test.process&input=data.csv&context[foo]=bar&queue=0', 'POST');
+
+        self::assertEquals(
+            new HttpProcessExecution('test.process', 'data.csv', ['foo' => 'bar'], false),
+            $this->resolve($request)
+        );
+    }
+
+    public function testQueueFromTheQueryString(): void
+    {
+        $request = Request::create('/http/process/execute?queue=0', 'POST', ['code' => 'test.process']);
+
+        self::assertEquals(new HttpProcessExecution('test.process', null, [], false), $this->resolve($request));
+    }
+
+    public function testQueueOfTheBodyOverridesTheQueryString(): void
+    {
+        $request = Request::create('/http/process/execute?queue=0', 'POST', ['code' => 'test.process', 'queue' => '1']);
+
+        self::assertEquals(new HttpProcessExecution('test.process', null, [], true), $this->resolve($request));
+    }
+
     public function testUploadedFileInput(): void
     {
         $file = tempnam(sys_get_temp_dir(), 'upload');
