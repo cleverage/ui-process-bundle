@@ -28,6 +28,7 @@ final class IsValidProcessCodeValidator extends ConstraintValidator
      */
     public function validate(mixed $value, Constraint $constraint): void
     {
+        $value = \is_scalar($value) ? (string) $value : '';
         if (!$this->registry->hasProcessConfiguration($value)) {
             $this->context->buildViolation($constraint->messageNotExists)
                 ->setParameter('{{ value }}', $value)

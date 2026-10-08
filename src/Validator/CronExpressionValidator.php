@@ -24,9 +24,12 @@ final class CronExpressionValidator extends ConstraintValidator
      */
     public function validate(mixed $value, Constraint $constraint): void
     {
+        $value = \is_scalar($value) ? (string) $value : '';
         try {
             CronExpressionTrigger::fromSpec($value);
-        } catch (\InvalidArgumentException) {
+        } catch (\Exception) {
+            // InvalidArgumentException, or LogicException for a "hashed" expression (#): it needs a context, which the
+            // process schedules do not provide
             $this->context->buildViolation($constraint->message)
                 ->setParameter('{{ value }}', $value)
                 ->addViolation();

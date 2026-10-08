@@ -121,7 +121,7 @@ class ProcessScheduleTest extends TestCase
             'demo.process',
             ProcessScheduleType::EVERY,
             '*/5 * * * *',
-            ['expression: The value "*/5 * * * *" is not every valid expression.'],
+            ['expression: The value "*/5 * * * *" is not a valid "every" expression.'],
         ];
         yield 'unknown process' => [
             'demo.unknown',

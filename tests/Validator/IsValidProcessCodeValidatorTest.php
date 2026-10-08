@@ -66,4 +66,13 @@ class IsValidProcessCodeValidatorTest extends ConstraintValidatorTestCase
             ->setParameter('{{ value }}', 'demo.unknown')
             ->assertRaised();
     }
+
+    public function testNullProcessCode(): void
+    {
+        $this->validator->validate(null, new IsValidProcessCode());
+
+        $this->buildViolation('The process "{{ value }}" does not exist.')
+            ->setParameter('{{ value }}', '')
+            ->assertRaised();
+    }
 }
