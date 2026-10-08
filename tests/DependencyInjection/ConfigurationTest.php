@@ -14,13 +14,16 @@ declare(strict_types=1);
 namespace CleverAge\UiProcessBundle\Tests\DependencyInjection;
 
 use CleverAge\UiProcessBundle\DependencyInjection\Configuration;
+use CleverAge\UiProcessBundle\Notifier\NotificationTrigger;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 use Symfony\Component\Config\Definition\Processor;
 
 #[CoversClass(Configuration::class)]
+#[UsesClass(NotificationTrigger::class)]
 class ConfigurationTest extends TestCase
 {
     /**
@@ -49,6 +52,12 @@ class ConfigurationTest extends TestCase
                 ],
                 'design' => [
                     'logo_path' => 'bundles/cleverageuiprocess/logo.jpg',
+                ],
+                'notification' => [
+                    'enabled' => false,
+                    'statuses' => ['failed', 'finish_with_report'],
+                    'channels' => [],
+                    'recipients' => [],
                 ],
             ],
             $this->process($env, [])
@@ -79,6 +88,15 @@ class ConfigurationTest extends TestCase
                 'design' => [
                     'logo_path' => 'images/my-logo.png',
                 ],
+                'notification' => [
+                    'enabled' => true,
+                    'statuses' => ['failed', 'finish'],
+                    'channels' => ['chat/slack', 'email'],
+                    'recipients' => [
+                        ['email' => 'ops@example.com', 'phone' => null],
+                        ['phone' => '+33600000000', 'email' => null],
+                    ],
+                ],
             ],
             $this->process('dev', [
                 'security' => ['roles' => ['ROLE_ADMIN', 'ROLE_OPERATOR']],
@@ -89,6 +107,12 @@ class ConfigurationTest extends TestCase
                     'report_increment_level' => 'Critical',
                 ],
                 'design' => ['logo_path' => 'images/my-logo.png'],
+                'notification' => [
+                    'enabled' => true,
+                    'statuses' => ['failed', 'finish'],
+                    'channels' => ['chat/slack', 'email'],
+                    'recipients' => [['email' => 'ops@example.com'], ['phone' => '+33600000000']],
+                ],
             ])
         );
     }
@@ -135,6 +159,14 @@ class ConfigurationTest extends TestCase
         yield 'roles not an array' => [['security' => ['roles' => 'ROLE_ADMIN']], 'clever_age_ui_process.security.roles'];
         yield 'role not a scalar' => [['security' => ['roles' => [['ROLE_ADMIN']]]], 'clever_age_ui_process.security.roles'];
         yield 'logo_path not a scalar' => [['design' => ['logo_path' => ['a.png']]], 'clever_age_ui_process.design.logo_path'];
+        yield 'unknown notification status' => [
+            ['notification' => ['statuses' => ['started']]],
+            'clever_age_ui_process.notification.statuses',
+        ];
+        yield 'notification recipient without email nor phone' => [
+            ['notification' => ['recipients' => [[]]]],
+            'A notification recipient must have an "email" or a "phone".',
+        ];
     }
 
     /**

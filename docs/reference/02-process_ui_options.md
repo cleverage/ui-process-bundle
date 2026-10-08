@@ -33,6 +33,9 @@ clever_age_process:
 Every key is optional: a process without `options.ui` is displayed and launched with a confirmation modal. Unknown
 keys, or invalid values, raise an options resolver error when the process list is displayed.
 
+The `notification` key, next to `ui`, configures the [notification](09-notifications.md) of the end of the process
+executions.
+
 Options
 -------
 

@@ -19,6 +19,7 @@ use CleverAge\UiProcessBundle\DependencyInjection\CleverAgeUiProcessExtension;
 use CleverAge\UiProcessBundle\DependencyInjection\Configuration;
 use CleverAge\UiProcessBundle\Entity\User;
 use CleverAge\UiProcessBundle\Message\ProcessExecuteMessage;
+use CleverAge\UiProcessBundle\Notifier\NotificationTrigger;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
@@ -28,6 +29,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 
 #[CoversClass(CleverAgeUiProcessExtension::class)]
 #[UsesClass(Configuration::class)]
+#[UsesClass(NotificationTrigger::class)]
 class CleverAgeUiProcessExtensionTest extends TestCase
 {
     public function testLoadWithDefaultConfiguration(): void
@@ -55,6 +57,25 @@ class CleverAgeUiProcessExtensionTest extends TestCase
         self::assertSame(
             'bundles/cleverageuiprocess/logo.jpg',
             $container->getDefinition(ProcessDashboardController::class)->getArgument('$logoPath')
+        );
+
+        // symfony/notifier is installed (dev dependency)
+        self::assertSame(
+            ['enabled' => false, 'statuses' => ['failed', 'finish_with_report'], 'channels' => [], 'recipients' => []],
+            $container->getDefinition('cleverage_ui_process.notifier.process_execution')->getArgument('$defaultOptions')
+        );
+    }
+
+    public function testLoadWithNotificationConfiguration(): void
+    {
+        $container = $this->createContainer('prod');
+        (new CleverAgeUiProcessExtension())->load([
+            ['notification' => ['enabled' => true, 'statuses' => ['finish'], 'channels' => ['chat/slack']]],
+        ], $container);
+
+        self::assertSame(
+            ['enabled' => true, 'statuses' => ['finish'], 'channels' => ['chat/slack'], 'recipients' => []],
+            $container->getDefinition('cleverage_ui_process.notifier.process_execution')->getArgument('$defaultOptions')
         );
     }
 

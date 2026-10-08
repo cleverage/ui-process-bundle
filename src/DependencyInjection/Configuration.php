@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace CleverAge\UiProcessBundle\DependencyInjection;
 
+use CleverAge\UiProcessBundle\Notifier\NotificationTrigger;
 use Monolog\Level;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
@@ -33,6 +34,7 @@ class Configuration implements ConfigurationInterface
         $this->addSecuritySection($rootNode);
         $this->addLogSection($rootNode);
         $this->addDesignSection($rootNode);
+        $this->addNotificationSection($rootNode);
 
         return $treeBuilder;
     }
@@ -74,6 +76,36 @@ class Configuration implements ConfigurationInterface
                 ->arrayNode('design')->addDefaultsIfNotSet()
                     ->children()
                         ->scalarNode('logo_path')->defaultValue('bundles/cleverageuiprocess/logo.jpg')->end()
+                    ->end()
+                ->end()
+            ->end()
+        ;
+    }
+
+    protected function addNotificationSection(ArrayNodeDefinition $node): void
+    {
+        $node
+            ->children()
+                ->arrayNode('notification')->addDefaultsIfNotSet()
+                    ->children()
+                        ->booleanNode('enabled')->defaultFalse()->end() // notify the end of the process executions (requires symfony/notifier), can be overridden by process
+                        ->arrayNode('statuses') // ends of process executions to notify
+                            ->defaultValue([NotificationTrigger::Failed->value, NotificationTrigger::FinishWithReport->value])
+                            ->enumPrototype()->values(NotificationTrigger::values())->end()
+                        ->end()
+                        ->arrayNode('channels')->scalarPrototype()->end()->end() // notifier channels (e.g. "chat/slack", "email"), the channel policy of the notifier if empty
+                        ->arrayNode('recipients') // the admin recipients of the notifier if empty
+                            ->arrayPrototype()
+                                ->children()
+                                    ->scalarNode('email')->defaultNull()->end()
+                                    ->scalarNode('phone')->defaultNull()->end()
+                                ->end()
+                                ->validate()
+                                    ->ifTrue(static fn (array $recipient): bool => null === $recipient['email'] && null === $recipient['phone'])
+                                    ->thenInvalid('A notification recipient must have an "email" or a "phone".')
+                                ->end()
+                            ->end()
+                        ->end()
                     ->end()
                 ->end()
             ->end()

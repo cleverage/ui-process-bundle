@@ -1,0 +1,13 @@
+services:
+    # Removed by the extension when symfony/notifier is not installed
+    cleverage_ui_process.notifier.process_execution:
+        class: CleverAge\UiProcessBundle\Notifier\ProcessExecutionNotifier
+        public: false
+        tags:
+            - { name: 'kernel.event_subscriber' }
+            - { name: 'monolog.logger', channel: 'cleverage_ui_process' }
+        arguments:
+            $processConfigurationsManager: '@cleverage_ui_process.manager.process_configuration'
+            $defaultOptions: [] # set by the extension
+            $notifier: '@?notifier'
+            $logger: '@?logger'

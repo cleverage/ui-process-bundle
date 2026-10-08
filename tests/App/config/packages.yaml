@@ -17,6 +17,13 @@ framework:
             scheduler_cron: 'in-memory://'
     validation:
         email_validation_mode: html5
+    notifier:
+        chatter_transports:
+            test: 'null://null'
+        channel_policy:
+            high: ['chat/test']
+            medium: ['chat/test']
+            low: ['chat/test']
 
 security:
     password_hashers:
@@ -103,6 +110,23 @@ clever_age_process:
                     service: '@CleverAge\ProcessBundle\Task\DummyTask'
         test.failing:
             description: 'Process failing on initialization (missing required option)'
+            tasks:
+                data:
+                    service: '@CleverAge\ProcessBundle\Task\ConstantOutputTask'
+        test.notification:
+            public: false
+            options:
+                notification:
+                    enabled: true
+                    statuses: [finish]
+            tasks:
+                data:
+                    service: '@CleverAge\ProcessBundle\Task\DummyTask'
+        test.notification_failing:
+            public: false
+            options:
+                notification:
+                    enabled: true
             tasks:
                 data:
                     service: '@CleverAge\ProcessBundle\Task\ConstantOutputTask'

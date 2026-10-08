@@ -16,6 +16,8 @@ namespace CleverAge\UiProcessBundle\Manager;
 use CleverAge\ProcessBundle\Configuration\ProcessConfiguration;
 use CleverAge\ProcessBundle\Registry\ProcessConfigurationRegistry;
 use CleverAge\ProcessBundle\Validator\ConstraintLoader;
+use CleverAge\UiProcessBundle\Notifier\NotificationTrigger;
+use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
 use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraint;
@@ -29,6 +31,12 @@ use Symfony\Component\Validator\Constraint;
  *      'constraints': Constraint[],
  *      'run': ?bool,
  *      'default': array{'input': mixed, 'context': array<array{'key': int|string, 'value': int|string}>}
+ *  }
+ * @phpstan-type NotificationOptions array{
+ *      'enabled': ?bool,
+ *      'statuses': ?string[],
+ *      'channels': ?list<string>,
+ *      'recipients': ?array<array{'email': ?string, 'phone': ?string}>
  *  }
  */
 final readonly class ProcessConfigurationsManager
@@ -60,17 +68,65 @@ final readonly class ProcessConfigurationsManager
 
         $configuration = $this->registry->getProcessConfiguration($processCode);
 
-        return $this->resolveUiOptions($configuration->getOptions())['ui'];
+        return $this->resolveOptions($configuration->getOptions())['ui'];
+    }
+
+    /**
+     * The "notification" option of the process, null values are inherited from the bundle configuration.
+     *
+     * @return NotificationOptions|null
+     */
+    public function getNotificationOptions(string $processCode): ?array
+    {
+        if (false === $this->registry->hasProcessConfiguration($processCode)) {
+            return null;
+        }
+
+        $configuration = $this->registry->getProcessConfiguration($processCode);
+
+        return $this->resolveOptions($configuration->getOptions())['notification'];
     }
 
     /**
      * @param array<int|string, mixed> $options
      *
-     * @return array{'ui': UiOptions}
+     * @return array{'ui': UiOptions, 'notification': NotificationOptions}
      */
-    private function resolveUiOptions(array $options): array
+    private function resolveOptions(array $options): array
     {
         $resolver = new OptionsResolver();
+        $resolver->setDefault('notification', []);
+        $resolver->setAllowedTypes('notification', 'array');
+        $resolver->setNormalizer('notification', static function (Options $options, array $notification): array {
+            $notificationResolver = new OptionsResolver();
+            $notificationResolver->setDefaults(['enabled' => null, 'statuses' => null, 'channels' => null, 'recipients' => null]);
+            $notificationResolver->setAllowedTypes('enabled', ['null', 'bool']);
+            $notificationResolver->setAllowedTypes('statuses', ['null', 'string[]']);
+            $notificationResolver->setAllowedValues('statuses', static fn (?array $statuses): bool => null === $statuses || [] === array_diff($statuses, NotificationTrigger::values()));
+            $notificationResolver->setAllowedTypes('channels', ['null', 'string[]']);
+            $notificationResolver->setAllowedTypes('recipients', ['null', 'array[]']);
+            $notificationResolver->setNormalizer('recipients', static function (Options $options, ?array $recipients): ?array {
+                if (null === $recipients) {
+                    return null;
+                }
+                $recipientResolver = new OptionsResolver();
+                $recipientResolver->setDefaults(['email' => null, 'phone' => null]);
+                $recipientResolver->setAllowedTypes('email', ['null', 'string']);
+                $recipientResolver->setAllowedTypes('phone', ['null', 'string']);
+
+                $recipientResolver->setNormalizer('phone', static function (Options $options, ?string $phone): ?string {
+                    if (null === $options['email'] && null === $phone) {
+                        throw new InvalidOptionsException('A notification recipient must have an "email" or a "phone".');
+                    }
+
+                    return $phone;
+                });
+
+                return array_values(array_map($recipientResolver->resolve(...), $recipients));
+            });
+
+            return $notificationResolver->resolve($notification);
+        });
         $resolver->setDefault('ui', []);
         $resolver->setAllowedTypes('ui', 'array');
         $resolver->setNormalizer('ui', static function (Options $options, array $ui): array {
@@ -109,7 +165,7 @@ final readonly class ProcessConfigurationsManager
             return $uiResolver->resolve($ui);
         });
         /**
-         * @var array{'ui': UiOptions} $options
+         * @var array{'ui': UiOptions, 'notification': NotificationOptions} $options
          */
         $options = $resolver->resolve($options);
 
