@@ -60,7 +60,13 @@ class LaunchType extends AbstractType
         );
         $builder->get('context')->addModelTransformer(new CallbackTransformer(
             static fn ($data) => $data ?? [],
-            static fn ($data) => array_column($data ?? [], 'value', 'key'),
+            // A row without key is left out (it is reported by the NotBlank constraint of ProcessContextType): a null
+            // key is deprecated as array offset, and an empty key breaks the property paths of the process constraints
+            static fn ($data) => array_column(
+                array_filter($data ?? [], static fn ($row): bool => \is_array($row) && null !== ($row['key'] ?? null) && '' !== $row['key']),
+                'value',
+                'key'
+            ),
         ));
     }
 

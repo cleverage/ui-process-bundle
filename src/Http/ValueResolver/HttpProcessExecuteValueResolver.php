@@ -36,8 +36,10 @@ readonly class HttpProcessExecuteValueResolver implements ValueResolverInterface
     {
         try {
             $hasRequestData = $request->request->count() > 0 || $request->files->count() > 0;
+            // The query string is read with form data, and also without body
+            $hasQueryOnly = !$hasRequestData && '' === $request->getContent() && $request->query->count() > 0;
 
-            if (!$hasRequestData) {
+            if (!$hasRequestData && !$hasQueryOnly) {
                 $content = $request->getContent();
                 if (empty($content)) {
                     return [new HttpProcessExecution()];
@@ -65,7 +67,9 @@ readonly class HttpProcessExecuteValueResolver implements ValueResolverInterface
                     $context = $request->query->all('context');
                 }
 
-                $queue = $request->request->getBoolean('queue', true);
+                $queue = $request->request->has('queue')
+                    ? $request->request->getBoolean('queue')
+                    : $request->query->getBoolean('queue', true);
 
                 $httpProcessExecution = new HttpProcessExecution(
                     (string) $code,

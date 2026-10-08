@@ -35,7 +35,8 @@ Parameters can be sent either as a JSON body, or as form data (`application/x-ww
 | `context` | `object` or JSON `string` |          | `{}`    | Process context, as key/value pairs. With form data, send one field per value: `context[key]=value`.                                                                 |
 | `queue`   | `bool`                    |          | `true`  | `true`: the process is queued to the `execute_process` transport (see [messenger](08-messenger.md)). `false`: the process is executed during the HTTP request.      |
 
-With form data, `code` and `input` can also be passed in the query string.
+`code`, `input`, `context` and `queue` can also be passed in the query string, with form data or without body (the form
+data takes precedence).
 
 Responses
 ---------
