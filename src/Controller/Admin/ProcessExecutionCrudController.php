@@ -142,7 +142,8 @@ class ProcessExecutionCrudController extends AbstractCrudController
         $processExecution = $this->getContext()?->getEntity()->getInstance();
         $filepath = $this->getLogFilePath($processExecution);
         $basename = basename($filepath);
-        $content = file_get_contents($filepath);
+        // file_get_contents() emits a warning (converted to an exception) before returning false on a missing file
+        $content = is_file($filepath) ? file_get_contents($filepath) : false;
         if (false === $content) {
             throw new NotFoundHttpException('Log file not found.');
         }

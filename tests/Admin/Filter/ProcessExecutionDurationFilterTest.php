@@ -47,9 +47,12 @@ class ProcessExecutionDurationFilterTest extends TestCase
 
         self::assertSame(
             'SELECT entity FROM '.ProcessExecution::class.' entity WHERE entity.endDate '.$comparison
-            .' date_add(entity.startDate, 60, \'SECOND\')',
+            .' date_add(entity.startDate, :duration_0, \'SECOND\')',
             $queryBuilder->getDQL()
         );
+        // Bound as a parameter, not concatenated in the DQL
+        self::assertCount(1, $queryBuilder->getParameters());
+        self::assertSame(60, $queryBuilder->getParameter('duration_0')?->getValue());
     }
 
     /**
@@ -71,9 +74,12 @@ class ProcessExecutionDurationFilterTest extends TestCase
 
         self::assertSame(
             'SELECT entity FROM '.ProcessExecution::class.' entity WHERE entity.endDate BETWEEN '
-            .'date_add(entity.startDate, 10, \'SECOND\') and date_add(entity.startDate, 120, \'SECOND\')',
+            .'date_add(entity.startDate, :duration_0, \'SECOND\') and date_add(entity.startDate, :duration_1, \'SECOND\')',
             $queryBuilder->getDQL()
         );
+        self::assertCount(2, $queryBuilder->getParameters());
+        self::assertSame(10, $queryBuilder->getParameter('duration_0')?->getValue());
+        self::assertSame(120, $queryBuilder->getParameter('duration_1')?->getValue());
     }
 
     public function testApplyWithUnsupportedComparisonDoesNothing(): void
