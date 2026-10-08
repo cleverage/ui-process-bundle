@@ -14,7 +14,9 @@ declare(strict_types=1);
 namespace CleverAge\UiProcessBundle\Controller;
 
 use CleverAge\ProcessBundle\Manager\ProcessManager;
+use CleverAge\UiProcessBundle\Entity\ProcessExecution;
 use CleverAge\UiProcessBundle\Http\Model\HttpProcessExecution;
+use CleverAge\UiProcessBundle\Manager\ProcessExecutionManager;
 use CleverAge\UiProcessBundle\Message\ProcessExecuteMessage;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -34,6 +36,7 @@ class ProcessExecuteController extends AbstractController
         private readonly ValidatorInterface $validator,
         private readonly MessageBusInterface $bus,
         private readonly ProcessManager $processManager,
+        private readonly ProcessExecutionManager $processExecutionManager,
     ) {
     }
 
@@ -61,6 +64,7 @@ class ProcessExecuteController extends AbstractController
 
             return new JsonResponse('Process has been added to queue. It will start as soon as possible.');
         }
+        $previousProcessExecution = $this->processExecutionManager->getLastProcessExecution();
         try {
             $this->processManager->execute(
                 $httpProcessExecution->code ?? '',
@@ -70,7 +74,13 @@ class ProcessExecuteController extends AbstractController
                     : $httpProcessExecution->context
             );
         } catch (\Throwable $e) {
-            return new JsonResponse($e->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
+            // The id of the process execution allows to find its logs in the UI
+            $processExecution = $this->processExecutionManager->getLastProcessExecution();
+            $message = $processExecution instanceof ProcessExecution && $processExecution !== $previousProcessExecution
+                ? \sprintf('%s (process execution: %s)', rtrim($e->getMessage()), $processExecution->getId())
+                : $e->getMessage();
+
+            return new JsonResponse($message, Response::HTTP_INTERNAL_SERVER_ERROR);
         }
 
         return new JsonResponse('Process has been proceed well.');

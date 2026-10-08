@@ -18,6 +18,7 @@ Latest
 * [#107](https://github.com/cleverage/ui-process-bundle/issues/107) `CronScheduler`: an error on a process schedule (e.g. `every 0 seconds`, accepted by the validator but not by the Symfony Scheduler) is logged and the schedule skipped; it skipped all the next schedules. Add tests.
 * [#109](https://github.com/cleverage/ui-process-bundle/issues/109) `ProcessExecutionCrudController::downloadLogFile()`: 404 when the log file no longer exists (`file_get_contents()` warning: 500). Add tests.
 * [#111](https://github.com/cleverage/ui-process-bundle/issues/111) `ProcessExecutionDurationFilter`: the filter values are bound as DQL parameters (they were concatenated in the DQL; not exploitable, the form field is numeric). Add tests.
+* [#113](https://github.com/cleverage/ui-process-bundle/issues/113) HTTP API, synchronous execution: the error message is followed by the id of the process execution (`(process execution: <id>)`), to find its logs in the UI; add `ProcessExecutionManager::getLastProcessExecution()`. Add tests.
 
 v3.0.2
 ------

@@ -111,7 +111,13 @@ class HttpProcessExecuteTest extends FunctionalTestCase
         $this->execute(['code' => 'test.failing', 'queue' => '0']);
 
         self::assertResponseStatusCodeSame(500);
-        self::assertStringContainsString('output', (string) $this->client->getResponse()->getContent());
+        $content = json_decode((string) $this->client->getResponse()->getContent(), true);
+        self::assertIsString($content);
+        self::assertStringContainsString('output', $content);
+        // The id of the failed process execution, to find its logs in the UI
+        $execution = $this->getEntityManager()->getRepository(ProcessExecution::class)->findOneBy(['code' => 'test.failing']);
+        self::assertInstanceOf(ProcessExecution::class, $execution);
+        self::assertStringEndsWith(\sprintf(' (process execution: %d)', $execution->getId()), $content);
     }
 
     public function testJsonBody(): void

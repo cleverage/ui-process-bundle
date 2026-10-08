@@ -20,6 +20,8 @@ class ProcessExecutionManager
 {
     private ?ProcessExecution $currentProcessExecution = null;
 
+    private ?ProcessExecution $lastProcessExecution = null;
+
     public function __construct(private readonly ProcessExecutionRepository $processExecutionRepository)
     {
     }
@@ -50,9 +52,18 @@ class ProcessExecutionManager
         return $this->currentProcessExecution;
     }
 
+    /**
+     * The last process execution which has ended (its current process execution is unset at the end of a process).
+     */
+    public function getLastProcessExecution(): ?ProcessExecution
+    {
+        return $this->lastProcessExecution;
+    }
+
     public function unsetProcessExecution(string $processCode): self
     {
         if ($this->currentProcessExecution?->code === $processCode) {
+            $this->lastProcessExecution = $this->currentProcessExecution;
             $this->currentProcessExecution = null;
         }
 

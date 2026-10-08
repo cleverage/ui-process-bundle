@@ -56,11 +56,16 @@ class ProcessExecutionManagerTest extends TestCase
         $manager = new ProcessExecutionManager($this->createRepositoryStub());
         $manager->setCurrentProcessExecution($processExecution);
 
+        self::assertNull($manager->getLastProcessExecution());
+
         $manager->unsetProcessExecution('other.process');
         self::assertSame($processExecution, $manager->getCurrentProcessExecution());
+        self::assertNull($manager->getLastProcessExecution());
 
         $manager->unsetProcessExecution('test.process');
         self::assertNull($manager->getCurrentProcessExecution());
+        // Kept as the last ended process execution
+        self::assertSame($processExecution, $manager->getLastProcessExecution());
 
         $other = new ProcessExecution('other.process', 'other.log');
         $manager->setCurrentProcessExecution($other);
