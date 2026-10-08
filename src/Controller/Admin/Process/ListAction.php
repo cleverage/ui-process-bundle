@@ -14,7 +14,9 @@ declare(strict_types=1);
 namespace CleverAge\UiProcessBundle\Controller\Admin\Process;
 
 use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
+use EasyCorp\Bundle\EasyAdminBundle\Contracts\Context\AdminContextInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Contracts\Intl\IntlFormatterInterface;
+use EasyCorp\Bundle\EasyAdminBundle\Provider\AdminContextProvider;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -27,11 +29,17 @@ class ListAction extends AbstractController
     public function __construct(
         private readonly IntlFormatterInterface $intlFormatter,
         private readonly ProcessConfigurationsManager $processConfigurationsManager,
+        private readonly AdminContextProvider $adminContextProvider,
     ) {
     }
 
     public function __invoke(): Response
     {
+        // Accessed directly, not through the dashboard: the template needs the EasyAdmin context
+        if (!$this->adminContextProvider->getContext() instanceof AdminContextInterface) {
+            return $this->redirectToRoute('process', ['routeName' => 'process_list']);
+        }
+
         return $this->render(
             '@CleverAgeUiProcess/admin/process/list.html.twig',
             [

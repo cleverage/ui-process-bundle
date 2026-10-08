@@ -111,4 +111,19 @@ class ProcessListTest extends FunctionalTestCase
         // EasyAdmin labels translated in the user locale
         self::assertStringContainsString('Déconnexion', $crawler->filter('body')->text());
     }
+
+    /**
+     * Accessed directly, not through the dashboard: redirected to the dashboard (the template needs the EasyAdmin
+     * context, it was a 500).
+     */
+    public function testDirectAccessRedirectsToTheDashboard(): void
+    {
+        $this->login();
+
+        $this->client->request('GET', '/process/list');
+
+        self::assertResponseRedirects('/process?routeName=process_list');
+        $this->client->followRedirect();
+        self::assertResponseIsSuccessful();
+    }
 }
