@@ -1,6 +1,14 @@
 Upgrade Guide
 =============
 
+## v4.0
+
+### API token generation
+
+The "generateToken" action of the users (edit page) is now a POST form with a CSRF token: the route
+`/process/user/{id}/generate-token` only accepts POST requests with a valid `csrfToken`. Generate the API tokens from
+the button of the user edit page; the direct GET URL returns a 405.
+
 ## v3.0
 
 ### Import routes

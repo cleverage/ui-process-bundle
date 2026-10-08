@@ -20,6 +20,10 @@ Latest
 * [#111](https://github.com/cleverage/ui-process-bundle/issues/111) `ProcessExecutionDurationFilter`: the filter values are bound as DQL parameters (they were concatenated in the DQL; not exploitable, the form field is numeric). Add tests.
 * [#113](https://github.com/cleverage/ui-process-bundle/issues/113) HTTP API, synchronous execution: the error message is followed by the id of the process execution (`(process execution: <id>)`), to find its logs in the UI; add `ProcessExecutionManager::getLastProcessExecution()`. Add tests.
 
+## BC break
+* [#115](https://github.com/cleverage/ui-process-bundle/issues/115) Users: the "generateToken" action is a POST form with a CSRF token and a confirmation (it was a link: a simple GET request replaced the API token); the token is generated with `random_bytes()`. Add tests.
+* Please follow [UPGRADE.md v4.0](UPGRADE.md#v40)
+
 v3.0.2
 ------
 

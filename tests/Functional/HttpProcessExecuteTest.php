@@ -163,10 +163,7 @@ class HttpProcessExecuteTest extends FunctionalTestCase
     public function testTokenGeneratedInTheUi(): void
     {
         $admin = $this->login(['ROLE_ADMIN']);
-        $this->client->request('GET', '/process/user/'.$admin->getId().'/generate-token');
-        self::assertResponseRedirects();
-        $crawler = $this->client->followRedirect();
-        $token = $this->getGeneratedToken($crawler->filter('.alert-success')->text());
+        $token = $this->generateTokenInTheUi($admin);
         $this->getEntityManager()->clear();
         $user = $this->getEntityManager()->find(User::class, $admin->getId());
         self::assertInstanceOf(User::class, $user);
