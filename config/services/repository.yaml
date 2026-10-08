@@ -4,6 +4,7 @@ services:
         public: false
         arguments:
             - '@doctrine.orm.entity_manager'
+            - '@doctrine'
 
     cleverage_ui_process.repository.process_schedule:
         class: CleverAge\UiProcessBundle\Repository\ProcessScheduleRepository

@@ -26,6 +26,7 @@ use CleverAge\UiProcessBundle\Repository\ProcessExecutionRepository;
 use CleverAge\UiProcessBundle\Tests\App\TestKernel;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\SchemaTool;
+use Doctrine\Persistence\ManagerRegistry;
 use Monolog\Level;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\UsesClass;
@@ -33,7 +34,8 @@ use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 /**
  * The entity manager is shared with the process tasks, which may clear it (e.g. ClearEntityManagerTask): the current
- * process execution is then detached. Entity manager of the test application (SQLite).
+ * process execution is then detached; or close it (Doctrine closes it after an error during a flush). Entity manager of
+ * the test application (SQLite).
  */
 #[CoversClass(ProcessExecutionManager::class)]
 #[CoversClass(ProcessExecutionRepository::class)]
@@ -105,6 +107,53 @@ class ProcessExecutionManagerEntityManagerTest extends KernelTestCase
             $connection->fetchFirstColumn('SELECT message FROM log_record WHERE process_execution_id = ? ORDER BY id', [$executions[0]['id']])
         );
         self::assertSame(0, (int) $connection->fetchOne('SELECT COUNT(*) FROM log_record WHERE process_execution_id <> ?', [$executions[0]['id']]));
+    }
+
+    public function testEntityManagerClosedDuringTheProcess(): void
+    {
+        /** @var ManagerRegistry $registry */
+        $registry = static::getContainer()->get('doctrine');
+        $manager = new ProcessExecutionManager(new ProcessExecutionRepository($this->entityManager, $registry));
+        $handler = new DoctrineProcessHandler();
+        $handler->setEntityManager($this->entityManager);
+        $handler->setProcessExecutionManager($manager);
+
+        // Process start (ProcessEventSubscriber::onProcessStart())
+        $manager->setCurrentProcessExecution(new ProcessExecution('test.process', 'test.log', ['key' => 'value']))->save();
+        $handler->handle($this->createRecord('before the close'));
+        $handler->flush();
+        $manager->increment('Warning');
+
+        // A process task closes the entity manager (Doctrine closes it after an error during a flush)
+        $this->entityManager->close();
+
+        $manager->increment('Warning');
+        $handler->handle($this->createRecord('after the close'));
+        $handler->flush();
+
+        // Process end (ProcessEventSubscriber::success())
+        $manager->getCurrentProcessExecution()?->setStatus(ProcessExecutionStatus::Finish);
+        $manager->getCurrentProcessExecution()?->end();
+        $manager->save();
+        $handler->flush(); // no record, nothing to write
+        $handler->disable();
+
+        // The entity manager has been reset in place: open again for the services holding it
+        self::assertTrue($this->entityManager->isOpen());
+        self::assertSame($this->entityManager, static::getContainer()->get('doctrine.orm.entity_manager'));
+
+        // A single execution, with its final state and all its logs
+        $connection = $this->entityManager->getConnection();
+        $executions = $connection->fetchAllAssociative('SELECT id, status, end_date, report, context FROM process_execution');
+        self::assertCount(1, $executions);
+        self::assertSame('finish', $executions[0]['status']);
+        self::assertNotNull($executions[0]['end_date']);
+        self::assertSame(['Warning' => 2], json_decode((string) $executions[0]['report'], true));
+        self::assertSame(['key' => 'value'], json_decode((string) $executions[0]['context'], true));
+        self::assertSame(
+            ['before the close', 'after the close'],
+            $connection->fetchFirstColumn('SELECT message FROM log_record WHERE process_execution_id = ? ORDER BY id', [$executions[0]['id']])
+        );
     }
 
     public function testProcessExecutionNotDetached(): void

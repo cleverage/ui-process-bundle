@@ -17,6 +17,7 @@ use CleverAge\UiProcessBundle\Entity\LogRecord;
 use CleverAge\UiProcessBundle\Entity\ProcessExecution;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
+use Doctrine\Persistence\ManagerRegistry;
 
 /**
  * @extends EntityRepository<ProcessExecution>
@@ -28,7 +29,7 @@ use Doctrine\ORM\EntityRepository;
  */
 class ProcessExecutionRepository extends EntityRepository
 {
-    public function __construct(EntityManagerInterface $em)
+    public function __construct(EntityManagerInterface $em, private readonly ?ManagerRegistry $registry = null)
     {
         parent::__construct($em, $em->getClassMetadata(ProcessExecution::class));
     }
@@ -43,9 +44,16 @@ class ProcessExecutionRepository extends EntityRepository
      * The process execution managed by the entity manager: the given one, or the persisted one, updated with the state
      * of the given one, when it has been detached (e.g. the entity manager, shared with the process tasks, has been
      * cleared). Persisting a detached process execution would insert it again.
+     *
+     * A closed entity manager (e.g. closed by Doctrine after an error during a flush of a process task) is reset
+     * first: the process execution could not be saved anymore.
      */
     public function getManaged(ProcessExecution $processExecution): ProcessExecution
     {
+        if (!$this->getEntityManager()->isOpen()) {
+            // Reset in place (lazy service): the services holding the entity manager get an open one
+            $this->registry?->resetManager();
+        }
         $id = $processExecution->getId();
         if (null === $id || $this->getEntityManager()->contains($processExecution)) {
             return $processExecution;
