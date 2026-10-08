@@ -149,6 +149,16 @@ class ProcessExecutionCrudTest extends FunctionalTestCase
         self::assertResponseHeaderSame('Content-Disposition', 'attachment; filename="'.$execution->logFilename.'"');
     }
 
+    public function testDownloadMissingLogFile(): void
+    {
+        $this->login();
+        $execution = $this->createExecution('test.process', ProcessExecutionStatus::Finish);
+
+        $this->client->request('GET', '/process/process-execution/download-logs?entityId='.$execution->getId());
+
+        self::assertResponseStatusCodeSame(404);
+    }
+
     private function createExecution(string $code, ProcessExecutionStatus $status): ProcessExecution
     {
         $execution = new ProcessExecution($code, $code.'_'.uniqid().'.log', ['key' => 'value']);
