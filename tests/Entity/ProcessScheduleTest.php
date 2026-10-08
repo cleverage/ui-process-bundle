@@ -72,6 +72,10 @@ class ProcessScheduleTest extends TestCase
         (new \ReflectionProperty(ProcessSchedule::class, 'context'))->setValue($schedule, '["a","b"]');
 
         self::assertSame(['a', 'b'], $schedule->getContext());
+
+        // A JSON object is decoded as an array (it gave a stdClass: TypeError on the return type)
+        (new \ReflectionProperty(ProcessSchedule::class, 'context'))->setValue($schedule, '{"key":"value"}');
+        self::assertSame(['key' => 'value'], $schedule->getContext());
     }
 
     /**

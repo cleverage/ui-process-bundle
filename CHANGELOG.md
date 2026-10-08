@@ -23,6 +23,7 @@ Latest
 * [#119](https://github.com/cleverage/ui-process-bundle/issues/119) Launch form: a context row without key is left out of the context (reported by its `NotBlank` constraint): it gave a 500 when the process has constraints on the context, and a PHP 8.5 deprecation (`null` array offset). Add tests.
 * [#121](https://github.com/cleverage/ui-process-bundle/issues/121) `ListAction` / `LaunchAction`: accessed directly (`/process/list`, `/process/launch`), redirected to the dashboard (`/process?routeName=...`) instead of a 500. Add tests.
 * [#123](https://github.com/cleverage/ui-process-bundle/issues/123) HTTP API: the parameters of the query string are also read without body, and `queue` is read from the query string (the form data takes precedence). Add tests.
+* [#125](https://github.com/cleverage/ui-process-bundle/issues/125) `ProcessSchedule::getContext()` decodes a JSON string as an array; `User::getRoles()` no longer duplicates `ROLE_USER`; `symfony/expression-language` declared (used by `Assert\When`); the `underscore_number_aware` Doctrine naming strategy prerequisite is documented. Add tests.
 
 v3.0.2
 ------

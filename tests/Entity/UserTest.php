@@ -69,6 +69,14 @@ class UserTest extends TestCase
         self::assertNull($user->getToken());
     }
 
+    public function testRoleUserIsNotDuplicated(): void
+    {
+        // As stored by UserCreateCommand
+        $user = (new User())->setRoles(['ROLE_USER', 'ROLE_ADMIN']);
+
+        self::assertSame(['ROLE_USER', 'ROLE_ADMIN'], $user->getRoles());
+    }
+
     public function testUserIdentifierRequiresAnEmail(): void
     {
         $user = (new User())->setEmail('');

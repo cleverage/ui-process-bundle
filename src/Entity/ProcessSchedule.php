@@ -76,7 +76,7 @@ class ProcessSchedule
      */
     public function getContext(): array
     {
-        return \is_array($this->context) ? $this->context : json_decode($this->context);
+        return \is_array($this->context) ? $this->context : json_decode($this->context, true);
     }
 
     /**
