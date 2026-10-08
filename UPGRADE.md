@@ -26,6 +26,28 @@ security:
                 enable_csrf: false
 ```
 
+### CSRF protection of the logout
+
+The `logout` configuration prepended by the bundle now enables `enable_csrf` (token id `logout`, parameter
+`_csrf_token`): `/process/logout` without a valid token is refused (403). The logout link of the UI menu carries the
+token. If you link to the logout from your own templates, use `logout_path()` (or `logout_url()`) instead of
+`path('process_logout')`:
+
+```twig
+<a href="{{ logout_path() }}">Logout</a>
+```
+
+To keep the previous behaviour, disable it on your `main` firewall:
+
+```yaml
+# config/packages/security.yaml
+security:
+    firewalls:
+        main:
+            logout:
+                enable_csrf: false
+```
+
 ## v3.0
 
 ### Import routes

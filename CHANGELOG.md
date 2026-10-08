@@ -12,7 +12,7 @@ Latest
 * [#91](https://github.com/cleverage/ui-process-bundle/issues/91) `LoginController`: pass `error` and `last_username` (`AuthenticationUtils`) to the login template, so that a failed login displays the error message and keeps the email. Test updated.
 
 ## BC break
-* [#93](https://github.com/cleverage/ui-process-bundle/issues/93) Protect the login form against CSRF: `enable_csrf` on the prepended `form_login` configuration, `csrf_token_intention` passed to the login template, `symfony/security-csrf` declared. Add tests.
+* [#93](https://github.com/cleverage/ui-process-bundle/issues/93) Protect the login form and the logout against CSRF: `enable_csrf` on the prepended `form_login` and `logout` configurations, `csrf_token_intention` passed to the login template, `symfony/security-csrf` declared. Add tests.
 * Please follow [UPGRADE.md v4.0](UPGRADE.md#v40)
 
 v3.0.2

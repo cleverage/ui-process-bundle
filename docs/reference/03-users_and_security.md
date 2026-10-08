@@ -25,6 +25,7 @@ security:
                 path: process_logout
                 target: process_login
                 clear_site_data: '*'
+                enable_csrf: true
 ```
 
 So your application firewall must be named `main`. The only required application configuration is a password
@@ -42,6 +43,10 @@ The UI pages are protected by `#[IsGranted]` attributes, no `access_control` rul
 The login form is protected by a CSRF token (token id `authenticate`, parameter `_csrf_token`): the Symfony CSRF
 protection must be enabled (`framework.csrf_protection`, enabled by default when the session is). If you override the
 login template, keep the `_csrf_token` field (the `csrf_token_intention` variable passed by `LoginController`).
+
+The logout is also protected by a CSRF token (token id `logout`, parameter `_csrf_token`): the logout link of the UI
+menu carries it. To link to the logout from your own templates, use `logout_path()` (or `logout_url()`), which adds the
+token, rather than `path('process_logout')`.
 
 Roles
 -----

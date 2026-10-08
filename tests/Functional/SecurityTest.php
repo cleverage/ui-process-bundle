@@ -154,10 +154,25 @@ class SecurityTest extends FunctionalTestCase
     {
         $this->login();
 
-        $this->client->request('GET', '/process/logout');
+        // Logout link of the user menu, with the CSRF token
+        $crawler = $this->client->request('GET', '/process/process-execution');
+        $link = $crawler->filter('a[href^="/process/logout?_csrf_token="]');
+        self::assertGreaterThan(0, $link->count());
+        $this->client->click($link->first()->link());
         self::assertResponseRedirects('http://localhost/process/login');
 
         $this->client->request('GET', '/process');
         self::assertResponseRedirects('http://localhost/process/login');
+    }
+
+    public function testLogoutWithoutCsrfToken(): void
+    {
+        $this->login();
+
+        $this->client->request('GET', '/process/logout');
+        self::assertResponseStatusCodeSame(403);
+
+        $this->client->request('GET', '/process/process-execution');
+        self::assertResponseIsSuccessful();
     }
 }
