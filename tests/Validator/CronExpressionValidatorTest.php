@@ -51,20 +51,23 @@ class CronExpressionValidatorTest extends ConstraintValidatorTestCase
     }
 
     #[DataProvider('provideInvalidExpressions')]
-    public function testInvalidExpression(string $expression): void
+    public function testInvalidExpression(?string $expression): void
     {
         $this->validator->validate($expression, new CronExpression());
 
         $this->buildViolation('The value "{{ value }}" is not a valid cron expression.')
-            ->setParameter('{{ value }}', $expression)
+            ->setParameter('{{ value }}', (string) $expression)
             ->assertRaised();
     }
 
     /**
-     * @return iterable<string, array{string}>
+     * @return iterable<string, array{?string}>
      */
     public static function provideInvalidExpressions(): iterable
     {
+        // "Hashed" expressions need a context (a Stringable message), which the process schedules do not provide
+        yield 'hashed' => ['#midnight'];
+        yield 'null' => [null];
         yield 'garbage' => ['not a cron'];
         yield 'too few fields' => ['* * *'];
         yield 'out of range' => ['61 * * * *'];
