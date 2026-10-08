@@ -36,6 +36,7 @@ class DoctrineProcessHandlerTest extends TestCase
         /** @var \ArrayObject<int, LogRecord> $persisted */
         $persisted = new \ArrayObject();
         $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager->method('isOpen')->willReturn(true);
         $entityManager->expects(self::exactly(2))
             ->method('persist')
             ->willReturnCallback(static function (object $entity) use ($persisted): void {
@@ -106,6 +107,27 @@ class DoctrineProcessHandlerTest extends TestCase
 
         $handler = $this->createHandler($entityManager, null);
         $handler->handle($this->createRecord(Level::Info, 'message'));
+        $handler->flush();
+        $handler->disable();
+    }
+
+    public function testClosedEntityManagerWithoutRecords(): void
+    {
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager->method('isOpen')->willReturn(false);
+        $entityManager->expects(self::never())->method('flush');
+
+        $handler = $this->createHandler($entityManager, new ProcessExecution('test.process', 'test.log'));
+        $handler->flush();
+    }
+
+    public function testOpenEntityManagerWithoutRecords(): void
+    {
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager->method('isOpen')->willReturn(true);
+        $entityManager->expects(self::once())->method('flush');
+
+        $handler = $this->createHandler($entityManager, new ProcessExecution('test.process', 'test.log'));
         $handler->flush();
         $handler->disable();
     }

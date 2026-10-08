@@ -62,6 +62,11 @@ class DoctrineProcessHandler extends AbstractProcessingHandler
         if (!$this->enabled) {
             return;
         }
+        if ($this->records->isEmpty() && false === $this->em?->isOpen()) {
+            // Nothing to write, and a closed entity manager cannot be flushed (it is reset when writing the next logs
+            // or saving the process execution, see ProcessExecutionRepository::getManaged())
+            return;
+        }
         $entities = [];
         $currentProcessExecution = $this->records->isEmpty() ? null : $this->processExecutionManager?->getManagedProcessExecution();
         foreach ($this->records as $record) {
