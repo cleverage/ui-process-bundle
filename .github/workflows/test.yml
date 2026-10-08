@@ -103,3 +103,93 @@ jobs:
       #  uses: codecov/codecov-action@v4
       #  with:
       #    files: build/logs/clover.xml
+
+  migrations:
+    name: Migrations ${{ matrix.database }} + DBAL ${{ matrix.dbal }}
+    runs-on: ubuntu-latest
+    env:
+      SYMFONY_REQUIRE: ${{ matrix.symfony-require }}
+      DATABASE_URL: ${{ matrix.database-url }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        database: [mysql, mariadb, postgresql]
+        dbal: ['3', '4']
+        include:
+          - database: mysql
+            image: mysql:8.4
+            port: 3306
+            health-cmd: mysqladmin ping -h 127.0.0.1
+            database-url: mysql://app:app@127.0.0.1:3306/app?serverVersion=8.4.0
+          - database: mariadb
+            image: mariadb:11.4
+            port: 3306
+            health-cmd: healthcheck.sh --connect --innodb_initialized
+            database-url: mysql://app:app@127.0.0.1:3306/app?serverVersion=11.4.0-MariaDB
+          - database: postgresql
+            image: postgres:17
+            port: 5432
+            health-cmd: pg_isready -U app
+            database-url: postgresql://app:app@127.0.0.1:5432/app?serverVersion=17&charset=utf8
+          - dbal: '3'
+            php-version: '8.4'
+            symfony-require: 7.4.*
+          - dbal: '4'
+            php-version: '8.5'
+            symfony-require: ''
+
+    services:
+      database:
+        image: ${{ matrix.image }}
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: app
+          MYSQL_USER: app
+          MYSQL_PASSWORD: app
+          MARIADB_ROOT_PASSWORD: root
+          MARIADB_DATABASE: app
+          MARIADB_USER: app
+          MARIADB_PASSWORD: app
+          POSTGRES_DB: app
+          POSTGRES_USER: app
+          POSTGRES_PASSWORD: app
+        ports:
+          - ${{ matrix.port }}:${{ matrix.port }}
+        options: >-
+          --health-cmd "${{ matrix.health-cmd }}"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Install PHP with extensions
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+          extensions: pdo_mysql, pdo_pgsql
+          coverage: none
+          tools: composer:v2, flex
+      - name: Require DBAL 3
+        if: matrix.dbal == '3'
+        run: composer require doctrine/dbal:^3.10 --no-update
+      - name: Install Composer dependencies
+        uses: ramsey/composer-install@v4
+        with:
+          dependency-versions: highest
+      - name: Run the migrations
+        run: tests/App/bin/console doctrine:migrations:migrate --no-interaction
+      # DBAL 3 does not read the PostgreSQL identity columns created by the migrations (it expects sequences): the
+      # schema is always reported as out of sync, inserts work (the ORM uses the sequence of the identity column)
+      - name: Validate the schema
+        if: matrix.dbal != '3' || matrix.database != 'postgresql'
+        run: tests/App/bin/console doctrine:schema:validate
+      - name: Revert the migrations
+        run: tests/App/bin/console doctrine:migrations:migrate first --no-interaction
+      - name: Run the migrations again
+        run: tests/App/bin/console doctrine:migrations:migrate --no-interaction
+      - name: Validate the schema again
+        if: matrix.dbal != '3' || matrix.database != 'postgresql'
+        run: tests/App/bin/console doctrine:schema:validate
