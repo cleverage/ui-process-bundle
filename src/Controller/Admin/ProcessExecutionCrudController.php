@@ -40,10 +40,14 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 #[IsGranted('ROLE_USER')]
 class ProcessExecutionCrudController extends AbstractCrudController
 {
-    public function __construct(
+    /**
+     * @param TranslatorInterface $translator deprecated, no longer used (the duration format is defined in the
+     *                                        admin/field/duration.html.twig template), will be removed in 4.0
+     */
+    public function __construct(// @phpstan-ignore constructor.unusedParameter ($translator deprecated, kept for BC)
         private readonly ProcessExecutionRepository $processExecutionRepository,
         private readonly string $logDirectory,
-        private readonly TranslatorInterface $translator,
+        TranslatorInterface $translator,
     ) {
     }
 
@@ -62,9 +66,7 @@ class ProcessExecutionCrudController extends AbstractCrudController
             DateTimeField::new('endDate')->setFormat('short', 'medium'),
             TextField::new('source')->setTemplatePath('@CleverAgeUiProcess/admin/field/process_source.html.twig'),
             TextField::new('target')->setTemplatePath('@CleverAgeUiProcess/admin/field/process_target.html.twig'),
-            TextField::new('duration')->formatValue(function ($value, ProcessExecution $entity) {
-                return $entity->duration($this->translator->trans('%H hour(s) %I min(s) %S s')); // returned format can be changed here
-            }),
+            TextField::new('duration')->setTemplatePath('@CleverAgeUiProcess/admin/field/duration.html.twig'),
             ArrayField::new('report')->setTemplatePath('@CleverAgeUiProcess/admin/field/report.html.twig'),
             ContextField::new('context'),
         ];

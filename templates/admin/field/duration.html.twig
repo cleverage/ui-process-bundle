@@ -1,0 +1,8 @@
+{# @var entity \EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto #}
+{# The format (see DateInterval::format()) can be changed by overriding this template #}
+{% set duration = entity.instance.duration('%H hour(s) %I min(s) %S s'|trans) %}
+{% if duration is null %}
+    {{ include(ea().templatePath('label/null')) }}
+{% else %}
+    {{ duration }}
+{% endif %}
