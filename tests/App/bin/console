@@ -1,0 +1,21 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+/*
+ * This file is part of the CleverAge/UiProcessBundle package.
+ *
+ * Copyright (c) Clever-Age
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
+use CleverAge\UiProcessBundle\Tests\App\TestKernel;
+use Symfony\Bundle\FrameworkBundle\Console\Application;
+
+// Console of the test application, used by the CI to run the migrations (DATABASE_URL)
+require dirname(__DIR__, 3).'/vendor/autoload.php';
+
+exit((new Application(new TestKernel('test', true)))->run());

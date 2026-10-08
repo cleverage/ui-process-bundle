@@ -1,5 +1,7 @@
 parameters:
     upload_directory: '%kernel.cache_dir%/uploads'
+    # SQLite by default; the CI runs the migrations on MySQL / MariaDB / PostgreSQL with DATABASE_URL
+    env(DATABASE_URL): 'sqlite:///%kernel.cache_dir%/test.db'
 
 framework:
     secret: 'test'
@@ -26,7 +28,7 @@ security:
 
 doctrine:
     dbal:
-        url: 'sqlite:///%kernel.cache_dir%/test.db'
+        url: '%env(resolve:DATABASE_URL)%'
     orm:
         auto_mapping: true
         # As the Symfony recipe: the indexes of the bundle entities use snake_case column names
