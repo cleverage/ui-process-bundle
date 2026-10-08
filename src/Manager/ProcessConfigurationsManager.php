@@ -27,8 +27,8 @@ use Symfony\Component\Validator\Constraint;
  *      'ui_launch_mode': ?string,
  *      'entrypoint_type': string,
  *      'constraints': Constraint[],
- *      'run': 'null|bool',
- *      'default': array{'input': mixed, 'context': array{array{'key': 'int|text', 'value':'int|text'}}}
+ *      'run': ?bool,
+ *      'default': array{'input': mixed, 'context': array<array{'key': int|string, 'value': int|string}>}
  *  }
  */
 final readonly class ProcessConfigurationsManager
