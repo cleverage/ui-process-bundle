@@ -17,6 +17,7 @@ use CleverAge\ProcessBundle\Event\ProcessEvent;
 use CleverAge\UiProcessBundle\Entity\Enum\ProcessExecutionStatus;
 use CleverAge\UiProcessBundle\Entity\LogRecord;
 use CleverAge\UiProcessBundle\Entity\ProcessExecution;
+use CleverAge\UiProcessBundle\Event\ProcessExecutionEndedEvent;
 use CleverAge\UiProcessBundle\EventSubscriber\ProcessEventSubscriber;
 use CleverAge\UiProcessBundle\Manager\ProcessExecutionManager;
 use CleverAge\UiProcessBundle\Monolog\Handler\DoctrineProcessHandler;
@@ -29,10 +30,12 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\TestWith;
 use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\EventDispatcher\EventDispatcher;
 
 #[CoversClass(ProcessEventSubscriber::class)]
 #[UsesClass(DoctrineProcessHandler::class)]
 #[UsesClass(LogRecord::class)]
+#[UsesClass(ProcessExecutionEndedEvent::class)]
 #[UsesClass(ProcessExecution::class)]
 #[UsesClass(ProcessExecutionManager::class)]
 #[UsesClass(ProcessHandler::class)]
@@ -157,6 +160,42 @@ class ProcessEventSubscriberTest extends TestCase
         self::assertNull($processExecution->endDate);
         self::assertSame($processExecution, $processExecutionManager->getCurrentProcessExecution());
         self::assertTrue($processHandler->hasFilename());
+    }
+
+    /**
+     * @param 'success'|'fail' $method
+     */
+    #[DataProvider('provideEnds')]
+    public function testProcessEndDispatchesTheProcessExecutionEndedEvent(string $method, ProcessExecutionStatus $expectedStatus): void
+    {
+        $processExecution = new ProcessExecution('test.process', 'test.log');
+        $processExecutionManager = new ProcessExecutionManager($this->createRepositoryStub());
+        $processExecutionManager->setCurrentProcessExecution($processExecution);
+        $eventDispatcher = new EventDispatcher();
+        $events = [];
+        $eventDispatcher->addListener(ProcessExecutionEndedEvent::class, static function (ProcessExecutionEndedEvent $event) use (&$events): void {
+            // The process execution has ended and is saved when the event is dispatched
+            self::assertNotNull($event->processExecution->endDate);
+            $events[] = $event;
+        });
+        $error = 'fail' === $method ? new \RuntimeException('Process error') : null;
+        $doctrineProcessHandler = new DoctrineProcessHandler();
+        $doctrineProcessHandler->disable();
+        $subscriber = new ProcessEventSubscriber(
+            new ProcessHandler('/var/log/process', $processExecutionManager),
+            $doctrineProcessHandler,
+            $processExecutionManager,
+            $eventDispatcher
+        );
+
+        $subscriber->{$method}(new ProcessEvent('test.process', null, [], null, $error));
+        // Sub-process end: no event
+        $subscriber->{$method}(new ProcessEvent('sub.process'));
+
+        self::assertCount(1, $events);
+        self::assertSame($processExecution, $events[0]->processExecution);
+        self::assertSame($expectedStatus, $events[0]->processExecution->status);
+        self::assertSame($error, $events[0]->error);
     }
 
     public function testFlushDoctrineLogs(): void

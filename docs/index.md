@@ -7,6 +7,7 @@
     - [Launch a CSV import from a form with file upload](cookbooks/form_file_upload.md)
     - [Schedule a recurring process](cookbooks/scheduled_process.md)
     - [Launch a process through the HTTP API](cookbooks/http_api_launch.md)
+    - [Notify the failures of the processes on Slack and by email](cookbooks/notify_process_failures.md)
 - Reference
     - [Bundle configuration](reference/01-bundle_configuration.md)
     - [Process UI options](reference/02-process_ui_options.md)
@@ -16,6 +17,7 @@
     - [HTTP API](reference/06-http_api.md)
     - [Console commands](reference/07-console_commands.md)
     - [Messenger & asynchronous execution](reference/08-messenger.md)
+    - [Notifications](reference/09-notifications.md)
 - [Troubleshooting](troubleshooting.md)
 - [CleverAge/ProcessBundle documentation](https://github.com/cleverage/process-bundle/blob/main/docs/index.md)
 
@@ -31,7 +33,8 @@ on top of the process bundle. It does not provide any process task. Its features
   status, duration, report and logs (stored in database and in a log file),
 - a scheduler to run processes periodically (cron or periodical expressions),
 - user management (login form, roles, API tokens),
-- an HTTP endpoint to launch a process from another application.
+- an HTTP endpoint to launch a process from another application,
+- notifications of the end of the process executions (failures, warnings...), with Symfony Notifier.
 
 It relies on Doctrine ORM (users, executions, logs, schedules), Symfony Messenger (asynchronous execution), Symfony
 Scheduler and Monolog.

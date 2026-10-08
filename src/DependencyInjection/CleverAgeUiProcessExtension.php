@@ -19,10 +19,12 @@ use CleverAge\UiProcessBundle\Entity\User;
 use CleverAge\UiProcessBundle\Message\ProcessExecuteMessage;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Exception\LogicException;
 use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\Finder\Finder;
+use Symfony\Component\Notifier\NotifierInterface;
 
 final class CleverAgeUiProcessExtension extends Extension implements PrependExtensionInterface
 {
@@ -51,6 +53,16 @@ final class CleverAgeUiProcessExtension extends Extension implements PrependExte
 
         $container->getDefinition(ProcessDashboardController::class)
             ->setArgument('$logoPath', $config['design']['logo_path']);
+
+        if (interface_exists(NotifierInterface::class)) {
+            $container->getDefinition('cleverage_ui_process.notifier.process_execution')
+                ->setArgument('$defaultOptions', $config['notification']);
+        } else {
+            if ($config['notification']['enabled']) {
+                throw new LogicException('The notification of the process executions requires symfony/notifier: run "composer require symfony/notifier".');
+            }
+            $container->removeDefinition('cleverage_ui_process.notifier.process_execution');
+        }
     }
 
     /**

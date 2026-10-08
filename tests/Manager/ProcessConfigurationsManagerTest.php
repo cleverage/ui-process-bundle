@@ -16,8 +16,10 @@ namespace CleverAge\UiProcessBundle\Tests\Manager;
 use CleverAge\ProcessBundle\Configuration\ProcessConfiguration;
 use CleverAge\ProcessBundle\Registry\ProcessConfigurationRegistry;
 use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
+use CleverAge\UiProcessBundle\Notifier\NotificationTrigger;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\OptionsResolver\Exception\ExceptionInterface as OptionsResolverException;
 use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
@@ -27,6 +29,7 @@ use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
 #[CoversClass(ProcessConfigurationsManager::class)]
+#[UsesClass(NotificationTrigger::class)]
 class ProcessConfigurationsManagerTest extends TestCase
 {
     public function testPublicAndPrivateProcesses(): void
@@ -164,6 +167,71 @@ class ProcessConfigurationsManagerTest extends TestCase
 
         $this->expectException(InvalidOptionsException::class);
         $manager->getUiOptions('test.process');
+    }
+
+    public function testNotificationOptionsOfAnUnknownProcess(): void
+    {
+        self::assertNull($this->createManager(['test.process' => $this->rawProcess()])->getNotificationOptions('unknown'));
+    }
+
+    public function testDefaultNotificationOptions(): void
+    {
+        self::assertSame(
+            ['enabled' => null, 'statuses' => null, 'channels' => null, 'recipients' => null],
+            $this->createManager(['test.process' => $this->rawProcess()])->getNotificationOptions('test.process')
+        );
+    }
+
+    public function testConfiguredNotificationOptions(): void
+    {
+        $manager = $this->createManager(['test.process' => $this->rawProcess([
+            'ui' => ['source' => 'ERP'],
+            'notification' => [
+                'enabled' => true,
+                'statuses' => ['finish'],
+                'channels' => ['chat/slack'],
+                'recipients' => [['email' => 'ops@example.com'], ['phone' => '+33600000000']],
+            ],
+        ])]);
+
+        self::assertSame(
+            [
+                'enabled' => true,
+                'statuses' => ['finish'],
+                'channels' => ['chat/slack'],
+                'recipients' => [['email' => 'ops@example.com', 'phone' => null], ['email' => null, 'phone' => '+33600000000']],
+            ],
+            $manager->getNotificationOptions('test.process')
+        );
+        // The "notification" option is accepted next to the "ui" one
+        self::assertSame('ERP', $manager->getUiOptions('test.process')['source'] ?? null);
+    }
+
+    /**
+     * @return iterable<string, array{array<string, mixed>, class-string<\Throwable>}>
+     */
+    public static function provideInvalidNotificationOptions(): iterable
+    {
+        yield 'not an array' => [['notification' => true], InvalidOptionsException::class];
+        yield 'unknown key' => [['notification' => ['level' => 'Error']], UndefinedOptionsException::class];
+        yield 'enabled not a boolean' => [['notification' => ['enabled' => 'yes']], InvalidOptionsException::class];
+        yield 'unknown status' => [['notification' => ['statuses' => ['started']]], InvalidOptionsException::class];
+        yield 'channels not an array' => [['notification' => ['channels' => 'email']], InvalidOptionsException::class];
+        yield 'recipient without email nor phone' => [['notification' => ['recipients' => [[]]]], InvalidOptionsException::class];
+        yield 'recipient unknown key' => [['notification' => ['recipients' => [['name' => 'Ops']]]], UndefinedOptionsException::class];
+    }
+
+    /**
+     * @param array<string, mixed>     $options
+     * @param class-string<\Throwable> $exception
+     */
+    #[DataProvider('provideInvalidNotificationOptions')]
+    public function testInvalidNotificationOptions(array $options, string $exception): void
+    {
+        $manager = $this->createManager(['test.process' => $this->rawProcess($options)]);
+
+        $this->expectException($exception);
+        $manager->getNotificationOptions('test.process');
     }
 
     /**

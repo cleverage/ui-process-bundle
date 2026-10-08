@@ -16,11 +16,13 @@ namespace CleverAge\UiProcessBundle\EventSubscriber;
 use CleverAge\ProcessBundle\Event\ProcessEvent;
 use CleverAge\UiProcessBundle\Entity\Enum\ProcessExecutionStatus;
 use CleverAge\UiProcessBundle\Entity\ProcessExecution;
+use CleverAge\UiProcessBundle\Event\ProcessExecutionEndedEvent;
 use CleverAge\UiProcessBundle\Manager\ProcessExecutionManager;
 use CleverAge\UiProcessBundle\Monolog\Handler\DoctrineProcessHandler;
 use CleverAge\UiProcessBundle\Monolog\Handler\ProcessHandler;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Uid\Uuid;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 final readonly class ProcessEventSubscriber implements EventSubscriberInterface
 {
@@ -28,6 +30,7 @@ final readonly class ProcessEventSubscriber implements EventSubscriberInterface
         private ProcessHandler $processHandler,
         private DoctrineProcessHandler $doctrineProcessHandler,
         private ProcessExecutionManager $processExecutionManager,
+        private ?EventDispatcherInterface $eventDispatcher = null,
     ) {
     }
 
@@ -53,6 +56,7 @@ final readonly class ProcessEventSubscriber implements EventSubscriberInterface
             $this->processExecutionManager->getCurrentProcessExecution()->end();
             $this->processExecutionManager->save()->unsetProcessExecution($event->getProcessCode());
             $this->processHandler->close();
+            $this->dispatchEnded($event);
         }
     }
 
@@ -63,6 +67,15 @@ final readonly class ProcessEventSubscriber implements EventSubscriberInterface
             $this->processExecutionManager->getCurrentProcessExecution()->end();
             $this->processExecutionManager->save()->unsetProcessExecution($event->getProcessCode());
             $this->processHandler->close();
+            $this->dispatchEnded($event);
+        }
+    }
+
+    private function dispatchEnded(ProcessEvent $event): void
+    {
+        $processExecution = $this->processExecutionManager->getLastProcessExecution();
+        if ($processExecution instanceof ProcessExecution) {
+            $this->eventDispatcher?->dispatch(new ProcessExecutionEndedEvent($processExecution, $event->getProcessError()));
         }
     }
 

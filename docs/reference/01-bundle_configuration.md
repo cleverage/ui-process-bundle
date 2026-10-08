@@ -18,6 +18,11 @@ clever_age_ui_process:
         report_increment_level: Warning
     design:
         logo_path: 'bundles/cleverageuiprocess/logo.jpg'
+    notification:
+        enabled: false
+        statuses: [failed, finish_with_report]
+        channels: []
+        recipients: []
 ```
 
 Options
@@ -48,6 +53,18 @@ Levels are Monolog level names (case-insensitive): `Debug`, `Info`, `Notice`, `W
 | Key         | Type     | Default                                 | Description                                                                                                |
 |-------------|----------|-----------------------------------------|------------------------------------------------------------------------------------------------------------|
 | `logo_path` | `string` | `bundles/cleverageuiprocess/logo.jpg`   | Path, relative to the public directory, of the logo displayed in the UI navigation. The default logo requires `bin/console assets:install`. |
+
+### notification
+
+Notification of the end of the process executions, with [symfony/notifier](https://symfony.com/doc/current/notifier.html)
+(optional dependency). Each key can be overridden by process. See [notifications](09-notifications.md).
+
+| Key          | Type       | Default                          | Description                                                                                                                         |
+|--------------|------------|----------------------------------|-------------------------------------------------------------------------------------------------------------------------------------|
+| `enabled`    | `bool`     | `false`                          | Notify the end of the process executions. `true` requires `symfony/notifier`.                                                       |
+| `statuses`   | `string[]` | `[failed, finish_with_report]`   | Ends of process executions to notify: `failed`, `finish_with_report` (finished with log levels counted in its report), `finish` (finished without them). |
+| `channels`   | `string[]` | `[]`                             | Notifier channels, e.g. `chat/slack`, `email`. Empty: the `channel_policy` of the notifier, by importance.                           |
+| `recipients` | `array[]`  | `[]`                             | Recipients, with an `email` and/or a `phone`. Empty: the `admin_recipients` of the notifier.                                         |
 
 Container parameters
 --------------------
