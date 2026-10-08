@@ -20,6 +20,7 @@ Latest
 * [#111](https://github.com/cleverage/ui-process-bundle/issues/111) `ProcessExecutionDurationFilter`: the filter values are bound as DQL parameters (they were concatenated in the DQL; not exploitable, the form field is numeric). Add tests.
 * [#113](https://github.com/cleverage/ui-process-bundle/issues/113) HTTP API, synchronous execution: the error message is followed by the id of the process execution (`(process execution: <id>)`), to find its logs in the UI; add `ProcessExecutionManager::getLastProcessExecution()`. Add tests.
 * [#117](https://github.com/cleverage/ui-process-bundle/issues/117) Schedule validators: `every` expressions checked as the Symfony Scheduler does (`PeriodicalTrigger`): expressions such as `0 seconds`, `yesterday` or `monday` were accepted but stopped the `scheduler_cron` worker, ISO 8601 durations (`PT1H`) were refused; message fixed ("is not a valid \"every\" expression"). A "hashed" cron expression is refused (500). No `TypeError` on `null`. Add tests.
+* [#119](https://github.com/cleverage/ui-process-bundle/issues/119) Launch form: a context row without key is left out of the context (reported by its `NotBlank` constraint): it gave a 500 when the process has constraints on the context, and a PHP 8.5 deprecation (`null` array offset). Add tests.
 
 v3.0.2
 ------

@@ -123,6 +123,17 @@ class LaunchTypeTest extends TypeTestCase
         self::assertFalse($form->isValid());
     }
 
+    public function testContextRowWithoutKey(): void
+    {
+        $form = $this->factory->create(LaunchType::class, null, ['process_code' => 'text.process']);
+        $form->submit(['input' => 'data.csv', 'context' => [['key' => 'foo', 'value' => 'bar'], ['key' => null, 'value' => 'qux']]]);
+
+        // The row without key is left out of the context, and reported as invalid
+        self::assertSame(['foo' => 'bar'], $form->get('context')->getData());
+        self::assertFalse($form->isValid());
+        self::assertCount(1, $form->get('context')->get('1')->get('key')->getErrors());
+    }
+
     public function testProcessCodeIsRequired(): void
     {
         $this->expectException(MissingOptionsException::class);
