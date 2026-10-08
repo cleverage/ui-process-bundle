@@ -66,6 +66,24 @@ clever_age_process:
             tasks:
                 data:
                     service: '@CleverAge\ProcessBundle\Task\DummyTask'
+        test.form_constraints:
+            description: 'Process launched with the UI form, with constraints on the context'
+            entry_point: data
+            options:
+                ui:
+                    ui_launch_mode: form
+                    constraints:
+                        - Collection:
+                              fields:
+                                  input: ~
+                                  context:
+                                      - Collection:
+                                            fields:
+                                                key1:
+                                                    - NotBlank: ~
+            tasks:
+                data:
+                    service: '@CleverAge\ProcessBundle\Task\DummyTask'
         test.upload:
             description: 'Process launched with the UI form, file input'
             entry_point: data

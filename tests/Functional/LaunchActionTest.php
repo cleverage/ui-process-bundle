@@ -148,6 +148,27 @@ class LaunchActionTest extends FunctionalTestCase
         unlink((string) $file);
     }
 
+    /**
+     * A context row without key, on a process with constraints on the context: the empty key broke the property paths
+     * of the constraints (500 "Could not parse property path").
+     */
+    public function testContextRowWithoutKey(): void
+    {
+        $this->login();
+
+        $crawler = $this->client->request('GET', '/process?routeName=process_launch&process=test.form_constraints');
+        self::assertResponseIsSuccessful();
+        $form = $crawler->selectButton('Launch')->form();
+        $values = $form->getPhpValues();
+        $values['launch']['context'] = [['key' => 'key1', 'value' => 'value1'], ['key' => '', 'value' => 'value2']];
+        $this->client->request($form->getMethod(), $form->getUri(), $values);
+
+        // The form is displayed again with the error (LaunchAction renders an invalid form with a 200)
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('.invalid-feedback', 'This value should not be blank.');
+        self::assertSame([], $this->getDispatchedMessages());
+    }
+
     public function testMissingProcessCode(): void
     {
         $this->login();
