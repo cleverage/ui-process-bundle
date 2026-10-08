@@ -89,6 +89,19 @@ class ProcessExecutionCrudTest extends FunctionalTestCase
         self::assertStringContainsString('test.form', $crawler->filter('table')->text());
     }
 
+    public function testDuration(): void
+    {
+        $this->login();
+        $this->createExecution('test.process', ProcessExecutionStatus::Finish);
+        $this->createExecution('test.form', ProcessExecutionStatus::Started, false);
+
+        $crawler = $this->client->request('GET', '/process/process-execution');
+
+        self::assertResponseIsSuccessful();
+        $durations = $crawler->filter('table tbody td[data-column="duration"]')->each(static fn ($cell): string => $cell->text());
+        self::assertEqualsCanonicalizing(['00 hour(s) 00 min(s) 00 s', 'Null'], $durations);
+    }
+
     public function testFilters(): void
     {
         $this->login();
@@ -159,12 +172,14 @@ class ProcessExecutionCrudTest extends FunctionalTestCase
         self::assertResponseStatusCodeSame(404);
     }
 
-    private function createExecution(string $code, ProcessExecutionStatus $status): ProcessExecution
+    private function createExecution(string $code, ProcessExecutionStatus $status, bool $ended = true): ProcessExecution
     {
         $execution = new ProcessExecution($code, $code.'_'.uniqid().'.log', ['key' => 'value']);
         $execution->setStatus($status);
         $execution->addReport('count', 3);
-        $execution->end();
+        if ($ended) {
+            $execution->end();
+        }
         $this->getEntityManager()->persist($execution);
         $this->getEntityManager()->flush();
 

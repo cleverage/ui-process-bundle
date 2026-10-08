@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Rector\Config\RectorConfig;
+use Rector\DeadCode\Rector\ClassMethod\RemoveUnusedConstructorParamRector;
 use Rector\Set\ValueObject\LevelSetList;
 use Rector\Symfony\Set\SymfonySetList;
 use Rector\ValueObject\PhpVersion;
@@ -21,5 +22,11 @@ return RectorConfig::configure()
     ->withSets([
         LevelSetList::UP_TO_PHP_82,
         SymfonySetList::SYMFONY_CONSTRUCTOR_INJECTION,
+    ])
+    ->withSkip([
+        // deprecated $translator argument kept for BC, to be removed in 4.0
+        RemoveUnusedConstructorParamRector::class => [
+            __DIR__.'/src/Controller/Admin/ProcessExecutionCrudController.php',
+        ],
     ])
 ;

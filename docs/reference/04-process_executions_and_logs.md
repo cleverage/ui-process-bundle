@@ -36,6 +36,16 @@ The "Process > Executions" menu (the dashboard home page) lists the executions, 
 status, dates, duration, report, context and the `source`/`target` [UI options](02-process_ui_options.md) of the
 process. They can be filtered by code, start date and duration (in seconds).
 
+The duration is rendered by the `@CleverAgeUiProcess/admin/field/duration.html.twig` template, with the
+`%H hour(s) %I min(s) %S s` format (see [`DateInterval::format()`](https://www.php.net/manual/en/dateinterval.format.php)),
+translated in the `messages` domain. To change it, translate this format, or
+[override the template](https://symfony.com/doc/current/bundles/override.html#templates) in
+`templates/bundles/CleverAgeUiProcessBundle/admin/field/duration.html.twig`, e.g.:
+
+```twig
+{{ entity.instance.duration('%a day(s) %H:%I:%S') ?? '-' }}
+```
+
 Two actions are available on each execution:
 - "Show logs stored in database": opens the [logs list](#logs-list) filtered on this execution (displayed only if
   some logs were stored),

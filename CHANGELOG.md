@@ -6,6 +6,7 @@ Latest
 * [#83](https://github.com/cleverage/ui-process-bundle/issues/83) Remove `UploadAndExecuteAction` (route `process_upload_and_execute`), `ProcessUploadFileType` and `ProcessConfigurationValueResolver`: the action was broken and unreachable, file uploads are handled by `LaunchAction` (`entrypoint_type: file`).
 * [#84](https://github.com/cleverage/ui-process-bundle/issues/84) Add `LogRecord::hasContextInfo()`, deprecate the misnamed `LogRecord::contextIsEmpty()` (it returns `true` when the context is not empty). Add tests.
 * [#85](https://github.com/cleverage/ui-process-bundle/issues/85) `ProcessHandler`: default report increment level aligned on the bundle configuration (`Warning`); declare the `symfony/ux-twig-component` dependency. Add tests.
+* [#48](https://github.com/cleverage/ui-process-bundle/issues/48) Executions list: the duration is rendered by the `@CleverAgeUiProcess/admin/field/duration.html.twig` template, so that its format can be changed by overriding the template instead of `ProcessExecutionCrudController` (the `$translator` argument of its constructor is no longer used: deprecated, will be removed in 4.0). Add tests.
 * [#129](https://github.com/cleverage/ui-process-bundle/issues/129) CI: `migrations` job running the migrations on MySQL, MariaDB and PostgreSQL, with DBAL 3 and 4 (`migrate`, `doctrine:schema:validate`, `migrate first`, `migrate` again); console of the test application (`tests/App/bin/console`), database URL overridable with `DATABASE_URL` (SQLite by default).
 
 ## Fixes
