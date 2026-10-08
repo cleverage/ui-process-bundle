@@ -84,6 +84,16 @@ See [users & security](reference/03-users_and_security.md).
 
 Supported databases: **MySQL / MariaDB** and **PostgreSQL** (maintained versions).
 
+The entities of the bundle expect the `underscore_number_aware` Doctrine naming strategy (that of the Symfony recipe):
+their indexes reference `snake_case` column names (e.g. `start_date`).
+
+```yaml
+# config/packages/doctrine.yaml
+doctrine:
+    orm:
+        naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
+```
+
 The bundle registers its own Doctrine migrations (`CleverAge\UiProcessBundle\Migrations`). Run them, then create a
 first user:
 
