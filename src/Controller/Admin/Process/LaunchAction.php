@@ -19,6 +19,7 @@ use CleverAge\UiProcessBundle\Form\Type\LaunchType;
 use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
 use CleverAge\UiProcessBundle\Message\ProcessExecuteMessage;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Asset;
+use EasyCorp\Bundle\EasyAdminBundle\Contracts\Context\AdminContextInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Provider\AdminContextProvider;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Filesystem\Filesystem;
@@ -51,6 +52,10 @@ class LaunchAction extends AbstractController
     public function __invoke(
         string $uploadDirectory,
     ): Response {
+        // Accessed directly, not through the dashboard: the template needs the EasyAdmin context
+        if (!$this->adminContextProvider->getContext() instanceof AdminContextInterface) {
+            return $this->redirectToRoute('process', ['routeName' => 'process_launch'] + ($this->requestStack->getMainRequest()?->query->all() ?? []));
+        }
         $processCode = (string) $this->requestStack->getMainRequest()?->query->get('process');
         if ('' === $processCode) {
             throw new MissingProcessException();
@@ -105,7 +110,7 @@ class LaunchAction extends AbstractController
 
             return $this->redirectToRoute('process', ['routeName' => 'process_list']);
         }
-        $this->adminContextProvider->getContext()?->getAssets()->addJsAsset(Asset::fromEasyAdminAssetPackage('field-collection.js')->getAsDto());
+        $this->adminContextProvider->getContext()->getAssets()->addJsAsset(Asset::fromEasyAdminAssetPackage('field-collection.js')->getAsDto());
 
         return $this->render(
             '@CleverAgeUiProcess/admin/process/launch.html.twig',
