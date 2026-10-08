@@ -24,6 +24,7 @@ Latest
 * [#121](https://github.com/cleverage/ui-process-bundle/issues/121) `ListAction` / `LaunchAction`: accessed directly (`/process/list`, `/process/launch`), redirected to the dashboard (`/process?routeName=...`) instead of a 500. Add tests.
 * [#123](https://github.com/cleverage/ui-process-bundle/issues/123) HTTP API: the parameters of the query string are also read without body, and `queue` is read from the query string (the form data takes precedence). Add tests.
 * [#125](https://github.com/cleverage/ui-process-bundle/issues/125) `ProcessSchedule::getContext()` decodes a JSON string as an array; `User::getRoles()` no longer duplicates `ROLE_USER`; `symfony/expression-language` declared (used by `Assert\When`); the `underscore_number_aware` Doctrine naming strategy prerequisite is documented. Add tests.
+* [#127](https://github.com/cleverage/ui-process-bundle/issues/127) `Version20261008120000` migration (MySQL / MariaDB, PostgreSQL): remove the `(DC2Type:...)` column comments created by the migrations when the type comments are not used (always with DBAL 4, `disable_type_comments` with DBAL 3): the schema was always reported as out of sync; with DBAL 3 using the type comments, they are kept. `UiOptions` PHPDoc: types instead of string literals (`'run': ?bool`, context rows `int|string`).
 
 v3.0.2
 ------
