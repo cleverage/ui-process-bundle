@@ -32,7 +32,7 @@ Parameters can be sent either as a JSON body, or as form data (`application/x-ww
 |-----------|---------------------------|:--------:|---------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `code`    | `string`                  |    **X** |         | Code of the process. It must exist and be public.                                                                                                                    |
 | `input`   | `string` or file          |          | `null`  | Process input. With form data, it can be an uploaded file: the file is saved in the `upload_directory` directory (see [bundle configuration](01-bundle_configuration.md#container-parameters)) and its path is passed as input. |
-| `context` | `object` or JSON `string` |          | `{}`    | Process context, as key/value pairs. With form data, send one field per value: `context[key]=value`.                                                                 |
+| `context` | `object` or JSON `string` |          | `{}`    | Process context, as key/value pairs. A JSON string must decode to an object or an array (`422` otherwise). With form data, send one field per value: `context[key]=value`. |
 | `queue`   | `bool`                    |          | `true`  | `true`: the process is queued to the `execute_process` transport (see [messenger](08-messenger.md)). `false`: the process is executed during the HTTP request.      |
 
 `code`, `input`, `context` and `queue` can also be passed in the query string, with form data or without body (the form
@@ -46,7 +46,7 @@ Responses
 | `200`  | `"Process has been added to queue. It will start as soon as possible."`       | `queue` is `true`.                                                                |
 | `200`  | `"Process has been proceed well."`                                              | `queue` is `false` and the process succeeded.                                    |
 | `500`  | The exception message and `(process execution: <id>)`, as a JSON string         | `queue` is `false` and the process failed.                                       |
-| `422`  | Violation messages, e.g. `Process code is required.`, `The process "foo" does not exist.`, `The process "foo" is not public.` | Invalid parameters. A request body that cannot be parsed is handled as an empty request. |
+| `422`  | Violation messages, e.g. `Process code is required.`, `The process "foo" does not exist.`, `The process "foo" is not public.`, `Context must be a JSON object or array.` | Invalid parameters. A request body that cannot be parsed is handled as an empty request. |
 
 Once the process has started, its execution is recorded in the [executions list](04-process_executions_and_logs.md), like any
 other execution.

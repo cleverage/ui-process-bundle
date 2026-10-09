@@ -4,6 +4,9 @@ Latest
 ## Changes
 * [#18](https://github.com/cleverage/ui-process-bundle/issues/18) PHPStan level 10 (was 8), on `src` and `tests`: `LogProcessFilter::new()` `$label` typed as `TranslatableInterface|string|false|null` (the type of `setLabel()`), `LogRecord::$context` documented as `array<mixed>` (the Monolog context), conditional return type of `ProcessExecution::getReport()`.
 
+## Fixes
+* [#135](https://github.com/cleverage/ui-process-bundle/issues/135) HTTP API: a `context` given as a JSON string that does not decode to an array (`"1"`, `"true"`, `"\"abc\""`, `"null"`, `""`) is rejected with a `422` (`Context must be a JSON object or array.`); it gave a 500 (`TypeError`), whose message exposed the server paths with a synchronous execution. Add tests.
+
 v3.1
 ------
 
