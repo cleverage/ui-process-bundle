@@ -84,6 +84,14 @@ class HttpProcessExecutionTest extends TestCase
     {
         yield 'array context' => ['demo.process', ['key' => 'value'], []];
         yield 'json context' => ['demo.process', '{"key":"value"}', []];
+        yield 'json list context' => ['demo.process', '["value"]', []];
+        yield 'empty json object context' => ['demo.process', '{}', []];
+        // Valid JSON accepted by the Json constraint, but not decoded to an array
+        yield 'json integer context' => ['demo.process', '1', ['context: Context must be a JSON object or array.']];
+        yield 'json boolean context' => ['demo.process', 'true', ['context: Context must be a JSON object or array.']];
+        yield 'json string context' => ['demo.process', '"abc"', ['context: Context must be a JSON object or array.']];
+        yield 'json null context' => ['demo.process', 'null', ['context: Context must be a JSON object or array.']];
+        yield 'empty string context' => ['demo.process', '', ['context: Context must be a JSON object or array.']];
         yield 'missing code' => [null, [], ['code: Process code is required.']];
         yield 'unknown code' => ['demo.unknown', [], ['code: The process "demo.unknown" does not exist.']];
     }

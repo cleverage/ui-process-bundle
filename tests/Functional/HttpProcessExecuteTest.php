@@ -43,6 +43,7 @@ use CleverAge\UiProcessBundle\Twig\Extension\ProcessExecutionExtension;
 use CleverAge\UiProcessBundle\Twig\Extension\ProcessExtension;
 use CleverAge\UiProcessBundle\Validator\IsValidProcessCodeValidator;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\UsesClass;
 use Symfony\Component\PasswordHasher\Hasher\Pbkdf2PasswordHasher;
 
@@ -152,6 +153,35 @@ class HttpProcessExecuteTest extends FunctionalTestCase
         self::assertCount(1, $messages);
         // A JSON string context is decoded
         self::assertSame(['key' => 'value'], $messages[0]->context);
+    }
+
+    /**
+     * A JSON context that does not decode to an array is rejected (it gave a 500: TypeError).
+     */
+    #[DataProvider('provideScalarJsonContext')]
+    public function testScalarJsonContext(string $context, bool $queue): void
+    {
+        $this->client->request(
+            'POST',
+            '/http/process/execute',
+            server: ['HTTP_AUTHORIZATION' => 'Bearer '.self::TOKEN, 'CONTENT_TYPE' => 'application/json'],
+            content: json_encode(['code' => 'test.process', 'context' => $context, 'queue' => $queue], \JSON_THROW_ON_ERROR)
+        );
+
+        self::assertResponseStatusCodeSame(422);
+        self::assertSame([], $this->getDispatchedMessages());
+        self::assertSame([], $this->getEntityManager()->getRepository(ProcessExecution::class)->findAll());
+    }
+
+    /**
+     * @return iterable<string, array{string, bool}>
+     */
+    public static function provideScalarJsonContext(): iterable
+    {
+        foreach (['1', 'true', '"abc"', 'null', ''] as $context) {
+            yield $context.' queued' => [$context, true];
+            yield $context.' synchronous' => [$context, false];
+        }
     }
 
     public function testUnknownProcess(): void

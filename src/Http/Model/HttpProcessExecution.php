@@ -15,10 +15,12 @@ namespace CleverAge\UiProcessBundle\Http\Model;
 
 use CleverAge\UiProcessBundle\Validator\IsValidProcessCode;
 use Symfony\Component\Validator\Constraints\AtLeastOneOf;
+use Symfony\Component\Validator\Constraints\Callback;
 use Symfony\Component\Validator\Constraints\Json;
 use Symfony\Component\Validator\Constraints\NotNull;
 use Symfony\Component\Validator\Constraints\Sequentially;
 use Symfony\Component\Validator\Constraints\Type;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 final readonly class HttpProcessExecution
 {
@@ -33,5 +35,29 @@ final readonly class HttpProcessExecution
         public string|array $context = [],
         public bool $queue = true,
     ) {
+    }
+
+    /**
+     * A JSON context must decode to an array: the Json constraint also accepts scalars ("1", "null"...) and "".
+     */
+    #[Callback]
+    public function validateContext(ExecutionContextInterface $context): void
+    {
+        if (!\is_string($this->context)) {
+            return;
+        }
+        try {
+            $decoded = json_decode($this->context, true, 512, \JSON_THROW_ON_ERROR);
+        } catch (\JsonException) {
+            if ('' !== $this->context) {
+                return; // Reported by the Json constraint
+            }
+            $decoded = null;
+        }
+        if (!\is_array($decoded)) {
+            $context->buildViolation('Context must be a JSON object or array.')
+                ->atPath('context')
+                ->addViolation();
+        }
     }
 }
