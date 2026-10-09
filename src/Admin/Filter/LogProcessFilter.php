@@ -21,6 +21,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Dto\FilterDataDto;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\FilterTrait;
 use EasyCorp\Bundle\EasyAdminBundle\Form\Filter\Type\ChoiceFilterType;
 use EasyCorp\Bundle\EasyAdminBundle\Form\Type\ComparisonType;
+use Symfony\Contracts\Translation\TranslatableInterface;
 
 class LogProcessFilter implements FilterInterface
 {
@@ -30,7 +31,7 @@ class LogProcessFilter implements FilterInterface
      * @param string[] $choices
      */
     public static function new(
-        mixed $label,
+        TranslatableInterface|string|false|null $label,
         array $choices,
         string|int|null $executionId = null,
     ): self {

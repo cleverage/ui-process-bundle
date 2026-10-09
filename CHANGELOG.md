@@ -1,6 +1,9 @@
 Latest
 ------
 
+## Changes
+* [#18](https://github.com/cleverage/ui-process-bundle/issues/18) PHPStan level 10 (was 8), on `src` and `tests`: `LogProcessFilter::new()` `$label` typed as `TranslatableInterface|string|false|null` (the type of `setLabel()`), `LogRecord::$context` documented as `array<mixed>` (the Monolog context), conditional return type of `ProcessExecution::getReport()`.
+
 v3.1
 ------
 

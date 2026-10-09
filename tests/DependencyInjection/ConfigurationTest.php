@@ -136,6 +136,7 @@ class ConfigurationTest extends TestCase
     public function testLastConfigurationWins(): void
     {
         $processor = new Processor();
+        /** @var array<string, array<string, mixed>> $config */
         $config = $processor->processConfiguration(new Configuration('prod'), [
             ['design' => ['logo_path' => 'first.png'], 'logs' => ['store_in_database' => false]],
             ['design' => ['logo_path' => 'second.png']],
@@ -188,6 +189,9 @@ class ConfigurationTest extends TestCase
      */
     private function process(string $env, array $config): array
     {
-        return (new Processor())->processConfiguration(new Configuration($env), [$config]);
+        /** @var array<string, mixed> $processedConfig */
+        $processedConfig = (new Processor())->processConfiguration(new Configuration($env), [$config]);
+
+        return $processedConfig;
     }
 }

@@ -14,6 +14,8 @@ declare(strict_types=1);
 namespace CleverAge\UiProcessBundle\Controller\Admin;
 
 use CleverAge\UiProcessBundle\Entity\User;
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\Persistence\ManagerRegistry;
 use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminRoute;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
@@ -114,10 +116,11 @@ class UserCrudController extends AbstractCrudController
         $user = $adminContext?->getEntity()->getInstance();
         $token = md5(uniqid(date('YmdHis')));
         $user->setToken((new Pbkdf2PasswordHasher())->hash($token));
-        $this->persistEntity(
-            $this->container->get('doctrine')->getManagerForClass($adminContext?->getEntity()->getFqcn()),
-            $user
-        );
+        /** @var ManagerRegistry $doctrine */
+        $doctrine = $this->container->get('doctrine');
+        /** @var EntityManagerInterface $entityManager */
+        $entityManager = $doctrine->getManagerForClass(User::class);
+        $this->persistEntity($entityManager, $user);
         $this->addFlash('success', 'New token generated '.$token.' (keep it in secured area. This token will never be displayed anymore)');
 
         return $this->redirect(

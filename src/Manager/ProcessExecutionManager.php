@@ -81,10 +81,12 @@ class ProcessExecutionManager
 
     public function increment(string $incrementKey, int $step = 1): void
     {
-        $this->currentProcessExecution?->addReport(
-            $incrementKey,
-            $this->currentProcessExecution->getReport($incrementKey, 0) + $step
-        );
+        if (!$this->currentProcessExecution instanceof ProcessExecution) {
+            return;
+        }
+        /** @var int $count */
+        $count = $this->currentProcessExecution->getReport($incrementKey, 0);
+        $this->currentProcessExecution->addReport($incrementKey, $count + $step);
     }
 
     public function setReport(string $incrementKey, string $value): void

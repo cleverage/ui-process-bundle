@@ -51,14 +51,16 @@ class ProcessExecuteController extends AbstractController
             }
             throw new UnprocessableEntityHttpException(implode('. ', $violationsMessages));
         }
+        /** @var mixed[] $context */
+        $context = \is_string($httpProcessExecution->context)
+            ? json_decode($httpProcessExecution->context, true)
+            : $httpProcessExecution->context;
         if ($httpProcessExecution->queue) {
             $this->bus->dispatch(
                 new ProcessExecuteMessage(
                     $httpProcessExecution->code ?? '',
                     $httpProcessExecution->input,
-                    \is_string($httpProcessExecution->context)
-                        ? json_decode($httpProcessExecution->context, true)
-                        : $httpProcessExecution->context
+                    $context
                 )
             );
 
@@ -69,9 +71,7 @@ class ProcessExecuteController extends AbstractController
             $this->processManager->execute(
                 $httpProcessExecution->code ?? '',
                 $httpProcessExecution->input,
-                \is_string($httpProcessExecution->context)
-                    ? json_decode($httpProcessExecution->context, true)
-                    : $httpProcessExecution->context
+                $context
             );
         } catch (\Throwable $e) {
             // The id of the process execution allows to find its logs in the UI

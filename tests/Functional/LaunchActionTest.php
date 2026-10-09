@@ -102,6 +102,7 @@ class LaunchActionTest extends FunctionalTestCase
         self::assertSame('key1', $crawler->filter('input[name="launch[context][0][key]"]')->attr('value'));
 
         $form = $crawler->selectButton('Launch')->form();
+        /** @var array<string, array<string, mixed>> $values */
         $values = $form->getPhpValues();
         $values['launch']['input'] = 'my input';
         $values['launch']['context'] = [['key' => 'key1', 'value' => 'value1'], ['key' => 'key2', 'value' => 'value2']];
@@ -159,6 +160,7 @@ class LaunchActionTest extends FunctionalTestCase
         $crawler = $this->client->request('GET', '/process?routeName=process_launch&process=test.form_constraints');
         self::assertResponseIsSuccessful();
         $form = $crawler->selectButton('Launch')->form();
+        /** @var array<string, array<string, mixed>> $values */
         $values = $form->getPhpValues();
         $values['launch']['context'] = [['key' => 'key1', 'value' => 'value1'], ['key' => '', 'value' => 'value2']];
         $this->client->request($form->getMethod(), $form->getUri(), $values);

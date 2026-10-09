@@ -36,7 +36,7 @@ class LogRecord
     #[ORM\Column(type: Types::STRING, length: 512)]
     public readonly string $message;
 
-    /** @var array<string, mixed> $context */
+    /** @var array<mixed> $context */
     #[ORM\Column(type: Types::JSON)]
     public readonly array $context;
 

@@ -274,7 +274,9 @@ class ProcessExecutionNotifierTest extends TestCase
 
             public function log($level, string|\Stringable $message, array $context = []): void
             {
-                $this->logs->append([(string) $level, $message, $context]);
+                /** @var string $levelName */
+                $levelName = $level;
+                $this->logs->append([$levelName, $message, $context]);
             }
         };
     }

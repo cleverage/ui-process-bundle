@@ -96,6 +96,7 @@ class ProcessExecutionManagerEntityManagerTest extends KernelTestCase
 
         // A single execution, with its final state and all its logs
         $connection = $this->entityManager->getConnection();
+        /** @var list<array{id: int|string, status: string, end_date: string|null, report: string, context: string|null}> $executions */
         $executions = $connection->fetchAllAssociative('SELECT id, status, end_date, report, context FROM process_execution');
         self::assertCount(1, $executions);
         self::assertSame('finish', $executions[0]['status']);
@@ -106,7 +107,9 @@ class ProcessExecutionManagerEntityManagerTest extends KernelTestCase
             ['before the clear', 'after the clear'],
             $connection->fetchFirstColumn('SELECT message FROM log_record WHERE process_execution_id = ? ORDER BY id', [$executions[0]['id']])
         );
-        self::assertSame(0, (int) $connection->fetchOne('SELECT COUNT(*) FROM log_record WHERE process_execution_id <> ?', [$executions[0]['id']]));
+        /** @var int|string $otherLogsCount */
+        $otherLogsCount = $connection->fetchOne('SELECT COUNT(*) FROM log_record WHERE process_execution_id <> ?', [$executions[0]['id']]);
+        self::assertSame(0, (int) $otherLogsCount);
     }
 
     public function testEntityManagerClosedDuringTheProcess(): void
@@ -144,6 +147,7 @@ class ProcessExecutionManagerEntityManagerTest extends KernelTestCase
 
         // A single execution, with its final state and all its logs
         $connection = $this->entityManager->getConnection();
+        /** @var list<array{id: int|string, status: string, end_date: string|null, report: string, context: string|null}> $executions */
         $executions = $connection->fetchAllAssociative('SELECT id, status, end_date, report, context FROM process_execution');
         self::assertCount(1, $executions);
         self::assertSame('finish', $executions[0]['status']);

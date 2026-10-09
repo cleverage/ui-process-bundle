@@ -75,13 +75,15 @@ class ProcessExecutionRepository extends EntityRepository
     public function getLastProcessExecution(string $code): ?ProcessExecution
     {
         $qb = $this->createQueryBuilder('pe');
-
-        return $qb->select('pe')
+        /** @var ProcessExecution|null $processExecution */
+        $processExecution = $qb->select('pe')
             ->where($qb->expr()->eq('pe.code', $qb->expr()->literal($code)))
             ->orderBy('pe.startDate', 'DESC')
             ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
+
+        return $processExecution;
     }
 
     public function hasLogs(ProcessExecution $processExecution): bool
