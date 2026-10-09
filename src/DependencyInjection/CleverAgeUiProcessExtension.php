@@ -35,6 +35,13 @@ final class CleverAgeUiProcessExtension extends Extension implements PrependExte
         /** @var string $env */
         $env = $container->getParameter('kernel.environment');
         $configuration = new Configuration($env);
+        /** @var array{
+         *     security: array{roles: list<string>},
+         *     logs: array{store_in_database: bool, database_level: string, file_level: string, report_increment_level: string},
+         *     design: array{logo_path: string},
+         *     notification: array{enabled: bool, ...},
+         * } $config
+         */
         $config = $this->processConfiguration($configuration, $configs);
 
         $container->getDefinition(UserCrudController::class)

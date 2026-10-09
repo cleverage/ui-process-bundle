@@ -36,6 +36,7 @@ class LaunchType extends AbstractType
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+        /** @var string $code */
         $code = $options['process_code'];
         $configuration = $this->registry->getProcessConfiguration($code);
         $uiOptions = $this->configurationsManager->getUiOptions($code);
@@ -62,7 +63,7 @@ class LaunchType extends AbstractType
             static fn ($data) => $data ?? [],
             // A row without key is left out (it is reported by the NotBlank constraint of ProcessContextType): a null
             // key is deprecated as array offset, and an empty key breaks the property paths of the process constraints
-            static fn ($data) => array_column(
+            static fn (?array $data) => array_column(
                 array_filter($data ?? [], static fn ($row): bool => \is_array($row) && null !== ($row['key'] ?? null) && '' !== $row['key']),
                 'value',
                 'key'

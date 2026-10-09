@@ -90,6 +90,9 @@ class ProcessExecution implements \Stringable
         $this->report[$key] = $value;
     }
 
+    /**
+     * @return ($key is null ? array<string, mixed> : mixed)
+     */
     public function getReport(?string $key = null, mixed $default = null): mixed
     {
         if (null === $key) {

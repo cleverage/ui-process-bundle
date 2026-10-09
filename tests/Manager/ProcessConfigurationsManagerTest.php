@@ -40,9 +40,14 @@ class ProcessConfigurationsManagerTest extends TestCase
             'public.two' => $this->rawProcess(),
         ]);
 
-        $codes = static fn (array $configurations): array => array_values(
-            array_map(static fn (ProcessConfiguration $configuration): string => $configuration->getCode(), $configurations)
-        );
+        $codes = static function (array $configurations): array {
+            /** @var array<ProcessConfiguration> $processConfigurations */
+            $processConfigurations = $configurations;
+
+            return array_values(
+                array_map(static fn (ProcessConfiguration $configuration): string => $configuration->getCode(), $processConfigurations)
+            );
+        };
 
         self::assertSame(['public.one', 'public.two'], $codes($manager->getPublicProcesses()));
         self::assertSame(['private.one'], $codes($manager->getPrivateProcesses()));

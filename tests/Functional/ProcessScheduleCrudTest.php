@@ -100,6 +100,7 @@ class ProcessScheduleCrudTest extends FunctionalTestCase
         self::assertNotContains('test.private', $options);
 
         $form = $crawler->selectButton('Create')->form();
+        /** @var array<string, array<string, mixed>> $values */
         $values = $form->getPhpValues();
         $values['ProcessSchedule']['process'] = 'test.process';
         $values['ProcessSchedule']['type'] = 'cron';
@@ -123,6 +124,7 @@ class ProcessScheduleCrudTest extends FunctionalTestCase
 
         $crawler = $this->client->request('GET', '/process/process-schedule/new');
         $form = $crawler->selectButton('Create')->form();
+        /** @var array<string, array<string, mixed>> $values */
         $values = $form->getPhpValues();
         $values['ProcessSchedule']['process'] = 'test.process';
         $values['ProcessSchedule']['type'] = 'cron';
@@ -141,6 +143,7 @@ class ProcessScheduleCrudTest extends FunctionalTestCase
         $crawler = $this->client->request('GET', '/process/process-schedule/'.$schedule->getId().'/edit');
         self::assertResponseIsSuccessful();
         $form = $crawler->selectButton('Save changes')->form();
+        /** @var array<string, array<string, mixed>> $values */
         $values = $form->getPhpValues();
         $values['ProcessSchedule']['expression'] = '1 hour';
         $this->client->request($form->getMethod(), $form->getUri(), $values);

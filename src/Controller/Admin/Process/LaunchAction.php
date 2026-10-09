@@ -98,11 +98,11 @@ class LaunchAction extends AbstractController
                 (new Filesystem())->dumpFile($filename, $input->getContent());
                 $input = $filename;
             }
-            $this->dispatch(
-                $form->getConfig()->getOption('process_code'),
-                $input,
-                $form->get('context')->getData()
-            );
+            /** @var string $processCode */
+            $processCode = $form->getConfig()->getOption('process_code');
+            /** @var mixed[] $context */
+            $context = $form->get('context')->getData();
+            $this->dispatch($processCode, $input, $context);
             $this->addFlash(
                 'success',
                 'Process has been added to queue. It will start as soon as possible'

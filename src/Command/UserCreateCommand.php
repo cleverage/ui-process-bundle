@@ -72,6 +72,10 @@ class UserCreateCommand extends Command
             );
         }
 
+        /**
+         * @var string $username
+         * @var string $password
+         */
         $user = new User();
         $user->setEmail($username);
         $user->setRoles(['ROLE_USER', 'ROLE_ADMIN']);

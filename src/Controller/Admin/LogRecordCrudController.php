@@ -89,7 +89,9 @@ class LogRecordCrudController extends AbstractCrudController
     #[\Override]
     public function configureFilters(Filters $filters): Filters
     {
-        $id = $this->requestStack->getMainRequest()?->query->all('filters')['process']['value'] ?? null;
+        /** @var array{process?: array{value?: string|int|null}} $queryFilters */
+        $queryFilters = $this->requestStack->getMainRequest()?->query->all('filters') ?? [];
+        $id = $queryFilters['process']['value'] ?? null;
         $processList = $this->processConfigurationsManager->getPublicProcesses();
         $processList = array_map(static fn (ProcessConfiguration $cfg) => $cfg->getCode(), $processList);
 

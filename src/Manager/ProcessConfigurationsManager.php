@@ -102,7 +102,12 @@ final readonly class ProcessConfigurationsManager
             $notificationResolver->setDefaults(['enabled' => null, 'statuses' => null, 'channels' => null, 'recipients' => null]);
             $notificationResolver->setAllowedTypes('enabled', ['null', 'bool']);
             $notificationResolver->setAllowedTypes('statuses', ['null', 'string[]']);
-            $notificationResolver->setAllowedValues('statuses', static fn (?array $statuses): bool => null === $statuses || [] === array_diff($statuses, NotificationTrigger::values()));
+            $notificationResolver->setAllowedValues('statuses', static function (?array $statuses): bool {
+                /** @var string[]|null $statusValues */
+                $statusValues = $statuses;
+
+                return null === $statusValues || [] === array_diff($statusValues, NotificationTrigger::values());
+            });
             $notificationResolver->setAllowedTypes('channels', ['null', 'string[]']);
             $notificationResolver->setAllowedTypes('recipients', ['null', 'array[]']);
             $notificationResolver->setNormalizer('recipients', static function (Options $options, ?array $recipients): ?array {
@@ -122,7 +127,10 @@ final readonly class ProcessConfigurationsManager
                     return $phone;
                 });
 
-                return array_values(array_map($recipientResolver->resolve(...), $recipients));
+                /** @var array<array<string, mixed>> $recipientRows */
+                $recipientRows = $recipients;
+
+                return array_values(array_map($recipientResolver->resolve(...), $recipientRows));
             });
 
             return $notificationResolver->resolve($notification);
@@ -154,7 +162,10 @@ final readonly class ProcessConfigurationsManager
                     $contextResolver = new OptionsResolver();
                     $contextResolver->setRequired(['key', 'value']);
 
-                    return array_map($contextResolver->resolve(...), $context);
+                    /** @var array<array<string, mixed>> $contextRows */
+                    $contextRows = $context;
+
+                    return array_map($contextResolver->resolve(...), $contextRows);
                 });
 
                 return $defaultResolver->resolve($default);

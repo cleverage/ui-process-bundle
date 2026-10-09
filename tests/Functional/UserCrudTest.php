@@ -88,6 +88,7 @@ class UserCrudTest extends FunctionalTestCase
         $crawler = $this->client->request('GET', '/process/user/new');
         self::assertResponseIsSuccessful();
         $form = $crawler->selectButton('Create')->form();
+        /** @var array<string, array<string, mixed>> $values */
         $values = $form->getPhpValues();
         $values['User']['email'] = 'new@example.com';
         $values['User']['password'] = ['first' => 'new password', 'second' => 'new password'];
@@ -110,6 +111,7 @@ class UserCrudTest extends FunctionalTestCase
 
         $crawler = $this->client->request('GET', '/process/user/new');
         $form = $crawler->selectButton('Create')->form();
+        /** @var array<string, array<string, mixed>> $values */
         $values = $form->getPhpValues();
         $values['User']['email'] = 'new@example.com';
         $values['User']['password'] = ['first' => 'password', 'second' => 'other'];

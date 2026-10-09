@@ -37,6 +37,7 @@ class ProcessDashboardController extends AbstractDashboardController
     #[\Override]
     public function index(): Response
     {
+        /** @var AdminUrlGenerator $adminUrlGenerator */
         $adminUrlGenerator = $this->container->get(AdminUrlGenerator::class);
 
         return $this->redirect($adminUrlGenerator->setController(ProcessExecutionCrudController::class)->generateUrl());
