@@ -77,7 +77,9 @@ the previous one. It is used to authenticate on the [HTTP API](06-http_api.md).
 Routes
 ------
 
-Routes are imported with `@CleverAgeUiProcessBundle/config/routes/*.yaml` (see [installation](../index.md#import-routes)).
+Routes are imported with `@CleverAgeUiProcessBundle/config/routes/*.yaml`, or
+`@CleverAgeUiProcessBundle/config/routes/controllers.yaml` when the EasyAdmin routes are already imported, as done by the
+Symfony Flex recipe (see [installation](../index.md#import-routes)).
 
 | Route name                   | Path                            | Description                                                                                  |
 |------------------------------|---------------------------------|----------------------------------------------------------------------------------------------|

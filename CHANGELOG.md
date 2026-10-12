@@ -1,6 +1,9 @@
 Latest
 ------
 
+## Changes
+* [#138](https://github.com/cleverage/ui-process-bundle/issues/138) Installation documentation: describe the Symfony Flex recipe, which registers the bundle, imports the bundle controllers routes (`config/routes/clever_age_ui_process.yaml`, the EasyAdmin routes being imported by the EasyAdmin recipe) and creates `config/packages/clever_age_ui_process.yaml`, and the manual setup without Flex.
+
 v3.1.1
 ------
 
