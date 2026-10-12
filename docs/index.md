@@ -50,7 +50,14 @@ Open a command console, enter your project directory and install it using compos
 composer require cleverage/ui-process-bundle
 ```
 
-Remember to add the following line to `config/bundles.php` (not required if Symfony Flex is used)
+With [Symfony Flex](https://symfony.com/doc/current/setup/flex.html), the
+[recipe](https://github.com/symfony/recipes-contrib/tree/main/cleverage/ui-process-bundle) registers the bundle,
+imports its routes (`config/routes/clever_age_ui_process.yaml`) and creates its configuration
+(`config/packages/clever_age_ui_process.yaml`, see [configuration](#configuration)). The recipes of its dependencies
+configure the security password hasher and the Doctrine naming strategy expected below: go straight to the
+[database](#database) step.
+
+Without Flex, add the following line to `config/bundles.php`, then follow the quick setup:
 
 ```php
 CleverAge\UiProcessBundle\CleverAgeUiProcessBundle::class => ['all' => true],
@@ -61,12 +68,21 @@ CleverAge\UiProcessBundle\CleverAgeUiProcessBundle::class => ['all' => true],
 ### Import routes
 
 ```yaml
-# config/routes.yaml
-ui-process-bundle:
+# config/routes/clever_age_ui_process.yaml
+clever_age_ui_process:
     resource: '@CleverAgeUiProcessBundle/config/routes/*.yaml'
 ```
 
-This imports the bundle controllers and the EasyAdmin routes (do not import `easyadmin.routes` a second time).
+This imports the bundle controllers and the EasyAdmin routes (do not import `easyadmin.routes` a second time). If
+EasyAdmin routes are already imported (e.g. `config/routes/easyadmin.yaml`, created by the EasyAdmin recipe), import
+only the controllers, as the recipe does:
+
+```yaml
+# config/routes/clever_age_ui_process.yaml
+clever_age_ui_process:
+    resource: '@CleverAgeUiProcessBundle/config/routes/controllers.yaml'
+```
+
 See [routes](reference/03-users_and_security.md#routes).
 
 ### Security
