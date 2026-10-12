@@ -100,7 +100,7 @@ class LaunchAction extends AbstractController
             }
             /** @var string $processCode */
             $processCode = $form->getConfig()->getOption('process_code');
-            /** @var mixed[] $context */
+            /** @var array<string, mixed> $context */
             $context = $form->get('context')->getData();
             $this->dispatch($processCode, $input, $context);
             $this->addFlash(
@@ -121,7 +121,7 @@ class LaunchAction extends AbstractController
     }
 
     /**
-     * @param mixed[] $context
+     * @param array<string, mixed> $context
      */
     protected function dispatch(string $processCode, mixed $input = null, array $context = []): void
     {

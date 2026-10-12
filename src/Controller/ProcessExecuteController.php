@@ -51,7 +51,7 @@ class ProcessExecuteController extends AbstractController
             }
             throw new UnprocessableEntityHttpException(implode('. ', $violationsMessages));
         }
-        /** @var mixed[] $context */
+        /** @var array<string, mixed> $context */
         $context = \is_string($httpProcessExecution->context)
             ? json_decode($httpProcessExecution->context, true)
             : $httpProcessExecution->context;
