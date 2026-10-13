@@ -87,6 +87,7 @@ Statuses
 | `failed`             | Failed (status `failed`).                                                                                                          | `high`     |
 | `finish_with_report` | Finished (status `finish`) with log levels counted in its [report](04-process_executions_and_logs.md#report), e.g. `{"Warning": 3}`. The counted levels depend on `logs.report_increment_level` (default `Warning`). | `medium`   |
 | `finish`             | Finished without log levels counted in its report.                                                                                | `low`      |
+| `stopped`            | Stopped from the UI (status `stopped`, see [stopping a process execution](04-process_executions_and_logs.md#stopping-a-process-execution)). Not notified by default. | `low`      |
 
 The importance selects the channels of the notifier `channel_policy` when no `channels` are configured.
 

@@ -16,6 +16,7 @@ namespace CleverAge\UiProcessBundle\Controller\Admin;
 use CleverAge\UiProcessBundle\Admin\Field\ContextField;
 use CleverAge\UiProcessBundle\Admin\Field\EnumField;
 use CleverAge\UiProcessBundle\Admin\Filter\ProcessExecutionDurationFilter;
+use CleverAge\UiProcessBundle\Entity\Enum\ProcessExecutionStatus;
 use CleverAge\UiProcessBundle\Entity\ProcessExecution;
 use CleverAge\UiProcessBundle\Repository\ProcessExecutionRepository;
 use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminRoute;
@@ -43,11 +44,14 @@ class ProcessExecutionCrudController extends AbstractCrudController
     /**
      * @param TranslatorInterface $translator deprecated, no longer used (the duration format is defined in the
      *                                        admin/field/duration.html.twig template), will be removed in 4.0
+     * @param int                 $staleAfter seconds without heartbeat after which a started execution is considered
+     *                                        as not responding
      */
     public function __construct(// @phpstan-ignore constructor.unusedParameter ($translator deprecated, kept for BC)
         private readonly ProcessExecutionRepository $processExecutionRepository,
         private readonly string $logDirectory,
         TranslatorInterface $translator,
+        private readonly int $staleAfter = 900,
     ) {
     }
 
@@ -61,7 +65,9 @@ class ProcessExecutionCrudController extends AbstractCrudController
     {
         return [
             TextField::new('code'),
-            EnumField::new('status'),
+            EnumField::new('status')
+                ->setTemplatePath('@CleverAgeUiProcess/admin/field/process_execution_status.html.twig')
+                ->setCustomOption('staleAfter', $this->staleAfter),
             DateTimeField::new('startDate')->setFormat('short', 'medium'),
             DateTimeField::new('endDate')->setFormat('short', 'medium'),
             TextField::new('source')->setTemplatePath('@CleverAgeUiProcess/admin/field/process_source.html.twig'),
@@ -109,7 +115,74 @@ class ProcessExecutionCrudController extends AbstractCrudController
                     )
                     ->linkToCrudAction('downloadLogFile')
                     ->displayIf(fn (ProcessExecution $entity) => file_exists($this->getLogFilePath($entity)))
+            )->add(
+                Crud::PAGE_INDEX,
+                Action::new('requestStop', false, 'fas fa-stop')
+                    ->setHtmlAttributes(
+                        [
+                            'data-bs-toggle' => 'tooltip',
+                            'data-bs-placement' => 'top',
+                            'title' => 'Stop the process',
+                        ]
+                    )
+                    ->linkToCrudAction('requestStop')
+                    ->renderAsForm()
+                    ->askConfirmation('Do you really want to stop this process execution? It will stop before its next task execution.')
+                    ->displayIf(fn (ProcessExecution $entity) => ProcessExecutionStatus::Started === $entity->status
+                        && !$entity->isStopRequested()
+                        && !$entity->isStale($this->staleAfter))
+            )->add(
+                Crud::PAGE_INDEX,
+                Action::new('markAsFailed', false, 'fas fa-skull-crossbones')
+                    ->setHtmlAttributes(
+                        [
+                            'data-bs-toggle' => 'tooltip',
+                            'data-bs-placement' => 'top',
+                            'title' => 'Mark as failed',
+                        ]
+                    )
+                    ->linkToCrudAction('markAsFailed')
+                    ->renderAsForm()
+                    ->askConfirmation('Do you really want to mark this process execution as failed? Do it only if its process is no longer running.')
+                    ->displayIf(fn (ProcessExecution $entity) => $entity->isStale($this->staleAfter))
             );
+    }
+
+    /**
+     * Records a stop request: the running process reads it and stops before its next task execution (see
+     * ProcessExecutionStopChecker), wherever it runs (worker, web request, console).
+     */
+    #[AdminRoute('{entityId}/request-stop', 'request-stop', options: ['methods' => ['POST']])]
+    public function requestStop(): RedirectResponse
+    {
+        $processExecution = $this->getProcessExecution();
+        if (ProcessExecutionStatus::Started !== $processExecution->status) {
+            $this->addFlash('warning', 'The process execution is not running.');
+        } else {
+            $processExecution->requestStop();
+            $this->processExecutionRepository->save($processExecution);
+            $this->addFlash('success', 'Stop requested: the process will stop before its next task execution.');
+        }
+
+        return $this->redirectToIndex();
+    }
+
+    /**
+     * Ends a stale execution (its process has probably been killed) as failed, at its last activity date.
+     */
+    #[AdminRoute('{entityId}/mark-as-failed', 'mark-as-failed', options: ['methods' => ['POST']])]
+    public function markAsFailed(): RedirectResponse
+    {
+        $processExecution = $this->getProcessExecution();
+        if (!$processExecution->isStale($this->staleAfter)) {
+            $this->addFlash('warning', 'Only a process execution which is not responding can be marked as failed.');
+        } else {
+            $processExecution->markAsFailed();
+            $this->processExecutionRepository->save($processExecution);
+            $this->addFlash('success', 'The process execution has been marked as failed.');
+        }
+
+        return $this->redirectToIndex();
     }
 
     #[AdminRoute('show-logs', 'show-logs')]
@@ -166,6 +239,24 @@ class ProcessExecutionCrudController extends AbstractCrudController
                 ProcessExecutionDurationFilter::new('duration', 'Duration (in seconds)')
                     ->setFormTypeOption('mapped', false)
             );
+    }
+
+    private function getProcessExecution(): ProcessExecution
+    {
+        $processExecution = $this->getContext()?->getEntity()->getInstance();
+        if (!$processExecution instanceof ProcessExecution) {
+            throw new NotFoundHttpException('Process execution not found.');
+        }
+
+        return $processExecution;
+    }
+
+    private function redirectToIndex(): RedirectResponse
+    {
+        /** @var AdminUrlGenerator $adminUrlGenerator */
+        $adminUrlGenerator = $this->container->get(AdminUrlGenerator::class);
+
+        return $this->redirect($adminUrlGenerator->setController(self::class)->setAction(Action::INDEX)->setEntityId(null)->generateUrl());
     }
 
     private function getLogFilePath(ProcessExecution $processExecution): string

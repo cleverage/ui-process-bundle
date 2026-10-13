@@ -40,7 +40,7 @@ class ProcessExecutionNotification extends Notification
         $this->importance(match ($trigger) {
             NotificationTrigger::Failed => self::IMPORTANCE_HIGH,
             NotificationTrigger::FinishWithReport => self::IMPORTANCE_MEDIUM,
-            NotificationTrigger::Finish => self::IMPORTANCE_LOW,
+            NotificationTrigger::Finish, NotificationTrigger::Stopped => self::IMPORTANCE_LOW,
         });
     }
 
@@ -50,6 +50,7 @@ class ProcessExecutionNotification extends Notification
             NotificationTrigger::Failed => 'failed',
             NotificationTrigger::FinishWithReport => 'finished with reported logs',
             NotificationTrigger::Finish => 'finished',
+            NotificationTrigger::Stopped => 'stopped',
         });
     }
 

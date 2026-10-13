@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace CleverAge\UiProcessBundle\Tests\DependencyInjection;
 
 use CleverAge\UiProcessBundle\Controller\Admin\ProcessDashboardController;
+use CleverAge\UiProcessBundle\Controller\Admin\ProcessExecutionCrudController;
 use CleverAge\UiProcessBundle\Controller\Admin\UserCrudController;
 use CleverAge\UiProcessBundle\DependencyInjection\CleverAgeUiProcessExtension;
 use CleverAge\UiProcessBundle\DependencyInjection\Configuration;
@@ -58,6 +59,11 @@ class CleverAgeUiProcessExtensionTest extends TestCase
             'bundles/cleverageuiprocess/logo.jpg',
             $container->getDefinition(ProcessDashboardController::class)->getArgument('$logoPath')
         );
+
+        $stopChecker = $container->getDefinition('cleverage_ui_process.stop_checker.process_execution');
+        self::assertSame(5, $stopChecker->getArgument(2));
+        self::assertTrue($stopChecker->hasTag('cleverage_process.stop_checker'));
+        self::assertSame(900, $container->getDefinition(ProcessExecutionCrudController::class)->getArgument('$staleAfter'));
 
         // symfony/notifier is installed (dev dependency)
         self::assertSame(
@@ -107,6 +113,7 @@ class CleverAgeUiProcessExtensionTest extends TestCase
                     'report_increment_level' => 'Critical',
                 ],
                 'design' => ['logo_path' => 'images/my-logo.png'],
+                'process_execution' => ['heartbeat_interval' => 10, 'stale_after' => 3600],
             ],
         ], $container);
 
@@ -129,6 +136,9 @@ class CleverAgeUiProcessExtensionTest extends TestCase
             'images/my-logo.png',
             $container->getDefinition(ProcessDashboardController::class)->getArgument('$logoPath')
         );
+
+        self::assertSame(10, $container->getDefinition('cleverage_ui_process.stop_checker.process_execution')->getArgument(2));
+        self::assertSame(3600, $container->getDefinition(ProcessExecutionCrudController::class)->getArgument('$staleAfter'));
     }
 
     public function testPrepend(): void

@@ -14,6 +14,8 @@ declare(strict_types=1);
 namespace CleverAge\UiProcessBundle\Tests\EventSubscriber;
 
 use CleverAge\ProcessBundle\Event\ProcessEvent;
+use CleverAge\ProcessBundle\Exception\ProcessFailedException;
+use CleverAge\ProcessBundle\Exception\ProcessStoppedException;
 use CleverAge\UiProcessBundle\Entity\Enum\ProcessExecutionStatus;
 use CleverAge\UiProcessBundle\Entity\LogRecord;
 use CleverAge\UiProcessBundle\Entity\ProcessExecution;
@@ -136,6 +138,33 @@ class ProcessEventSubscriberTest extends TestCase
         self::assertInstanceOf(\DateTimeImmutable::class, $processExecution->endDate);
         self::assertNull($processExecutionManager->getCurrentProcessExecution());
         self::assertFalse($processHandler->hasFilename());
+    }
+
+    /**
+     * @return iterable<string, array{\Throwable}>
+     */
+    public static function provideStopErrors(): iterable
+    {
+        $stopped = ProcessStoppedException::create('test.process', 'task');
+        yield 'process stopped' => [ProcessFailedException::create('test.process', 'task', $stopped)];
+        // A sub-process stopped: the failure of the ProcessExecutorTask of the parent process
+        yield 'sub-process stopped' => [
+            ProcessFailedException::create('test.process', 'execute', ProcessFailedException::create('sub.process', 'task', $stopped)),
+        ];
+    }
+
+    #[DataProvider('provideStopErrors')]
+    public function testStoppedProcess(\Throwable $error): void
+    {
+        $processExecution = new ProcessExecution('test.process', 'test.log');
+        $processExecutionManager = new ProcessExecutionManager($this->createRepositoryStub());
+        $processExecutionManager->setCurrentProcessExecution($processExecution);
+
+        $this->createSubscriber(new ProcessHandler('/var/log/process', $processExecutionManager), $processExecutionManager)
+            ->fail(new ProcessEvent('test.process', null, [], null, $error));
+
+        self::assertSame(ProcessExecutionStatus::Stopped, $processExecution->status);
+        self::assertInstanceOf(\DateTimeImmutable::class, $processExecution->endDate);
     }
 
     /**

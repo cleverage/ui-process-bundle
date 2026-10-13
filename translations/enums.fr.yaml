@@ -1,5 +1,6 @@
 enum.process_execution_status.started: 'Démarré'
 enum.process_execution_status.finish: 'Terminé'
+enum.process_execution_status.stopped: 'Arrêté'
 enum.process_execution_status.failed: 'Échoué'
 
 enum.process_schedule_type.cron: 'Tâche planifiée'

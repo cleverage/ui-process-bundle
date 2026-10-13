@@ -33,6 +33,7 @@ class NotificationTriggerTest extends TestCase
         yield 'started' => [ProcessExecutionStatus::Started, [], null];
         yield 'failed' => [ProcessExecutionStatus::Failed, [], NotificationTrigger::Failed];
         yield 'failed with report' => [ProcessExecutionStatus::Failed, ['Error' => 2], NotificationTrigger::Failed];
+        yield 'stopped' => [ProcessExecutionStatus::Stopped, ['Warning' => 1], NotificationTrigger::Stopped];
         yield 'finish' => [ProcessExecutionStatus::Finish, [], NotificationTrigger::Finish];
         yield 'finish with a custom report key' => [ProcessExecutionStatus::Finish, ['imported' => 12], NotificationTrigger::Finish];
         yield 'finish with report' => [ProcessExecutionStatus::Finish, ['Warning' => 3, 'imported' => 12], NotificationTrigger::FinishWithReport];
@@ -65,6 +66,6 @@ class NotificationTriggerTest extends TestCase
 
     public function testValues(): void
     {
-        self::assertSame(['failed', 'finish_with_report', 'finish'], NotificationTrigger::values());
+        self::assertSame(['failed', 'finish_with_report', 'finish', 'stopped'], NotificationTrigger::values());
     }
 }
