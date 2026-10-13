@@ -1,6 +1,9 @@
 Latest
 ------
 
+v3.2
+------
+
 ## Changes
 * [#142](https://github.com/cleverage/ui-process-bundle/issues/142) Scheduler: a schedule can be disabled (`ProcessSchedule::$enabled`, default `true`, switch in the schedules list; `Version20261013120000` migration adding `process_schedule.enabled`, the existing schedules are enabled). Disabled schedules are not loaded by the `scheduler_cron` worker; when a schedule is due, `CronProcessMessageHandler` reads it again from the database (new optional `$repository` and `$logger` arguments, `ProcessScheduleRepository::findFresh()`), so that a schedule disabled or deleted after the worker has started is not run, and its current input and context are used. Enabling a schedule again still requires restarting the worker. Add documentation and tests.
 * [#143](https://github.com/cleverage/ui-process-bundle/issues/143) Stop a running process execution from the UI: "Stop the process" action (POST, with confirmation) on the `started` executions, recording a stop request (`ProcessExecution::$stopRequestedAt`). The new `ProcessExecutionStopChecker` (a stop checker of cleverage/process-bundle#266, tag `cleverage_process.stop_checker`) reads it with DBAL before the task executions, at most every `process_execution.heartbeat_interval` seconds (new bundle configuration, default `5`): the process stops before its next task execution, with the new `stopped` status (`ProcessExecutionStatus::Stopped`, "Stop requested" displayed until then). New `stopped` notification status (`NotificationTrigger::Stopped`, not notified by default). Requires `cleverage/process-bundle` ^5.3. Add documentation and tests.
