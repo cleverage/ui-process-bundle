@@ -90,13 +90,15 @@ its execution keeps the `started` status: the end of the process is never record
 While the process runs, the `ProcessExecutionStopChecker` updates the heartbeat of its execution (`heartbeatAt`) at
 most every `heartbeat_interval` seconds, before a task execution. A `started` execution without heartbeat (or start,
 without heartbeat yet) for more than `process_execution.stale_after` seconds (default `900`) is displayed as "Not
-responding", with the date of its last activity. It cannot be stopped anymore, but it can be marked as failed with the
-"Mark as failed" action (after a confirmation): its status becomes `failed`, and its end date is set to its last
-activity.
+responding", with the date of its last activity. It can be marked as failed with the "Mark as failed" action (after a
+confirmation): its status becomes `failed`, and its end date is set to its last activity. This only updates the
+execution: it does not stop its process.
 
 A process blocked in a single long task call does not update its heartbeat either: set `stale_after` above the
-longest task call of your processes, and only mark as failed an execution whose process is no longer running (if it
-is still running, its real status is recorded at its end).
+longest task call of your processes. A not responding execution can still be stopped: if its process is in fact
+blocked in a long task call, it stops when the call returns; if it has been killed, the stop request is never read.
+Only mark as failed an execution whose process is no longer running (if it is still running, it goes on until its
+end, and its real status is recorded then).
 
 ### Report
 

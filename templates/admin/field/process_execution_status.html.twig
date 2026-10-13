@@ -4,6 +4,7 @@
 <span class="badge badge-{{ class }}">{{ field.value|trans() }}</span>
 {% if processExecution.isStale(field.customOptions.get('staleAfter')) %}
     <span class="badge badge-danger" title="{{ 'Last activity'|trans }}: {{ processExecution.lastActivityDate|date('Y-m-d H:i:s') }}">{{ 'Not responding'|trans }}</span>
-{% elseif field.value.value == 'started' and processExecution.isStopRequested %}
+{% endif %}
+{% if field.value.value == 'started' and processExecution.isStopRequested %}
     <span class="badge badge-warning">{{ 'Stop requested'|trans }}</span>
 {% endif %}

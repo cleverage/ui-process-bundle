@@ -128,9 +128,8 @@ class ProcessExecutionCrudController extends AbstractCrudController
                     ->linkToCrudAction('requestStop')
                     ->renderAsForm()
                     ->askConfirmation('Do you really want to stop this process execution? It will stop before its next task execution.')
-                    ->displayIf(fn (ProcessExecution $entity) => ProcessExecutionStatus::Started === $entity->status
-                        && !$entity->isStopRequested()
-                        && !$entity->isStale($this->staleAfter))
+                    ->displayIf(static fn (ProcessExecution $entity) => ProcessExecutionStatus::Started === $entity->status
+                        && !$entity->isStopRequested())
             )->add(
                 Crud::PAGE_INDEX,
                 Action::new('markAsFailed', false, 'fas fa-skull-crossbones')

@@ -233,9 +233,17 @@ class ProcessExecutionCrudTest extends FunctionalTestCase
         self::assertEqualsCanonicalizing(['Started Not responding', 'Started'], $statuses);
         self::assertCount(1, $crawler->filter('form[method="POST"][action*="mark-as-failed"]'));
         self::assertStringContainsString('/'.$stale->getId().'/mark-as-failed', (string) $crawler->filter('form[action*="mark-as-failed"]')->attr('action'));
-        // A stale execution cannot be stopped
-        self::assertCount(1, $crawler->filter('form[action*="request-stop"]'));
-        self::assertStringContainsString('/'.$running->getId().'/request-stop', (string) $crawler->filter('form[action*="request-stop"]')->attr('action'));
+        // A stale execution can still be stopped (its process may be blocked in a long task call)
+        self::assertCount(2, $crawler->filter('form[method="POST"][action*="request-stop"]'));
+
+        $this->client->request('POST', '/process/process-execution/'.$stale->getId().'/request-stop');
+        $crawler = $this->client->followRedirect();
+        self::assertSelectorTextContains('.alert-success', 'Stop requested: the process will stop before its next task execution.');
+        $statuses = $crawler->filter('table td[data-column="status"]')->each(static fn ($cell): string => $cell->text());
+        self::assertEqualsCanonicalizing(['Started Not responding Stop requested', 'Started'], $statuses);
+        // Still available after the stop request: a killed process never reads it
+        self::assertCount(1, $crawler->filter('form[method="POST"][action*="mark-as-failed"]'));
+        self::assertCount(1, $crawler->filter('form[method="POST"][action*="request-stop"]'));
 
         $this->client->request('POST', '/process/process-execution/'.$running->getId().'/mark-as-failed');
         $this->client->followRedirect();
