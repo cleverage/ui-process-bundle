@@ -23,7 +23,7 @@ class ProcessExecutionStatusTest extends TestCase
 {
     public function testValues(): void
     {
-        self::assertSame(['started', 'finish', 'failed'], array_column(ProcessExecutionStatus::cases(), 'value'));
+        self::assertSame(['started', 'finish', 'failed', 'stopped'], array_column(ProcessExecutionStatus::cases(), 'value'));
     }
 
     public function testTrans(): void

@@ -86,6 +86,17 @@ class ProcessExecutionNotificationTest extends TestCase
         self::assertStringEndsWith("\nLog file: test.process/test.log\nProcess execution: 42", $notification->getContent());
     }
 
+    public function testStopped(): void
+    {
+        $processExecution = $this->createProcessExecution(ProcessExecutionStatus::Stopped, []);
+
+        $notification = new ProcessExecutionNotification($processExecution, NotificationTrigger::Stopped);
+
+        self::assertSame('Process "test.process" stopped', $notification->getSubject());
+        self::assertSame(Notification::IMPORTANCE_LOW, $notification->getImportance());
+        self::assertStringStartsWith("Status: stopped\n", $notification->getContent());
+    }
+
     public function testRunningProcessExecution(): void
     {
         $processExecution = new ProcessExecution('test.process', 'test.log');

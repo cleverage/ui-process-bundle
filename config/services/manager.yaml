@@ -10,3 +10,15 @@ services:
         public: false
         arguments:
             - '@cleverage_process.registry.process_configuration'
+
+    cleverage_ui_process.stop_checker.process_execution:
+        class: CleverAge\UiProcessBundle\StopChecker\ProcessExecutionStopChecker
+        public: false
+        arguments:
+            - '@cleverage_ui_process.manager.process_execution'
+            - '@doctrine.orm.entity_manager'
+            - 5
+            - '@logger'
+        tags:
+            - { name: 'cleverage_process.stop_checker' }
+            - { name: 'monolog.logger', channel: 'cleverage_process' }

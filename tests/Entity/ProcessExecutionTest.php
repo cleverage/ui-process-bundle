@@ -109,4 +109,62 @@ class ProcessExecutionTest extends TestCase
         self::assertSame('01 hour(s) 02 min(s) 03 s', $execution->duration());
         self::assertSame('1:2:3', $execution->duration('%h:%i:%s'));
     }
+
+    public function testRequestStop(): void
+    {
+        $execution = new ProcessExecution('demo.process', 'demo.process.log');
+        self::assertNull($execution->stopRequestedAt);
+        self::assertFalse($execution->isStopRequested());
+
+        $execution->requestStop();
+        $requestedAt = $execution->stopRequestedAt;
+        self::assertInstanceOf(\DateTimeImmutable::class, $requestedAt);
+        self::assertTrue($execution->isStopRequested());
+
+        // The first request is kept
+        $execution->requestStop();
+        self::assertSame($requestedAt, $execution->stopRequestedAt);
+    }
+
+    public function testLastActivityDate(): void
+    {
+        $execution = new ProcessExecution('demo.process', 'demo.process.log');
+        self::assertNull($execution->heartbeatAt);
+        self::assertSame($execution->startDate, $execution->getLastActivityDate());
+
+        $execution->heartbeatAt = $execution->startDate->modify('+1 minute');
+        self::assertSame($execution->heartbeatAt, $execution->getLastActivityDate());
+    }
+
+    public function testIsStale(): void
+    {
+        $execution = new ProcessExecution('demo.process', 'demo.process.log');
+        $now = $execution->startDate->modify('+10 minutes');
+
+        // Without heartbeat, from the start date
+        self::assertFalse($execution->isStale(600, $now));
+        self::assertTrue($execution->isStale(599, $now));
+
+        $execution->heartbeatAt = $execution->startDate->modify('+5 minutes');
+        self::assertFalse($execution->isStale(599, $now));
+        self::assertTrue($execution->isStale(299, $now));
+
+        // Only a started execution
+        $execution->setStatus(ProcessExecutionStatus::Failed);
+        self::assertFalse($execution->isStale(299, $now));
+
+        self::assertFalse((new ProcessExecution('demo.process', 'demo.process.log'))->isStale(60));
+    }
+
+    public function testMarkAsFailed(): void
+    {
+        $execution = new ProcessExecution('demo.process', 'demo.process.log');
+        $execution->heartbeatAt = $execution->startDate->modify('+5 minutes');
+
+        $execution->markAsFailed();
+
+        self::assertSame(ProcessExecutionStatus::Failed, $execution->status);
+        // Ended at its last activity, not when marked
+        self::assertSame($execution->heartbeatAt, $execution->endDate);
+    }
 }

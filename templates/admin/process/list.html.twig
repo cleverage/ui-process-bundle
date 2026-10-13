@@ -26,7 +26,7 @@
                 {% set uiOptions = resolve_ui_options(process.code) %}
                 {% set statusClass = '' %}
                 {% if lastExecution is not null %}
-                    {% set statusClass = lastExecution.status.value == 'failed' ? 'danger' : 'success' %}
+                    {% set statusClass = {failed: 'danger', stopped: 'warning'}[lastExecution.status.value] ?? 'success' %}
                 {% endif %}
                 <tr>
                     <td>{{ process.code }}</td>

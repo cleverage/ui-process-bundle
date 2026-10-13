@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace CleverAge\UiProcessBundle\DependencyInjection;
 
 use CleverAge\UiProcessBundle\Controller\Admin\ProcessDashboardController;
+use CleverAge\UiProcessBundle\Controller\Admin\ProcessExecutionCrudController;
 use CleverAge\UiProcessBundle\Controller\Admin\UserCrudController;
 use CleverAge\UiProcessBundle\Entity\User;
 use CleverAge\UiProcessBundle\Message\ProcessExecuteMessage;
@@ -40,6 +41,7 @@ final class CleverAgeUiProcessExtension extends Extension implements PrependExte
          *     logs: array{store_in_database: bool, database_level: string, file_level: string, report_increment_level: string},
          *     design: array{logo_path: string},
          *     notification: array{enabled: bool, ...},
+         *     process_execution: array{heartbeat_interval: int, stale_after: int},
          * } $config
          */
         $config = $this->processConfiguration($configuration, $configs);
@@ -60,6 +62,11 @@ final class CleverAgeUiProcessExtension extends Extension implements PrependExte
 
         $container->getDefinition(ProcessDashboardController::class)
             ->setArgument('$logoPath', $config['design']['logo_path']);
+
+        $container->getDefinition('cleverage_ui_process.stop_checker.process_execution')
+            ->replaceArgument(2, $config['process_execution']['heartbeat_interval']);
+        $container->getDefinition(ProcessExecutionCrudController::class)
+            ->setArgument('$staleAfter', $config['process_execution']['stale_after']);
 
         if (interface_exists(NotifierInterface::class)) {
             $container->getDefinition('cleverage_ui_process.notifier.process_execution')

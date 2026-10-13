@@ -1,5 +1,6 @@
 enum.process_execution_status.started: 'Started'
 enum.process_execution_status.finish: 'Finished'
+enum.process_execution_status.stopped: 'Stopped'
 enum.process_execution_status.failed: 'Failed'
 
 enum.process_schedule_type.cron: 'Cron'

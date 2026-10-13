@@ -35,6 +35,7 @@ class Configuration implements ConfigurationInterface
         $this->addLogSection($rootNode);
         $this->addDesignSection($rootNode);
         $this->addNotificationSection($rootNode);
+        $this->addProcessExecutionSection($rootNode);
 
         return $treeBuilder;
     }
@@ -106,6 +107,20 @@ class Configuration implements ConfigurationInterface
                                 ->end()
                             ->end()
                         ->end()
+                    ->end()
+                ->end()
+            ->end()
+        ;
+    }
+
+    protected function addProcessExecutionSection(ArrayNodeDefinition $node): void
+    {
+        $node
+            ->children()
+                ->arrayNode('process_execution')->addDefaultsIfNotSet()
+                    ->children()
+                        ->integerNode('heartbeat_interval')->defaultValue(5)->min(1)->end() // seconds between two updates of the heartbeat of a running process execution (and checks of its stop request)
+                        ->integerNode('stale_after')->defaultValue(900)->min(1)->end() // seconds without heartbeat after which a started process execution is considered as not responding
                     ->end()
                 ->end()
             ->end()

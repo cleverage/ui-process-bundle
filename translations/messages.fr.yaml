@@ -59,3 +59,12 @@ Duration (in seconds): Durée (en secondes)
 Run process: Exécuter le processus
 Do you really want to run process %process% in background: Voulez-vous vraiment exécuter le processus %process% en arrière plan
 Confirm: Confirmer
+Do you really want to stop this process execution? It will stop before its next task execution.: Voulez-vous vraiment arrêter cette exécution ? Elle s'arrêtera avant l'exécution de sa prochaine tâche.
+Stop requested: Arrêt demandé
+"Stop requested: the process will stop before its next task execution.": "Arrêt demandé : le processus s'arrêtera avant l'exécution de sa prochaine tâche."
+The process execution is not running.: L'exécution n'est pas en cours.
+Do you really want to mark this process execution as failed? Do it only if its process is no longer running.: Voulez-vous vraiment marquer cette exécution comme échouée ? Faites-le uniquement si son processus ne tourne plus.
+Only a process execution which is not responding can be marked as failed.: Seule une exécution qui ne répond plus peut être marquée comme échouée.
+The process execution has been marked as failed.: L'exécution a été marquée comme échouée.
+Not responding: Ne répond plus
+Last activity: Dernière activité

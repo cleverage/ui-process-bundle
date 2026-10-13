@@ -41,6 +41,18 @@ class ProcessExecution implements \Stringable
     public ProcessExecutionStatus $status = ProcessExecutionStatus::Started;
 
     /**
+     * Requested from the UI: the process is stopped before its next task execution.
+     */
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    public ?\DateTimeImmutable $stopRequestedAt = null;
+
+    /**
+     * Updated while the process runs (see ProcessExecutionStopChecker), written with DBAL by the running process.
+     */
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    public ?\DateTimeImmutable $heartbeatAt = null;
+
+    /**
      * @var array<string, mixed>
      */
     #[ORM\Column(type: Types::JSON)]
@@ -83,6 +95,43 @@ class ProcessExecution implements \Stringable
     public function end(): void
     {
         $this->endDate = \DateTimeImmutable::createFromMutable(new \DateTime());
+    }
+
+    public function requestStop(): void
+    {
+        $this->stopRequestedAt ??= new \DateTimeImmutable();
+    }
+
+    public function isStopRequested(): bool
+    {
+        return $this->stopRequestedAt instanceof \DateTimeImmutable;
+    }
+
+    /**
+     * The last sign of life of the process: its last heartbeat, or its start.
+     */
+    public function getLastActivityDate(): \DateTimeImmutable
+    {
+        return $this->heartbeatAt ?? $this->startDate;
+    }
+
+    /**
+     * A started execution without activity for more than $staleAfter seconds: its process has probably been killed
+     * (worker crash, out of memory...), or is blocked in a long task call (SQL query, HTTP request...).
+     */
+    public function isStale(int $staleAfter, ?\DateTimeImmutable $now = null): bool
+    {
+        return ProcessExecutionStatus::Started === $this->status
+            && $this->getLastActivityDate() < ($now ?? new \DateTimeImmutable())->modify(\sprintf('-%d seconds', $staleAfter));
+    }
+
+    /**
+     * Ends a stale execution as failed, at its last activity date.
+     */
+    public function markAsFailed(): void
+    {
+        $this->status = ProcessExecutionStatus::Failed;
+        $this->endDate = $this->getLastActivityDate();
     }
 
     public function addReport(string $key, mixed $value): void

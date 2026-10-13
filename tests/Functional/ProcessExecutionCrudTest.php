@@ -172,6 +172,105 @@ class ProcessExecutionCrudTest extends FunctionalTestCase
         self::assertResponseStatusCodeSame(404);
     }
 
+    public function testRequestStop(): void
+    {
+        $this->login();
+        $running = $this->createExecution('test.process', ProcessExecutionStatus::Started, false);
+        $this->createExecution('test.form', ProcessExecutionStatus::Finish);
+
+        $crawler = $this->client->request('GET', '/process/process-execution');
+        self::assertResponseIsSuccessful();
+        // Only for the running execution, as a POST form
+        self::assertCount(1, $crawler->filter('form[method="POST"][action*="request-stop"]'));
+        self::assertStringContainsString('/'.$running->getId().'/request-stop', (string) $crawler->filter('form[action*="request-stop"]')->attr('action'));
+
+        $this->client->request('GET', '/process/process-execution/'.$running->getId().'/request-stop');
+        self::assertResponseStatusCodeSame(405);
+
+        $this->client->request('POST', '/process/process-execution/'.$running->getId().'/request-stop');
+        self::assertResponseRedirects();
+        $crawler = $this->client->followRedirect();
+        self::assertSelectorTextContains('.alert-success', 'Stop requested: the process will stop before its next task execution.');
+        self::assertStringContainsString('Stop requested', $crawler->filter('table')->text());
+        self::assertCount(0, $crawler->filter('form[action*="request-stop"]'));
+
+        $this->getEntityManager()->clear();
+        $running = $this->getEntityManager()->find(ProcessExecution::class, $running->getId());
+        self::assertInstanceOf(\DateTimeImmutable::class, $running?->stopRequestedAt);
+        self::assertSame(ProcessExecutionStatus::Started, $running->status);
+    }
+
+    public function testRequestStopOfAnEndedExecution(): void
+    {
+        $this->login();
+        $ended = $this->createExecution('test.process', ProcessExecutionStatus::Finish);
+
+        $this->client->request('POST', '/process/process-execution/'.$ended->getId().'/request-stop');
+        self::assertResponseRedirects();
+        $this->client->followRedirect();
+        self::assertSelectorTextContains('.alert-warning', 'The process execution is not running.');
+
+        $this->getEntityManager()->clear();
+        self::assertNull($this->getEntityManager()->find(ProcessExecution::class, $ended->getId())?->stopRequestedAt);
+    }
+
+    public function testMarkStaleExecutionAsFailed(): void
+    {
+        $this->login();
+        $stale = $this->createExecution('test.process', ProcessExecutionStatus::Started, false);
+        $running = $this->createExecution('test.form', ProcessExecutionStatus::Started, false);
+        // No activity for 1 hour (default stale_after: 15 minutes)
+        $this->getEntityManager()->getConnection()->executeStatement(
+            'UPDATE process_execution SET start_date = ?, heartbeat_at = ? WHERE id = ?',
+            [new \DateTimeImmutable('-2 hours'), new \DateTimeImmutable('-1 hour'), $stale->getId()],
+            ['datetime_immutable', 'datetime_immutable', 'integer']
+        );
+        $this->getEntityManager()->clear();
+
+        $crawler = $this->client->request('GET', '/process/process-execution');
+        self::assertResponseIsSuccessful();
+        $statuses = $crawler->filter('table td[data-column="status"]')->each(static fn ($cell): string => $cell->text());
+        self::assertEqualsCanonicalizing(['Started Not responding', 'Started'], $statuses);
+        self::assertCount(1, $crawler->filter('form[method="POST"][action*="mark-as-failed"]'));
+        self::assertStringContainsString('/'.$stale->getId().'/mark-as-failed', (string) $crawler->filter('form[action*="mark-as-failed"]')->attr('action'));
+        // A stale execution can still be stopped (its process may be blocked in a long task call)
+        self::assertCount(2, $crawler->filter('form[method="POST"][action*="request-stop"]'));
+
+        $this->client->request('POST', '/process/process-execution/'.$stale->getId().'/request-stop');
+        $crawler = $this->client->followRedirect();
+        self::assertSelectorTextContains('.alert-success', 'Stop requested: the process will stop before its next task execution.');
+        $statuses = $crawler->filter('table td[data-column="status"]')->each(static fn ($cell): string => $cell->text());
+        self::assertEqualsCanonicalizing(['Started Not responding Stop requested', 'Started'], $statuses);
+        // Still available after the stop request: a killed process never reads it
+        self::assertCount(1, $crawler->filter('form[method="POST"][action*="mark-as-failed"]'));
+        self::assertCount(1, $crawler->filter('form[method="POST"][action*="request-stop"]'));
+
+        $this->client->request('POST', '/process/process-execution/'.$running->getId().'/mark-as-failed');
+        $this->client->followRedirect();
+        self::assertSelectorTextContains('.alert-warning', 'Only a process execution which is not responding can be marked as failed.');
+
+        $this->client->request('POST', '/process/process-execution/'.$stale->getId().'/mark-as-failed');
+        $this->client->followRedirect();
+        self::assertSelectorTextContains('.alert-success', 'The process execution has been marked as failed.');
+
+        $this->getEntityManager()->clear();
+        $stale = $this->getEntityManager()->find(ProcessExecution::class, $stale->getId());
+        self::assertSame(ProcessExecutionStatus::Failed, $stale?->status);
+        self::assertEquals($stale->heartbeatAt, $stale->endDate);
+        self::assertSame(ProcessExecutionStatus::Started, $this->getEntityManager()->find(ProcessExecution::class, $running->getId())?->status);
+    }
+
+    public function testStoppedStatus(): void
+    {
+        $this->login();
+        $this->createExecution('test.process', ProcessExecutionStatus::Stopped);
+
+        $crawler = $this->client->request('GET', '/process/process-execution');
+
+        self::assertResponseIsSuccessful();
+        self::assertSame('Stopped', $crawler->filter('table td[data-column="status"] .badge-warning')->text());
+    }
+
     private function createExecution(string $code, ProcessExecutionStatus $status, bool $ended = true): ProcessExecution
     {
         $execution = new ProcessExecution($code, $code.'_'.uniqid().'.log', ['key' => 'value']);

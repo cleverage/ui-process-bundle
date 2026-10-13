@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace CleverAge\UiProcessBundle\EventSubscriber;
 
 use CleverAge\ProcessBundle\Event\ProcessEvent;
+use CleverAge\ProcessBundle\Exception\ProcessStoppedException;
 use CleverAge\UiProcessBundle\Entity\Enum\ProcessExecutionStatus;
 use CleverAge\UiProcessBundle\Entity\ProcessExecution;
 use CleverAge\UiProcessBundle\Event\ProcessExecutionEndedEvent;
@@ -63,12 +64,29 @@ final readonly class ProcessEventSubscriber implements EventSubscriberInterface
     public function fail(ProcessEvent $event): void
     {
         if ($event->getProcessCode() === $this->processExecutionManager->getCurrentProcessExecution()?->getCode()) {
-            $this->processExecutionManager->getCurrentProcessExecution()->setStatus(ProcessExecutionStatus::Failed);
+            $this->processExecutionManager->getCurrentProcessExecution()->setStatus(
+                $this->isStopped($event->getProcessError()) ? ProcessExecutionStatus::Stopped : ProcessExecutionStatus::Failed
+            );
             $this->processExecutionManager->getCurrentProcessExecution()->end();
             $this->processExecutionManager->save()->unsetProcessExecution($event->getProcessCode());
             $this->processHandler->close();
             $this->dispatchEnded($event);
         }
+    }
+
+    /**
+     * The process has been stopped on a stop request: a ProcessStoppedException in the chain of the previous
+     * exceptions (wrapped in a ProcessFailedException, by each parent process for a sub-process).
+     */
+    private function isStopped(?\Throwable $error): bool
+    {
+        for (; $error instanceof \Throwable; $error = $error->getPrevious()) {
+            if ($error instanceof ProcessStoppedException) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function dispatchEnded(ProcessEvent $event): void

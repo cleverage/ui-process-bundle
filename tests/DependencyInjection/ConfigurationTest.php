@@ -59,6 +59,10 @@ class ConfigurationTest extends TestCase
                     'channels' => [],
                     'recipients' => [],
                 ],
+                'process_execution' => [
+                    'heartbeat_interval' => 5,
+                    'stale_after' => 900,
+                ],
             ],
             $this->process($env, [])
         );
@@ -97,6 +101,10 @@ class ConfigurationTest extends TestCase
                         ['phone' => '+33600000000', 'email' => null],
                     ],
                 ],
+                'process_execution' => [
+                    'heartbeat_interval' => 10,
+                    'stale_after' => 3600,
+                ],
             ],
             $this->process('dev', [
                 'security' => ['roles' => ['ROLE_ADMIN', 'ROLE_OPERATOR']],
@@ -113,6 +121,7 @@ class ConfigurationTest extends TestCase
                     'channels' => ['chat/slack', 'email'],
                     'recipients' => [['email' => 'ops@example.com'], ['phone' => '+33600000000']],
                 ],
+                'process_execution' => ['heartbeat_interval' => 10, 'stale_after' => 3600],
             ])
         );
     }
@@ -163,6 +172,14 @@ class ConfigurationTest extends TestCase
         yield 'unknown notification status' => [
             ['notification' => ['statuses' => ['started']]],
             'clever_age_ui_process.notification.statuses',
+        ];
+        yield 'heartbeat_interval lower than 1' => [
+            ['process_execution' => ['heartbeat_interval' => 0]],
+            'clever_age_ui_process.process_execution.heartbeat_interval',
+        ];
+        yield 'stale_after not an integer' => [
+            ['process_execution' => ['stale_after' => '15 minutes']],
+            'clever_age_ui_process.process_execution.stale_after',
         ];
         yield 'notification recipient without email nor phone' => [
             ['notification' => ['recipients' => [[]]]],

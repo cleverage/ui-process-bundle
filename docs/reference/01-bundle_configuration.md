@@ -23,6 +23,9 @@ clever_age_ui_process:
         statuses: [failed, finish_with_report]
         channels: []
         recipients: []
+    process_execution:
+        heartbeat_interval: 5
+        stale_after: 900
 ```
 
 Options
@@ -62,9 +65,19 @@ Notification of the end of the process executions, with [symfony/notifier](https
 | Key          | Type       | Default                          | Description                                                                                                                         |
 |--------------|------------|----------------------------------|-------------------------------------------------------------------------------------------------------------------------------------|
 | `enabled`    | `bool`     | `false`                          | Notify the end of the process executions. `true` requires `symfony/notifier`.                                                       |
-| `statuses`   | `string[]` | `[failed, finish_with_report]`   | Ends of process executions to notify: `failed`, `finish_with_report` (finished with log levels counted in its report), `finish` (finished without them). |
+| `statuses`   | `string[]` | `[failed, finish_with_report]`   | Ends of process executions to notify: `failed`, `finish_with_report` (finished with log levels counted in its report), `finish` (finished without them), `stopped` (stopped from the UI). |
 | `channels`   | `string[]` | `[]`                             | Notifier channels, e.g. `chat/slack`, `email`. Empty: the `channel_policy` of the notifier, by importance.                           |
 | `recipients` | `array[]`  | `[]`                             | Recipients, with an `email` and/or a `phone`. Empty: the `admin_recipients` of the notifier.                                         |
+
+### process_execution
+
+See [stopping a process execution](04-process_executions_and_logs.md#stopping-a-process-execution) and
+[not responding executions](04-process_executions_and_logs.md#not-responding-executions).
+
+| Key                  | Type  | Default | Description                                                                                                                                          |
+|----------------------|-------|---------|------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `heartbeat_interval` | `int` | `5`     | Seconds between two updates of the heartbeat of a running process execution, which also read its stop request (minimum `1`).                     |
+| `stale_after`        | `int` | `900`   | Seconds without heartbeat after which a started process execution is displayed as not responding, and can be marked as failed (minimum `1`). Keep it above the longest task call of your processes. |
 
 Container parameters
 --------------------
