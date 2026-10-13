@@ -83,4 +83,62 @@ class ProcessScheduleRepositoryTest extends KernelTestCase
         self::assertSame('data.csv', $schedules[0]->getInput());
         self::assertSame([['key' => 'foo', 'value' => 'bar']], $schedules[0]->getContext());
     }
+
+    public function testFindEnabled(): void
+    {
+        $enabled = $this->createSchedule(true);
+        $this->createSchedule(false);
+        $this->entityManager->clear();
+
+        $schedules = (new ProcessScheduleRepository($this->entityManager))->findEnabled();
+
+        self::assertCount(1, $schedules);
+        self::assertSame($enabled->getId(), $schedules[0]->getId());
+    }
+
+    public function testFindFreshRefreshesTheLoadedSchedule(): void
+    {
+        $schedule = $this->createSchedule(true);
+        $id = $schedule->getId();
+        self::assertNotNull($id);
+        // Updated by another process (the UI) while the schedule is loaded
+        $this->entityManager->getConnection()->executeStatement(
+            'UPDATE process_schedule SET enabled = ?, input = ? WHERE id = ?',
+            [false, 'other.csv', $id],
+            ['boolean', 'string', 'integer'],
+        );
+
+        $repository = new ProcessScheduleRepository($this->entityManager);
+        self::assertSame($schedule, $repository->find($id));
+        self::assertTrue($schedule->isEnabled());
+
+        $fresh = $repository->findFresh($id);
+
+        self::assertSame($schedule, $fresh);
+        self::assertFalse($fresh->isEnabled());
+        self::assertSame('other.csv', $fresh->getInput());
+    }
+
+    public function testFindFreshDeletedSchedule(): void
+    {
+        $schedule = $this->createSchedule(true);
+        $id = $schedule->getId();
+        self::assertNotNull($id);
+        $this->entityManager->getConnection()->executeStatement('DELETE FROM process_schedule WHERE id = ?', [$id]);
+
+        self::assertNull((new ProcessScheduleRepository($this->entityManager))->findFresh($id));
+    }
+
+    private function createSchedule(bool $enabled): ProcessSchedule
+    {
+        $schedule = (new ProcessSchedule())
+            ->setProcess('test.process')
+            ->setType(ProcessScheduleType::EVERY)
+            ->setExpression('1 hour')
+            ->setEnabled($enabled);
+        $this->entityManager->persist($schedule);
+        $this->entityManager->flush();
+
+        return $schedule;
+    }
 }

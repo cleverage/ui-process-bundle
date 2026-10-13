@@ -67,11 +67,14 @@ How it works:
 - The `scheduler_cron` worker loads the schedules when it starts. When one is due, it dispatches the process, with the
   schedule input and context, to the `execute_process` transport, where the other worker executes it
   (see [how it works](../reference/05-scheduler.md#how-it-works) and [messenger](../reference/08-messenger.md)).
+- To suspend the process, e.g. during a maintenance, switch "Enabled" off in the schedules list: it is taken into
+  account at the next run, without restarting the worker. When switching it on again, restart the `scheduler_cron`
+  worker.
 - The context pairs of the schedule are injected into the contextualized options, like `-c lastname:King` on the
   console: the same process can be scheduled several times with different contexts.
 - Each run appears in "Process > Executions" with its status, duration and a report counting the `Warning` logs, i.e.
   the number of removed authors (see [report](../reference/04-process_executions_and_logs.md#report)).
 
 In production, keep the workers alive with Supervisor (see [workers](../reference/08-messenger.md#workers)), and
-restart the `scheduler_cron` worker after each change in the scheduler, e.g. with
+restart the `scheduler_cron` worker after creating a schedule, enabling it again or changing its expression, e.g. with
 `bin/console messenger:stop-workers`.

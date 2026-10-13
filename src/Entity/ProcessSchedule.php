@@ -54,6 +54,9 @@ class ProcessSchedule
     #[ORM\Column(type: Types::JSON)]
     private string|array $context = [];
 
+    #[ORM\Column(options: ['default' => true])]
+    private bool $enabled = true;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -130,6 +133,18 @@ class ProcessSchedule
     public function setInput(?string $input): self
     {
         $this->input = $input;
+
+        return $this;
+    }
+
+    public function isEnabled(): bool
+    {
+        return $this->enabled;
+    }
+
+    public function setEnabled(bool $enabled): self
+    {
+        $this->enabled = $enabled;
 
         return $this;
     }

@@ -36,7 +36,7 @@ readonly class CronScheduler implements ScheduleProviderInterface
     {
         $schedule = new Schedule();
         try {
-            $processSchedules = $this->repository->findAll();
+            $processSchedules = $this->repository->findEnabled();
         } catch (\Exception $e) {
             $this->logger->critical($e->getMessage());
 

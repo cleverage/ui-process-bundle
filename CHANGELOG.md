@@ -1,6 +1,9 @@
 Latest
 ------
 
+## Changes
+* [#142](https://github.com/cleverage/ui-process-bundle/issues/142) Scheduler: a schedule can be disabled (`ProcessSchedule::$enabled`, default `true`, switch in the schedules list; `Version20261013120000` migration adding `process_schedule.enabled`, the existing schedules are enabled). Disabled schedules are not loaded by the `scheduler_cron` worker; when a schedule is due, `CronProcessMessageHandler` reads it again from the database (new optional `$repository` and `$logger` arguments, `ProcessScheduleRepository::findFresh()`), so that a schedule disabled or deleted after the worker has started is not run, and its current input and context are used. Enabling a schedule again still requires restarting the worker. Add documentation and tests.
+
 v3.1.1
 ------
 

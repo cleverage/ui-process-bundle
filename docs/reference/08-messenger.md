@@ -11,7 +11,7 @@ Messages
 | Message                                                | Transport         | Handler                                                                                                         |
 |--------------------------------------------------------|-------------------|-----------------------------------------------------------------------------------------------------------------|
 | `CleverAge\UiProcessBundle\Message\ProcessExecuteMessage` (`code`, `input`, `context`) | `execute_process` | Executes the process with the process manager, like `cleverage:process:execute`.                                |
-| `CleverAge\UiProcessBundle\Message\CronProcessMessage` (`processSchedule`)             | `scheduler_cron`  | Dispatches a `ProcessExecuteMessage` with the input and context of the schedule.                                |
+| `CleverAge\UiProcessBundle\Message\CronProcessMessage` (`processSchedule`)             | `scheduler_cron`  | Reads the schedule again, and dispatches a `ProcessExecuteMessage` with its current input and context, unless it has been disabled or deleted. |
 
 You can dispatch a `ProcessExecuteMessage` yourself to queue a process from your code:
 
@@ -83,8 +83,8 @@ Useful options of `messenger:consume`:
       --sleep=SLEEP                  Seconds to sleep before asking for new messages after no messages were found [default: 1]
 ```
 
-Workers must be restarted after each deployment (`bin/console messenger:stop-workers`) and after any change in the
-UI schedules. It is recommended to use [Supervisor](https://symfony.com/doc/current/messenger.html#supervisor-configuration)
+Workers must be restarted after each deployment (`bin/console messenger:stop-workers`) and after creating a UI
+schedule, enabling it again or changing its type or expression (see [scheduler](05-scheduler.md#how-it-works)). It is recommended to use [Supervisor](https://symfony.com/doc/current/messenger.html#supervisor-configuration)
 or an equivalent to keep them alive:
 
 ```ini

@@ -16,6 +16,7 @@ namespace CleverAge\UiProcessBundle\Repository;
 use CleverAge\UiProcessBundle\Entity\ProcessSchedule;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
+use Doctrine\ORM\Query;
 
 /**
  * @extends EntityRepository<ProcessSchedule>
@@ -30,5 +31,33 @@ class ProcessScheduleRepository extends EntityRepository
     public function __construct(EntityManagerInterface $em)
     {
         parent::__construct($em, $em->getClassMetadata(ProcessSchedule::class));
+    }
+
+    /**
+     * @return list<ProcessSchedule>
+     */
+    public function findEnabled(): array
+    {
+        /** @var list<ProcessSchedule> $processSchedules */
+        $processSchedules = $this->findBy(['enabled' => true]);
+
+        return $processSchedules;
+    }
+
+    /**
+     * The schedule as currently stored: the scheduler worker keeps the schedules loaded when it started, which may
+     * have been updated, disabled or deleted since.
+     */
+    public function findFresh(int $id): ?ProcessSchedule
+    {
+        /** @var ProcessSchedule|null $processSchedule */
+        $processSchedule = $this->createQueryBuilder('ps')
+            ->where('ps.id = :id')
+            ->setParameter('id', $id)
+            ->getQuery()
+            ->setHint(Query::HINT_REFRESH, true)
+            ->getOneOrNullResult();
+
+        return $processSchedule;
     }
 }

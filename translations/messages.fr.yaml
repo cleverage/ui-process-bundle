@@ -44,6 +44,8 @@ To run scheduler, ensure "bin/console messenger:consume scheduler_cron" console 
 Delete: Supprimer
 Type: Type
 Expression: Expression
+Enabled: Activé
+A disabled schedule is not run.: Un planificateur désactivé n'est pas exécuté.
 Next Execution: Prochaîne exécution
 Input: Entrée
 General: Général

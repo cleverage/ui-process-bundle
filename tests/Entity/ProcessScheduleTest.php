@@ -47,6 +47,7 @@ class ProcessScheduleTest extends TestCase
         self::assertNull($schedule->getId());
         self::assertNull($schedule->getInput());
         self::assertSame([], $schedule->getContext());
+        self::assertTrue($schedule->isEnabled());
         self::assertNull($schedule->getNextExecution()); // @phpstan-ignore staticMethod.alreadyNarrowedType
 
         self::assertSame($schedule, $schedule->setProcess('demo.process'));
@@ -63,6 +64,9 @@ class ProcessScheduleTest extends TestCase
 
         $schedule->setInput(null);
         self::assertNull($schedule->getInput());
+
+        self::assertSame($schedule, $schedule->setEnabled(false));
+        self::assertFalse($schedule->isEnabled());
     }
 
     public function testGetContextDecodesJsonString(): void
