@@ -22,6 +22,7 @@ use CleverAge\UiProcessBundle\Entity\LogRecord;
 use CleverAge\UiProcessBundle\Entity\ProcessExecution;
 use CleverAge\UiProcessBundle\Entity\User;
 use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
+use CleverAge\UiProcessBundle\Notifier\NotificationTrigger;
 use Monolog\Level;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\UsesClass;
@@ -37,6 +38,7 @@ use Symfony\Component\Uid\Uuid;
 #[UsesClass(ProcessExecution::class)]
 #[UsesClass(User::class)]
 #[UsesClass(ProcessConfigurationsManager::class)]
+#[UsesClass(NotificationTrigger::class)]
 class PurgeLogsCommandTest extends FunctionalTestCase
 {
     /** @var list<string> */
