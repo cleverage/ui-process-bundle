@@ -10,7 +10,9 @@ Processes launched from the UI, the HTTP API (queued) or the scheduler are execu
 
 - Make sure both `bin/console messenger:consume scheduler_cron` and `bin/console messenger:consume execute_process`
   are running.
-- Schedules are loaded when the `scheduler_cron` worker starts: restart it after any change in the scheduler.
+- Schedules are loaded when the `scheduler_cron` worker starts: restart it after creating a schedule, enabling it
+  again or changing its type or expression.
+- Disabled schedules are not run: check the "Enabled" switch in the schedules list.
 - Invalid schedules (unknown or private process, invalid expression) are skipped and logged on the `scheduler`
   channel.
 

@@ -107,7 +107,7 @@ class CronSchedulerTest extends TestCase
     public function testExceptionsAreLogged(): void
     {
         $repository = $this->createStub(ProcessScheduleRepository::class);
-        $repository->method('findAll')->willThrowException(new \RuntimeException('Database is not available'));
+        $repository->method('findEnabled')->willThrowException(new \RuntimeException('Database is not available'));
 
         $logger = $this->createMock(LoggerInterface::class);
         $logger->expects(self::once())->method('critical')->with('Database is not available');
@@ -174,7 +174,7 @@ class CronSchedulerTest extends TestCase
     private function createRepository(array $schedules): ProcessScheduleRepository
     {
         $repository = $this->createStub(ProcessScheduleRepository::class);
-        $repository->method('findAll')->willReturn($schedules);
+        $repository->method('findEnabled')->willReturn($schedules);
 
         return $repository;
     }

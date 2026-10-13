@@ -116,6 +116,7 @@ class ProcessScheduleCrudTest extends FunctionalTestCase
         self::assertSame(ProcessScheduleType::CRON, $schedules[0]->getType());
         self::assertSame('*/5 * * * *', $schedules[0]->getExpression());
         self::assertSame('my input', $schedules[0]->getInput());
+        self::assertTrue($schedules[0]->isEnabled());
     }
 
     public function testInvalidExpressionIsRejected(): void
@@ -151,6 +152,30 @@ class ProcessScheduleCrudTest extends FunctionalTestCase
         self::assertResponseRedirects();
         $this->getEntityManager()->clear();
         self::assertSame('1 hour', $this->getEntityManager()->find(ProcessSchedule::class, $schedule->getId())?->getExpression());
+    }
+
+    public function testDisable(): void
+    {
+        $this->login();
+        $schedule = $this->createSchedule(ProcessScheduleType::CRON, '0 4 * * *');
+
+        $crawler = $this->client->request('GET', '/process/process-schedule/'.$schedule->getId().'/edit');
+        self::assertResponseIsSuccessful();
+        $form = $crawler->selectButton('Save changes')->form();
+        /** @var array<string, array<string, mixed>> $values */
+        $values = $form->getPhpValues();
+        self::assertSame('1', $values['ProcessSchedule']['enabled']);
+        unset($values['ProcessSchedule']['enabled']);
+        $this->client->request($form->getMethod(), $form->getUri(), $values);
+
+        self::assertResponseRedirects();
+        $this->getEntityManager()->clear();
+        self::assertFalse($this->getEntityManager()->find(ProcessSchedule::class, $schedule->getId())?->isEnabled());
+
+        // No next execution for a disabled schedule
+        $crawler = $this->client->request('GET', '/process/process-schedule');
+        self::assertResponseIsSuccessful();
+        self::assertDoesNotMatchRegularExpression('/\d{4}-\d{2}-\d{2}T04:00:00/', $crawler->filter('table')->text());
     }
 
     public function testEntityFqcn(): void

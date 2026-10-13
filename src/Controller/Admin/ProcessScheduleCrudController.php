@@ -26,6 +26,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Config\KeyValueStore;
 use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ArrayField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\FormField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
@@ -88,12 +89,14 @@ class ProcessScheduleCrudController extends AbstractCrudController
                 ->setFormType(EnumType::class)
                 ->setFormTypeOption('class', ProcessScheduleType::class),
             TextField::new('expression'),
+            BooleanField::new('enabled')
+                ->setHelp('A disabled schedule is not run.'),
             DateTimeField::new('nextExecution')
                 ->setFormTypeOption('mapped', false)
                 ->setVirtual(true)
                 ->hideOnForm()
                 ->hideOnDetail()
-                ->formatValue(static fn ($value, ProcessSchedule $entity) => ProcessScheduleType::CRON === $entity->getType()
+                ->formatValue(static fn ($value, ProcessSchedule $entity) => $entity->isEnabled() && ProcessScheduleType::CRON === $entity->getType()
                     ? CronExpressionTrigger::fromSpec($entity->getExpression() ?? '')
                         ->getNextRunDate(new \DateTimeImmutable())
                         ?->format('c')
