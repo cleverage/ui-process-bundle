@@ -140,6 +140,8 @@ clever_age_ui_process:
         database_level: Info # Debug on dev environment
         file_level: Info # Debug on dev environment
         report_increment_level: Warning
+        database_max_days: ~ # Log retention, see the cleverage:ui-process:purge-logs command
+        file_max_days: ~
     design:
         logo_path: 'bundles/cleverageuiprocess/logo.jpg'
 ```

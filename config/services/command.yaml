@@ -8,3 +8,13 @@ services:
             - '@validator'
             - '@security.user_password_hasher'
             - '@doctrine.orm.entity_manager'
+
+    cleverage_ui_process.command.purge_logs:
+        class: CleverAge\UiProcessBundle\Command\PurgeLogsCommand
+        public: false
+        tags:
+            - { name: console.command }
+        arguments:
+            $entityManager: '@doctrine.orm.entity_manager'
+            $processConfigurationsManager: '@cleverage_ui_process.manager.process_configuration'
+            $logDirectory: '%kernel.logs_dir%'

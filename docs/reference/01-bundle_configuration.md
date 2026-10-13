@@ -16,6 +16,8 @@ clever_age_ui_process:
         database_level: Info # Debug when kernel.environment is "dev"
         file_level: Info # Debug when kernel.environment is "dev"
         report_increment_level: Warning
+        database_max_days: ~
+        file_max_days: ~
     design:
         logo_path: 'bundles/cleverageuiprocess/logo.jpg'
     notification:
@@ -47,6 +49,10 @@ See [process executions & logs](04-process_executions_and_logs.md) for the whole
 | `database_level`         | `string` | `Debug` on `dev` environment, else `Info` | Minimum Monolog level of the log records stored in database.                                                                                 |
 | `file_level`             | `string` | `Debug` on `dev` environment, else `Info` | Minimum Monolog level of the log records written in the execution log file.                                                                  |
 | `report_increment_level` | `string` | `Warning`                                 | Minimum Monolog level from which a log record increments the execution report (one counter per level, e.g. `Warning: 3`, `Error: 1`). Only records passing `file_level` are counted. |
+| `database_max_days`      | `int`, `null` | `null`                               | Days after which the log records are deleted from database by the [`cleverage:ui-process:purge-logs`](07-console_commands.md#cleverageui-processpurge-logs) command. `null`: kept. Can be overridden by process. |
+| `file_max_days`          | `int`, `null` | `null`                               | Days after which the log files are deleted by the [`cleverage:ui-process:purge-logs`](07-console_commands.md#cleverageui-processpurge-logs) command. `null`: kept. Can be overridden by process. |
+
+See [log retention](04-process_executions_and_logs.md#log-retention).
 
 Levels are Monolog level names (case-insensitive): `Debug`, `Info`, `Notice`, `Warning`, `Error`, `Critical`,
 `Alert`, `Emergency`.

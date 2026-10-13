@@ -26,6 +26,24 @@ bin/console cleverage:ui-process:user-create admin@example.com 'my-secret-passwo
 
 Values passed as arguments are not validated. The email must be unique.
 
+cleverage:ui-process:purge-logs
+-------------------------------
+
+Deletes the log records stored in database and the log files older than the configured retention
+(`logs.database_max_days` and `logs.file_max_days`, overridable by process). The process executions are kept. See
+[log retention](04-process_executions_and_logs.md#log-retention).
+
+```bash
+bin/console cleverage:ui-process:purge-logs [--dry-run]
+```
+
+| Option      | Description                                                                   |
+|-------------|-------------------------------------------------------------------------------|
+| `--dry-run` | Counts the log records and the log files to delete, without deleting them.   |
+
+It displays, for each process with a retention, the retention and the number of log records and log files deleted.
+Without any retention configured, it does nothing.
+
 Related commands
 ----------------
 

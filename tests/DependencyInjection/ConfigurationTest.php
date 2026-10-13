@@ -49,6 +49,8 @@ class ConfigurationTest extends TestCase
                     'database_level' => $expectedLevel,
                     'file_level' => $expectedLevel,
                     'report_increment_level' => 'Warning',
+                    'database_max_days' => null,
+                    'file_max_days' => null,
                 ],
                 'design' => [
                     'logo_path' => 'bundles/cleverageuiprocess/logo.jpg',
@@ -88,6 +90,8 @@ class ConfigurationTest extends TestCase
                     'database_level' => 'Error',
                     'file_level' => 'Notice',
                     'report_increment_level' => 'Critical',
+                    'database_max_days' => 30,
+                    'file_max_days' => 180,
                 ],
                 'design' => [
                     'logo_path' => 'images/my-logo.png',
@@ -113,6 +117,8 @@ class ConfigurationTest extends TestCase
                     'database_level' => 'Error',
                     'file_level' => 'Notice',
                     'report_increment_level' => 'Critical',
+                    'database_max_days' => 30,
+                    'file_max_days' => 180,
                 ],
                 'design' => ['logo_path' => 'images/my-logo.png'],
                 'notification' => [
@@ -136,6 +142,8 @@ class ConfigurationTest extends TestCase
                 'store_in_database' => true,
                 'database_level' => 'Debug',
                 'report_increment_level' => 'Warning',
+                'database_max_days' => null,
+                'file_max_days' => null,
             ],
             $config['logs']
         );
@@ -165,6 +173,14 @@ class ConfigurationTest extends TestCase
         yield 'store_in_database not a boolean' => [
             ['logs' => ['store_in_database' => 'yes']],
             'clever_age_ui_process.logs.store_in_database',
+        ];
+        yield 'database_max_days lower than 1' => [
+            ['logs' => ['database_max_days' => 0]],
+            'clever_age_ui_process.logs.database_max_days',
+        ];
+        yield 'file_max_days not an integer' => [
+            ['logs' => ['file_max_days' => '30 days']],
+            'clever_age_ui_process.logs.file_max_days',
         ];
         yield 'roles not an array' => [['security' => ['roles' => 'ROLE_ADMIN']], 'clever_age_ui_process.security.roles'];
         yield 'role not a scalar' => [['security' => ['roles' => [['ROLE_ADMIN']]]], 'clever_age_ui_process.security.roles'];
