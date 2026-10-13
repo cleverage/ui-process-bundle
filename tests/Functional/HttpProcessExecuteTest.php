@@ -37,6 +37,7 @@ use CleverAge\UiProcessBundle\Notifier\NotificationTrigger;
 use CleverAge\UiProcessBundle\Notifier\ProcessExecutionNotifier;
 use CleverAge\UiProcessBundle\Repository\ProcessExecutionRepository;
 use CleverAge\UiProcessBundle\Security\HttpProcessExecutionAuthenticator;
+use CleverAge\UiProcessBundle\StopChecker\ProcessExecutionStopChecker;
 use CleverAge\UiProcessBundle\Twig\Extension\LogLevelExtension;
 use CleverAge\UiProcessBundle\Twig\Extension\MD5Extension;
 use CleverAge\UiProcessBundle\Twig\Extension\ProcessExecutionExtension;
@@ -79,6 +80,7 @@ use Symfony\Component\PasswordHasher\Hasher\Pbkdf2PasswordHasher;
 #[UsesClass(ProcessExecutionEndedEvent::class)]
 #[UsesClass(NotificationTrigger::class)]
 #[UsesClass(ProcessExecutionNotifier::class)]
+#[UsesClass(ProcessExecutionStopChecker::class)]
 class HttpProcessExecuteTest extends FunctionalTestCase
 {
     private const TOKEN = 'api-token';
