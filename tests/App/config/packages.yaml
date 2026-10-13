@@ -130,6 +130,15 @@ clever_age_process:
             tasks:
                 data:
                     service: '@CleverAge\ProcessBundle\Task\ConstantOutputTask'
+        test.logs_retention:
+            public: false
+            options:
+                logs:
+                    database_max_days: 90
+                    file_max_days: 365
+            tasks:
+                data:
+                    service: '@CleverAge\ProcessBundle\Task\DummyTask'
 
 twig_component:
     anonymous_template_directory: 'components/'

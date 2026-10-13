@@ -64,6 +64,8 @@ class Configuration implements ConfigurationInterface
                         ->scalarNode('database_level')->defaultValue($defaultLevel)->end() // min log level to store log record in database
                         ->scalarNode('file_level')->defaultValue($defaultLevel)->end() // min log level to store log record in file
                         ->scalarNode('report_increment_level')->defaultValue(Level::Warning->name)->end() // min log level to increment process execution report
+                        ->integerNode('database_max_days')->defaultNull()->min(1)->end() // days after which the log records are deleted from database by the purge command, null to keep them, can be overridden by process
+                        ->integerNode('file_max_days')->defaultNull()->min(1)->end() // days after which the log files are deleted by the purge command, null to keep them, can be overridden by process
                     ->end()
                 ->end()
             ->end()

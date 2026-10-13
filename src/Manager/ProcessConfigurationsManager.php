@@ -38,6 +38,10 @@ use Symfony\Component\Validator\Constraint;
  *      'channels': ?list<string>,
  *      'recipients': ?array<array{'email': ?string, 'phone': ?string}>
  *  }
+ * @phpstan-type LogsOptions array{
+ *      'database_max_days': ?int,
+ *      'file_max_days': ?int
+ *  }
  */
 final readonly class ProcessConfigurationsManager
 {
@@ -88,9 +92,25 @@ final readonly class ProcessConfigurationsManager
     }
 
     /**
+     * The "logs" option of the process, null values are inherited from the bundle configuration.
+     *
+     * @return LogsOptions|null
+     */
+    public function getLogsOptions(string $processCode): ?array
+    {
+        if (false === $this->registry->hasProcessConfiguration($processCode)) {
+            return null;
+        }
+
+        $configuration = $this->registry->getProcessConfiguration($processCode);
+
+        return $this->resolveOptions($configuration->getOptions())['logs'];
+    }
+
+    /**
      * @param array<int|string, mixed> $options
      *
-     * @return array{'ui': UiOptions, 'notification': NotificationOptions}
+     * @return array{'ui': UiOptions, 'notification': NotificationOptions, 'logs': LogsOptions}
      */
     private function resolveOptions(array $options): array
     {
@@ -135,6 +155,18 @@ final readonly class ProcessConfigurationsManager
 
             return $notificationResolver->resolve($notification);
         });
+        $resolver->setDefault('logs', []);
+        $resolver->setAllowedTypes('logs', 'array');
+        $resolver->setNormalizer('logs', static function (Options $options, array $logs): array {
+            $logsResolver = new OptionsResolver();
+            $logsResolver->setDefaults(['database_max_days' => null, 'file_max_days' => null]);
+            foreach (['database_max_days', 'file_max_days'] as $option) {
+                $logsResolver->setAllowedTypes($option, ['null', 'int']);
+                $logsResolver->setAllowedValues($option, static fn (?int $days): bool => null === $days || $days >= 1);
+            }
+
+            return $logsResolver->resolve($logs);
+        });
         $resolver->setDefault('ui', []);
         $resolver->setAllowedTypes('ui', 'array');
         $resolver->setNormalizer('ui', static function (Options $options, array $ui): array {
@@ -176,7 +208,7 @@ final readonly class ProcessConfigurationsManager
             return $uiResolver->resolve($ui);
         });
         /**
-         * @var array{'ui': UiOptions, 'notification': NotificationOptions} $options
+         * @var array{'ui': UiOptions, 'notification': NotificationOptions, 'logs': LogsOptions} $options
          */
         $options = $resolver->resolve($options);
 

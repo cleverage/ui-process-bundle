@@ -45,6 +45,13 @@ When the `store_in_database` option is enabled with a low `database_level`, the 
 
 See [process executions & logs](reference/04-process_executions_and_logs.md).
 
+## The log_record table keeps growing
+
+Configure a log retention (`logs.database_max_days`) and schedule the `cleverage:ui-process:purge-logs` command. After
+the first purge, the space of the deleted rows is reused by the new ones, but the table does not shrink on disk.
+
+See [log retention](reference/04-process_executions_and_logs.md#log-retention).
+
 ## {"message":"Missing auth token."} response when launching a process via HTTP request
 
 If you use the Apache web server with PHP-FPM/FastCGI, the `Authorization` header may not be passed to PHP. Add (or

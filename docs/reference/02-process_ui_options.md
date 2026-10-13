@@ -34,7 +34,8 @@ Every key is optional: a process without `options.ui` is displayed and launched 
 keys, or invalid values, raise an options resolver error when the process list is displayed.
 
 The `notification` key, next to `ui`, configures the [notification](09-notifications.md) of the end of the process
-executions.
+executions. The `logs` key, next to `ui`, configures the [log retention](04-process_executions_and_logs.md#log-retention)
+of the process.
 
 Options
 -------

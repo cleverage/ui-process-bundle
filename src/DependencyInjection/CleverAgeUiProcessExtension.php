@@ -38,7 +38,7 @@ final class CleverAgeUiProcessExtension extends Extension implements PrependExte
         $configuration = new Configuration($env);
         /** @var array{
          *     security: array{roles: list<string>},
-         *     logs: array{store_in_database: bool, database_level: string, file_level: string, report_increment_level: string},
+         *     logs: array{store_in_database: bool, database_level: string, file_level: string, report_increment_level: string, database_max_days: ?int, file_max_days: ?int},
          *     design: array{logo_path: string},
          *     notification: array{enabled: bool, ...},
          *     process_execution: array{heartbeat_interval: int, stale_after: int},
@@ -59,6 +59,9 @@ final class CleverAgeUiProcessExtension extends Extension implements PrependExte
             $container->getDefinition('cleverage_ui_process.monolog_handler.doctrine_process')
                 ->addMethodCall('disable');
         }
+        $container->getDefinition('cleverage_ui_process.command.purge_logs')
+            ->setArgument('$databaseMaxDays', $config['logs']['database_max_days'])
+            ->setArgument('$fileMaxDays', $config['logs']['file_max_days']);
 
         $container->getDefinition(ProcessDashboardController::class)
             ->setArgument('$logoPath', $config['design']['logo_path']);

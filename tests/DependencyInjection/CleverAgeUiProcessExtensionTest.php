@@ -55,6 +55,10 @@ class CleverAgeUiProcessExtensionTest extends TestCase
         self::assertSame('Info', $databaseHandler->getArgument('$level'));
         self::assertFalse($databaseHandler->hasMethodCall('disable'));
 
+        $purgeLogsCommand = $container->getDefinition('cleverage_ui_process.command.purge_logs');
+        self::assertNull($purgeLogsCommand->getArgument('$databaseMaxDays'));
+        self::assertNull($purgeLogsCommand->getArgument('$fileMaxDays'));
+
         self::assertSame(
             'bundles/cleverageuiprocess/logo.jpg',
             $container->getDefinition(ProcessDashboardController::class)->getArgument('$logoPath')
@@ -111,6 +115,8 @@ class CleverAgeUiProcessExtensionTest extends TestCase
                     'database_level' => 'Error',
                     'file_level' => 'Notice',
                     'report_increment_level' => 'Critical',
+                    'database_max_days' => 30,
+                    'file_max_days' => 180,
                 ],
                 'design' => ['logo_path' => 'images/my-logo.png'],
                 'process_execution' => ['heartbeat_interval' => 10, 'stale_after' => 3600],
@@ -131,6 +137,10 @@ class CleverAgeUiProcessExtensionTest extends TestCase
         self::assertTrue($databaseHandler->hasMethodCall('disable'));
         $calls = $databaseHandler->getMethodCalls();
         self::assertSame(['disable', []], end($calls));
+
+        $purgeLogsCommand = $container->getDefinition('cleverage_ui_process.command.purge_logs');
+        self::assertSame(30, $purgeLogsCommand->getArgument('$databaseMaxDays'));
+        self::assertSame(180, $purgeLogsCommand->getArgument('$fileMaxDays'));
 
         self::assertSame(
             'images/my-logo.png',

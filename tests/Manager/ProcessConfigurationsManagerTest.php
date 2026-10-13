@@ -239,6 +239,58 @@ class ProcessConfigurationsManagerTest extends TestCase
         $manager->getNotificationOptions('test.process');
     }
 
+    public function testLogsOptionsOfAnUnknownProcess(): void
+    {
+        self::assertNull($this->createManager(['test.process' => $this->rawProcess()])->getLogsOptions('unknown'));
+    }
+
+    public function testDefaultLogsOptions(): void
+    {
+        self::assertSame(
+            ['database_max_days' => null, 'file_max_days' => null],
+            $this->createManager(['test.process' => $this->rawProcess()])->getLogsOptions('test.process')
+        );
+    }
+
+    public function testConfiguredLogsOptions(): void
+    {
+        $manager = $this->createManager(['test.process' => $this->rawProcess([
+            'ui' => ['source' => 'ERP'],
+            'notification' => ['enabled' => true],
+            'logs' => ['database_max_days' => 30, 'file_max_days' => 365],
+        ])]);
+
+        self::assertSame(['database_max_days' => 30, 'file_max_days' => 365], $manager->getLogsOptions('test.process'));
+        // The "logs" option is accepted next to the "ui" and "notification" ones
+        self::assertSame('ERP', $manager->getUiOptions('test.process')['source'] ?? null);
+        self::assertTrue($manager->getNotificationOptions('test.process')['enabled'] ?? null);
+    }
+
+    /**
+     * @return iterable<string, array{array<string, mixed>, class-string<\Throwable>}>
+     */
+    public static function provideInvalidLogsOptions(): iterable
+    {
+        yield 'not an array' => [['logs' => 30], InvalidOptionsException::class];
+        yield 'unknown key' => [['logs' => ['max_days' => 30]], UndefinedOptionsException::class];
+        yield 'database_max_days not an integer' => [['logs' => ['database_max_days' => '30']], InvalidOptionsException::class];
+        yield 'database_max_days lower than 1' => [['logs' => ['database_max_days' => 0]], InvalidOptionsException::class];
+        yield 'file_max_days lower than 1' => [['logs' => ['file_max_days' => -1]], InvalidOptionsException::class];
+    }
+
+    /**
+     * @param array<string, mixed>     $options
+     * @param class-string<\Throwable> $exception
+     */
+    #[DataProvider('provideInvalidLogsOptions')]
+    public function testInvalidLogsOptions(array $options, string $exception): void
+    {
+        $manager = $this->createManager(['test.process' => $this->rawProcess($options)]);
+
+        $this->expectException($exception);
+        $manager->getLogsOptions('test.process');
+    }
+
     /**
      * @param array<string, array<string, mixed>> $rawConfiguration
      */

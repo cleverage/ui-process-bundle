@@ -159,6 +159,71 @@ clever_age_ui_process:
         report_increment_level: Error
 ```
 
+### Log retention
+
+Neither the log records stored in database nor the log files are deleted by default. The
+`cleverage:ui-process:purge-logs` command deletes those older than a retention, in days:
+
+| Option              | Deletes                                                                                                   |
+|---------------------|-----------------------------------------------------------------------------------------------------------|
+| `database_max_days` | The log records (`log_record` table) created more than `database_max_days` days ago.                     |
+| `file_max_days`     | The log files (`<code>/<uuid>.log` in `%kernel.logs_dir%`) last modified more than `file_max_days` days ago. |
+
+Both default to `null` (kept), in the [bundle configuration](01-bundle_configuration.md#logs), and can be overridden
+by process under the `logs` key of its options (next to the [`ui` options](02-process_ui_options.md)). A key missing
+(or `null`) in the process options is inherited from the bundle configuration; the executions of a process no longer
+defined use the bundle configuration.
+
+```yaml
+# config/packages/clever_age_ui_process.yaml
+clever_age_ui_process:
+    logs:
+        database_max_days: 30
+        file_max_days: 180
+
+# A process whose logs are kept longer
+clever_age_process:
+    configurations:
+        app.daily_import:
+            options:
+                logs:
+                    database_max_days: 90
+                    file_max_days: 365
+            tasks:
+                # ...
+```
+
+Schedule the command, e.g. every night with a cron:
+
+```
+0 3 * * * cd /path/to/project && bin/console cleverage:ui-process:purge-logs --no-debug
+```
+
+Run it with `--dry-run` first to count what would be deleted.
+
+Keep in mind that:
+- The process executions are never modified nor deleted: the executions list, their statuses and reports stay
+  complete. Once its logs are purged, the "Show logs stored in database" and "Download log file" actions of an
+  execution are no longer displayed.
+- The log file of an execution contains its log records (the `message` is not truncated), as long as `file_level` is
+  not higher than `database_level`: keep the files longer than the database logs to keep the logs readable.
+- Only the log files of the bundle are deleted: files named `<uuid>.log`, in the directory of a process code.
+- The log records are deleted by batches of 1000.
+
+#### Database space
+
+Deleting rows does not shrink the `log_record` table on disk: the database reuses the freed space for the new log
+records, so that with regular purges the table stops growing. To give the space back after the first purge, rebuild
+the table during a maintenance window (no process running: the table is locked while it is rebuilt):
+
+| Database            | Command                       |
+|---------------------|-------------------------------|
+| PostgreSQL          | `VACUUM FULL log_record;`     |
+| MySQL / MariaDB     | `OPTIMIZE TABLE log_record;`  |
+| SQLite              | `VACUUM;` (whole database)    |
+
+The command does not run them: they would block the running processes, which write their logs in this table.
+
 ### Logs list
 
 The "Process > Logs" menu lists the database logs (250 per page), with their level, message, date and a "Has context
