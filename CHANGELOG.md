@@ -1,6 +1,9 @@
 Latest
 ------
 
+## Changes
+* [#150](https://github.com/cleverage/ui-process-bundle/issues/150) Require `symfony/monolog-bundle` and `monolog/monolog`, used directly by the bundle (log handlers, `monolog` configuration prepended, `monolog.logger` tags) but only installed through `cleverage/process-bundle`, which may stop requiring MonologBundle (cleverage/process-bundle#269).
+
 v3.2
 ------
 
