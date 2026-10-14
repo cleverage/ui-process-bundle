@@ -74,6 +74,8 @@ class LogRecord
      */
     public function contextIsEmpty(): bool
     {
+        trigger_deprecation('cleverage/ui-process-bundle', '3.1', 'The "%s()" method is deprecated, use "hasContextInfo()" instead.', __METHOD__);
+
         return $this->hasContextInfo();
     }
 
