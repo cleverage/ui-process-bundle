@@ -47,12 +47,41 @@ class ProcessExecutionDurationFilterTest extends TestCase
 
         self::assertSame(
             'SELECT entity FROM '.ProcessExecution::class.' entity WHERE entity.endDate '.$comparison
-            .' date_add(entity.startDate, :duration_0, \'SECOND\')',
+            .' date_add(entity.startDate, 60, \'SECOND\')',
             $queryBuilder->getDQL()
         );
-        // Bound as a parameter, not concatenated in the DQL
-        self::assertCount(1, $queryBuilder->getParameters());
-        self::assertSame(60, $queryBuilder->getParameter('duration_0')?->getValue());
+        self::assertCount(0, $queryBuilder->getParameters());
+    }
+
+    /**
+     * The value is cast to an integer before being inlined in the DQL (not bound: DBAL 3 SqlitePlatform does not bind
+     * the SECOND intervals).
+     *
+     * @param int|float|string|null $value
+     */
+    #[DataProvider('provideValues')]
+    public function testValueIsCastToAnInteger(mixed $value, string $expected): void
+    {
+        $queryBuilder = $this->apply(['comparison' => ComparisonType::GT, 'value' => $value]);
+
+        self::assertSame(
+            'SELECT entity FROM '.ProcessExecution::class.' entity WHERE entity.endDate > '
+            .'date_add(entity.startDate, '.$expected.', \'SECOND\')',
+            $queryBuilder->getDQL()
+        );
+    }
+
+    /**
+     * @return iterable<string, array{int|float|string|null, string}>
+     */
+    public static function provideValues(): iterable
+    {
+        yield 'integer' => [3600, '3600'];
+        yield 'float' => [1.9, '1'];
+        yield 'numeric string' => ['42', '42'];
+        yield 'negative' => [-5, '(-5)'];
+        yield 'not numeric' => ["1') OR 1=1 OR ('", '0'];
+        yield 'null' => [null, '0'];
     }
 
     /**
@@ -74,12 +103,10 @@ class ProcessExecutionDurationFilterTest extends TestCase
 
         self::assertSame(
             'SELECT entity FROM '.ProcessExecution::class.' entity WHERE entity.endDate BETWEEN '
-            .'date_add(entity.startDate, :duration_0, \'SECOND\') and date_add(entity.startDate, :duration_1, \'SECOND\')',
+            .'date_add(entity.startDate, 10, \'SECOND\') and date_add(entity.startDate, 120, \'SECOND\')',
             $queryBuilder->getDQL()
         );
-        self::assertCount(2, $queryBuilder->getParameters());
-        self::assertSame(10, $queryBuilder->getParameter('duration_0')?->getValue());
-        self::assertSame(120, $queryBuilder->getParameter('duration_1')?->getValue());
+        self::assertCount(0, $queryBuilder->getParameters());
     }
 
     public function testApplyWithUnsupportedComparisonDoesNothing(): void

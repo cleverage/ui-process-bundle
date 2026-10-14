@@ -37,23 +37,35 @@ class ProcessExecutionDurationFilter implements FilterInterface
 
     public function apply(QueryBuilder $queryBuilder, FilterDataDto $filterDataDto, ?FieldDto $fieldDto, EntityDto $entityDto): void
     {
-        $parameter = $filterDataDto->getParameterName();
         if (\in_array($filterDataDto->getComparison(), ['=', '>', '>=', '<', '<=', '!='], true)) {
             $queryBuilder->andWhere(
-                \sprintf('entity.endDate %s date_add(entity.startDate, :%s, \'SECOND\')', $filterDataDto->getComparison(), $parameter)
-            );
-            $queryBuilder->setParameter($parameter, $filterDataDto->getValue());
-        } elseif ('between' === $filterDataDto->getComparison()) {
-            $parameter2 = $filterDataDto->getParameter2Name();
-            $queryBuilder->andWhere(
                 \sprintf(
-                    'entity.endDate BETWEEN date_add(entity.startDate, :%s, \'SECOND\') and date_add(entity.startDate, :%s, \'SECOND\')',
-                    $parameter,
-                    $parameter2
+                    'entity.endDate %s date_add(entity.startDate, %s, \'SECOND\')',
+                    $filterDataDto->getComparison(),
+                    $this->toSeconds($filterDataDto->getValue())
                 )
             );
-            $queryBuilder->setParameter($parameter, $filterDataDto->getValue());
-            $queryBuilder->setParameter($parameter2, $filterDataDto->getValue2());
+        } elseif ('between' === $filterDataDto->getComparison()) {
+            $queryBuilder->andWhere(
+                \sprintf(
+                    'entity.endDate BETWEEN date_add(entity.startDate, %s, \'SECOND\') and date_add(entity.startDate, %s, \'SECOND\')',
+                    $this->toSeconds($filterDataDto->getValue()),
+                    $this->toSeconds($filterDataDto->getValue2())
+                )
+            );
         }
+    }
+
+    /**
+     * The number of seconds is cast to an integer and inlined in the DQL instead of being bound as a parameter: with
+     * DBAL 3, SqlitePlatform generates the SECOND intervals inside a string literal (DATETIME(date, '+? SECOND')), so
+     * a bound parameter is never bound ("column index out of range").
+     */
+    private function toSeconds(mixed $value): string
+    {
+        $seconds = is_numeric($value) ? (int) $value : 0;
+
+        // A negative number is not a DQL literal
+        return $seconds < 0 ? \sprintf('(%d)', $seconds) : (string) $seconds;
     }
 }
