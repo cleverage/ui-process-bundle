@@ -2,6 +2,7 @@ Latest
 ------
 
 ## Changes
+* [#149](https://github.com/cleverage/ui-process-bundle/issues/149) Clean up composer.json: remove the unused `symfony/dotenv`, `symfony/runtime`, `ext-ctype` and `ext-iconv` requirements (applications relying on the bundle to install `symfony/dotenv` / `symfony/runtime` must require them, as the Symfony skeleton does); replace `doctrine/common` by `doctrine/collections` (only `ArrayCollection` is used); require `twig/twig`, `symfony/twig-bundle`, `psr/log`, `doctrine/persistence`, `doctrine/migrations` and `symfony/event-dispatcher-contracts`, used directly but only installed transitively; add `twig/extra-bundle` and `symfony/property-access` (used by the tests) to the dev requirements.
 * [#150](https://github.com/cleverage/ui-process-bundle/issues/150) Require `symfony/monolog-bundle` and `monolog/monolog`, used directly by the bundle (log handlers, `monolog` configuration prepended, `monolog.logger` tags) but only installed through `cleverage/process-bundle`, which may stop requiring MonologBundle (cleverage/process-bundle#269).
 
 v3.2
