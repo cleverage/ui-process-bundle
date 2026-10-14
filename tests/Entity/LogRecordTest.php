@@ -41,9 +41,22 @@ class LogRecordTest extends TestCase
 
     public function testDeprecatedContextIsEmptyIsUnchanged(): void
     {
-        // Misnamed: returns true when the context is NOT empty
-        self::assertTrue($this->createLogRecord(['file' => 'a.txt'])->contextIsEmpty());
-        self::assertFalse($this->createLogRecord([])->contextIsEmpty());
+        $deprecations = [];
+        set_error_handler(static function (int $errno, string $errstr) use (&$deprecations): bool {
+            $deprecations[] = $errstr;
+
+            return true;
+        }, \E_USER_DEPRECATED);
+        try {
+            // Misnamed: returns true when the context is NOT empty
+            self::assertTrue($this->createLogRecord(['file' => 'a.txt'])->contextIsEmpty());
+            self::assertFalse($this->createLogRecord([])->contextIsEmpty());
+        } finally {
+            restore_error_handler();
+        }
+
+        $expected = 'Since cleverage/ui-process-bundle 3.1: The "CleverAge\\UiProcessBundle\\Entity\\LogRecord::contextIsEmpty()" method is deprecated, use "hasContextInfo()" instead.';
+        self::assertSame([$expected, $expected], $deprecations);
     }
 
     public function testAccessors(): void
