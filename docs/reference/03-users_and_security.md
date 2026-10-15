@@ -4,7 +4,7 @@ Users & security
 Security configuration
 ----------------------
 
-The bundle prepends the following configuration to the `security` extension:
+The bundle adds the following configuration to the `security` extension:
 
 ```yaml
 security:
@@ -26,7 +26,13 @@ security:
                 clear_site_data: '*'
 ```
 
-So your application firewall must be named `main`. The only required application configuration is a password
+This configuration is added **after** the application one, so it overrides it: the `provider`, `form_login` and `logout`
+of your `main` firewall are replaced by the bundle ones (e.g. the `provider: users_in_memory` of the default Symfony
+recipe), and the API token authenticator is added to it. So your application firewall must be named `main`, and it is
+dedicated to the UI. To keep the control of your security configuration, disable it, see
+[configuring the security in your application](#configuring-the-security-in-your-application).
+
+With this configuration, the only required application configuration is a password
 hasher for the `User` entity (the Symfony default configuration is enough):
 
 ```yaml
@@ -37,6 +43,53 @@ security:
 ```
 
 The UI pages are protected by `#[IsGranted]` attributes, no `access_control` rule is required.
+
+### Configuring the security in your application
+
+Set `clever_age_ui_process.security.configure_firewall` to `false` (it must be a literal boolean, not a parameter nor an
+environment variable): the bundle no longer adds any `security` configuration, neither the user provider nor the
+firewall. Configure them in your application, on the firewall and with the provider of your choice. The UI requires:
+
+- a user provider of the `CleverAge\UiProcessBundle\Entity\User` entity, by `email`;
+- a firewall covering the UI routes, with a login form on the `process_login` route and the logout on the
+  `process_logout` route;
+- the `cleverage_ui_process.security.http_process_execution_authenticator` authenticator on the firewall covering the
+  `http_process_execute` route, for the [HTTP API](06-http_api.md).
+
+For instance, with the same behaviour as the bundle configuration on a firewall dedicated to the UI:
+
+```yaml
+# config/packages/clever_age_ui_process.yaml
+clever_age_ui_process:
+    security:
+        configure_firewall: false
+```
+
+```yaml
+# config/packages/security.yaml
+security:
+    providers:
+        process_user_provider:
+            entity:
+                class: CleverAge\UiProcessBundle\Entity\User
+                property: email
+    firewalls:
+        process:
+            pattern: ^/(process|http/process)
+            provider: process_user_provider
+            custom_authenticator: [cleverage_ui_process.security.http_process_execution_authenticator]
+            form_login:
+                login_path: process_login
+                check_path: process_login
+            logout:
+                path: process_logout
+                target: process_login
+                clear_site_data: '*'
+        main:
+            # ... your application firewall
+```
+
+The `pattern` depends on the prefix of the [routes](#routes) (here the default ones).
 
 Roles
 -----

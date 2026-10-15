@@ -11,6 +11,7 @@ Every key is optional. Default values are shown below.
 clever_age_ui_process:
     security:
         roles: ['ROLE_ADMIN']
+        configure_firewall: true
     logs:
         store_in_database: true
         database_level: Info # Debug when kernel.environment is "dev"
@@ -38,6 +39,7 @@ Options
 | Key     | Type       | Default          | Description                                                                                                                                       |
 |---------|------------|------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
 | `roles` | `string[]` | `['ROLE_ADMIN']` | Roles that can be assigned to a user in the UI user edit form. `ROLE_USER` is always granted to every user (see [users & security](03-users_and_security.md)). |
+| `configure_firewall` | `bool` | `true` | Add the `process_user_provider` user provider and configure the `main` firewall of the application (overriding its provider, login form and logout). `false`: no `security` configuration is added, configure it in your application (see [users & security](03-users_and_security.md#configuring-the-security-in-your-application)). Must be a literal boolean (no parameter nor environment variable). |
 
 ### logs
 
@@ -103,11 +105,13 @@ parameters:
 Configuration added to other bundles
 ------------------------------------
 
-The bundle prepends some configuration to other bundles, so that it works out of the box:
+The bundle configures other bundles, so that it works out of the box. The Messenger configuration is prepended: your
+application configuration overrides it. The other ones are added after your application configuration, so they override
+it. Each one is skipped when the bundle is not enabled.
 
 | Bundle               | Configuration                                                                                                                                                                                   |
 |----------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `monolog`            | `pb_ui_file` and `pb_ui_orm` handlers (with their `*_filter` handlers) listening to the `cleverage_process` and `cleverage_process_task` channels. See [process executions & logs](04-process_executions_and_logs.md). |
 | `doctrine_migrations` | Migrations path `CleverAge\UiProcessBundle\Migrations`.                                                                                                                                        |
 | `framework`          | Messenger `execute_process` transport (`doctrine://default`, no retry) and routing of `ProcessExecuteMessage` to it. See [messenger](08-messenger.md).                                            |
-| `security`           | `process_user_provider` user provider and the `main` firewall. See [users & security](03-users_and_security.md).                                                                              |
+| `security`           | `process_user_provider` user provider and the `main` firewall, unless `security.configure_firewall` is `false`. See [users & security](03-users_and_security.md).                              |

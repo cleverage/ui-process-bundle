@@ -24,6 +24,7 @@ use CleverAge\UiProcessBundle\Notifier\NotificationTrigger;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
@@ -226,6 +227,53 @@ class CleverAgeUiProcessExtensionTest extends TestCase
             ],
             $security[0]['firewalls']
         );
+    }
+
+    public function testPrependWithoutFirewallConfiguration(): void
+    {
+        $container = $this->createContainer('prod');
+        foreach (['monolog', 'doctrine_migrations', 'security'] as $alias) {
+            $container->registerExtension($this->createExtension($alias));
+        }
+        $container->loadFromExtension('security', ['firewalls' => ['main' => ['provider' => 'app_users']]]);
+        $container->registerExtension(new CleverAgeUiProcessExtension());
+        $container->loadFromExtension('clever_age_ui_process', ['security' => ['configure_firewall' => true]]);
+        $container->loadFromExtension('clever_age_ui_process', ['security' => ['configure_firewall' => false]]);
+
+        (new CleverAgeUiProcessExtension())->prepend($container);
+
+        // Only the application configuration: the last "configure_firewall" value wins
+        self::assertSame(
+            [['firewalls' => ['main' => ['provider' => 'app_users']]]],
+            $container->getExtensionConfig('security')
+        );
+        self::assertCount(1, $container->getExtensionConfig('monolog'));
+        self::assertCount(1, $container->getExtensionConfig('doctrine_migrations'));
+    }
+
+    public function testPrependWithAParameterAsFirewallConfiguration(): void
+    {
+        $container = $this->createContainer('prod');
+        $container->registerExtension($this->createExtension('security'));
+        $container->registerExtension(new CleverAgeUiProcessExtension());
+        $container->loadFromExtension('clever_age_ui_process', ['security' => ['configure_firewall' => '%env(bool:UI_FIREWALL)%']]);
+
+        $this->expectException(InvalidConfigurationException::class);
+        $this->expectExceptionMessage('The "clever_age_ui_process.security.configure_firewall" option must be a boolean, "string" given');
+
+        (new CleverAgeUiProcessExtension())->prepend($container);
+    }
+
+    public function testPrependWithoutTheConfiguredBundles(): void
+    {
+        $container = $this->createContainer('prod');
+
+        (new CleverAgeUiProcessExtension())->prepend($container);
+
+        self::assertSame([], $container->getExtensionConfig('monolog'));
+        self::assertSame([], $container->getExtensionConfig('doctrine_migrations'));
+        self::assertSame([], $container->getExtensionConfig('security'));
+        self::assertCount(1, $container->getExtensionConfig('framework'));
     }
 
     public function testPrependedFrameworkConfigurationComesFirst(): void

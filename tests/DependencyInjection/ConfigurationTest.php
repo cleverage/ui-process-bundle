@@ -43,6 +43,7 @@ class ConfigurationTest extends TestCase
             [
                 'security' => [
                     'roles' => ['ROLE_ADMIN'],
+                    'configure_firewall' => true,
                 ],
                 'logs' => [
                     'store_in_database' => true,
@@ -84,6 +85,7 @@ class ConfigurationTest extends TestCase
             [
                 'security' => [
                     'roles' => ['ROLE_ADMIN', 'ROLE_OPERATOR'],
+                    'configure_firewall' => false,
                 ],
                 'logs' => [
                     'store_in_database' => false,
@@ -111,7 +113,7 @@ class ConfigurationTest extends TestCase
                 ],
             ],
             $this->process('dev', [
-                'security' => ['roles' => ['ROLE_ADMIN', 'ROLE_OPERATOR']],
+                'security' => ['roles' => ['ROLE_ADMIN', 'ROLE_OPERATOR'], 'configure_firewall' => false],
                 'logs' => [
                     'store_in_database' => false,
                     'database_level' => 'Error',
@@ -147,7 +149,7 @@ class ConfigurationTest extends TestCase
             ],
             $config['logs']
         );
-        self::assertSame(['roles' => ['ROLE_ADMIN']], $config['security']);
+        self::assertSame(['roles' => ['ROLE_ADMIN'], 'configure_firewall' => true], $config['security']);
     }
 
     public function testLastConfigurationWins(): void
@@ -184,6 +186,7 @@ class ConfigurationTest extends TestCase
         ];
         yield 'roles not an array' => [['security' => ['roles' => 'ROLE_ADMIN']], 'clever_age_ui_process.security.roles'];
         yield 'role not a scalar' => [['security' => ['roles' => [['ROLE_ADMIN']]]], 'clever_age_ui_process.security.roles'];
+        yield 'configure_firewall not a boolean' => [['security' => ['configure_firewall' => 'no']], 'clever_age_ui_process.security.configure_firewall'];
         yield 'logo_path not a scalar' => [['design' => ['logo_path' => ['a.png']]], 'clever_age_ui_process.design.logo_path'];
         yield 'unknown notification status' => [
             ['notification' => ['statuses' => ['started']]],
