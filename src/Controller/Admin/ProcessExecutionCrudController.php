@@ -22,6 +22,7 @@ use CleverAge\UiProcessBundle\Repository\ProcessExecutionRepository;
 use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminRoute;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Assets;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
@@ -85,6 +86,22 @@ class ProcessExecutionCrudController extends AbstractCrudController
         $crud->setDefaultSort(['startDate' => 'DESC']);
 
         return $crud;
+    }
+
+    /**
+     * EasyAdmin adds an end margin to the inlined actions rendered as forms (requestStop, markAsFailed): it shifts them
+     * from the right edge and makes the actions wrap on several lines.
+     */
+    #[\Override]
+    public function configureAssets(Assets $assets): Assets
+    {
+        return $assets->addHtmlContentToHead(<<<'HTML'
+            <style>
+                .datagrid td.actions:not(.actions-as-dropdown) { white-space: nowrap; }
+                .datagrid td.actions:not(.actions-as-dropdown) form { margin-inline-end: 0; }
+                .datagrid td.actions:not(.actions-as-dropdown) form + a { margin-inline-start: var(--ea-sp-5); }
+            </style>
+            HTML);
     }
 
     #[\Override]
