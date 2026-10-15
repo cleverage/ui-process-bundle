@@ -136,7 +136,7 @@ class CleverAgeUiProcessExtensionTest extends TestCase
         self::assertSame('Error', $databaseHandler->getArgument('$level'));
         self::assertTrue($databaseHandler->hasMethodCall('disable'));
         $calls = $databaseHandler->getMethodCalls();
-        self::assertSame(['disable', []], end($calls));
+        self::assertSame(['disable', []], array_last($calls));
 
         $purgeLogsCommand = $container->getDefinition('cleverage_ui_process.command.purge_logs');
         self::assertSame(30, $purgeLogsCommand->getArgument('$databaseMaxDays'));

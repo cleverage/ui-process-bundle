@@ -17,6 +17,7 @@ use CleverAge\ProcessBundle\CleverAgeProcessBundle;
 use CleverAge\UiProcessBundle\CleverAgeUiProcessBundle;
 use Doctrine\Bundle\DoctrineBundle\DoctrineBundle;
 use Doctrine\Bundle\MigrationsBundle\DoctrineMigrationsBundle;
+use Doctrine\ORM\Proxy\ProxyFactory;
 use EasyCorp\Bundle\EasyAdminBundle\EasyAdminBundle;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
@@ -70,6 +71,11 @@ class TestKernel extends Kernel
     protected function configureContainer(\Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator $container): void
     {
         $container->import(__DIR__.'/config/packages.yaml');
+        // Doctrine ORM 2 (lowest dependencies): lazy ghost proxies, as configured by the Symfony recipe, the legacy
+        // proxies cannot unset the readonly properties of the entities (ProcessExecution::$code...)
+        if (method_exists(ProxyFactory::class, 'resetUninitializedProxy')) {
+            $container->extension('doctrine', ['orm' => ['enable_lazy_ghost_objects' => true]]);
+        }
     }
 
     protected function configureRoutes(\Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator $routes): void
