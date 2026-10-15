@@ -133,14 +133,46 @@ class SecurityTest extends FunctionalTestCase
         self::assertResponseRedirects('http://localhost/process/login');
     }
 
+    public function testLoginWithAnInvalidCsrfToken(): void
+    {
+        $this->createUser('admin@example.com', ['ROLE_ADMIN'], 'secret');
+
+        $crawler = $this->client->request('GET', '/process/login');
+        self::assertCount(1, $crawler->filter('input[type="hidden"][name="_csrf_token"]'));
+        $form = $crawler->filter('form')->form(['_username' => 'admin@example.com', '_password' => 'secret']);
+        $form['_csrf_token'] = 'invalid';
+        $this->client->submit($form);
+
+        self::assertResponseRedirects('http://localhost/process/login');
+        $this->client->followRedirect();
+        self::assertSelectorTextContains('.alert-danger', 'Invalid CSRF token.');
+        $this->client->request('GET', '/process');
+        self::assertResponseRedirects('http://localhost/process/login');
+    }
+
     public function testLogout(): void
     {
         $this->login();
 
-        $this->client->request('GET', '/process/logout');
+        // Logout link of the user menu, with the CSRF token
+        $crawler = $this->client->request('GET', '/process/process-execution');
+        $link = $crawler->filter('a[href^="/process/logout?_csrf_token="]');
+        self::assertGreaterThan(0, $link->count());
+        $this->client->click($link->first()->link());
         self::assertResponseRedirects('http://localhost/process/login');
 
         $this->client->request('GET', '/process');
         self::assertResponseRedirects('http://localhost/process/login');
+    }
+
+    public function testLogoutWithoutCsrfToken(): void
+    {
+        $this->login();
+
+        $this->client->request('GET', '/process/logout');
+        self::assertResponseStatusCodeSame(403);
+
+        $this->client->request('GET', '/process/process-execution');
+        self::assertResponseIsSuccessful();
     }
 }
