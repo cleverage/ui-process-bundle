@@ -10,6 +10,9 @@ Latest
 * [#149](https://github.com/cleverage/ui-process-bundle/issues/149) Clean up composer.json: remove the unused `symfony/dotenv`, `symfony/runtime`, `ext-ctype` and `ext-iconv` requirements (applications relying on the bundle to install `symfony/dotenv` / `symfony/runtime` must require them, as the Symfony skeleton does); replace `doctrine/common` by `doctrine/collections` (only `ArrayCollection` is used); require `twig/twig`, `symfony/twig-bundle`, `psr/log`, `doctrine/persistence`, `doctrine/migrations` and `symfony/event-dispatcher-contracts`, used directly but only installed transitively; add `twig/extra-bundle` and `symfony/property-access` (used by the tests) to the dev requirements.
 * [#150](https://github.com/cleverage/ui-process-bundle/issues/150) Require `symfony/monolog-bundle` and `monolog/monolog`, used directly by the bundle (log handlers, `monolog` configuration prepended, `monolog.logger` tags) but only installed through `cleverage/process-bundle`, which may stop requiring MonologBundle (cleverage/process-bundle#269).
 
+## Fixes
+* [#169](https://github.com/cleverage/ui-process-bundle/issues/169) Security: the configuration added by the bundle to the `security` extension (`process_user_provider` user provider, provider, login form, logout and API token authenticator of the `main` firewall) overrides the application one, it can now be disabled with the new `security.configure_firewall` option (default `true`, same behaviour as before; `false`: no `security` configuration is added, the application configures the provider and the firewall, e.g. a firewall dedicated to the UI). The `monolog`, `doctrine_migrations` and `security` configurations are skipped when the bundle is not enabled, instead of a `LogicException`. The documentation no longer says that these configurations are prepended (only the Messenger one is). Update documentation, add tests.
+
 v3.2
 ------
 

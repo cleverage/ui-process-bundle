@@ -72,7 +72,8 @@ See [routes](reference/03-users_and_security.md#routes).
 ### Security
 
 The bundle automatically configures a user provider and the `main` firewall (login form, logout, API token
-authenticator). You only need a password hasher for the bundle `User` entity, which is the Symfony default:
+authenticator), overriding the provider, login form and logout of your `main` firewall. You only need a password hasher
+for the bundle `User` entity, which is the Symfony default:
 
 ```yaml
 # config/packages/security.yaml
@@ -81,7 +82,8 @@ security:
         Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
 ```
 
-See [users & security](reference/03-users_and_security.md).
+To configure the security in your application instead (e.g. on a dedicated firewall), set
+`clever_age_ui_process.security.configure_firewall` to `false`. See [users & security](reference/03-users_and_security.md).
 
 ### Database
 

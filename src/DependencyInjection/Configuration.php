@@ -46,7 +46,8 @@ class Configuration implements ConfigurationInterface
             ->children()
                 ->arrayNode('security')->addDefaultsIfNotSet()
                     ->children()
-                        ->arrayNode('roles')->defaultValue(['ROLE_ADMIN'])->scalarPrototype()->end() // Roles displayed inside user edit form
+                        ->arrayNode('roles')->defaultValue(['ROLE_ADMIN'])->scalarPrototype()->end()->end() // Roles displayed inside user edit form
+                        ->booleanNode('configure_firewall')->defaultTrue()->end() // add the process_user_provider user provider and configure the main firewall (see CleverAgeUiProcessExtension::prepend()), false to configure the security of the UI in the application
                     ->end()
                 ->end()
             ->end()

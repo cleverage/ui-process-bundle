@@ -18,6 +18,7 @@ use CleverAge\UiProcessBundle\Controller\Admin\ProcessExecutionCrudController;
 use CleverAge\UiProcessBundle\Controller\Admin\UserCrudController;
 use CleverAge\UiProcessBundle\Entity\User;
 use CleverAge\UiProcessBundle\Message\ProcessExecuteMessage;
+use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Exception\LogicException;
@@ -37,7 +38,7 @@ final class CleverAgeUiProcessExtension extends Extension implements PrependExte
         $env = $container->getParameter('kernel.environment');
         $configuration = new Configuration($env);
         /** @var array{
-         *     security: array{roles: list<string>},
+         *     security: array{roles: list<string>, configure_firewall: bool},
          *     logs: array{store_in_database: bool, database_level: string, file_level: string, report_increment_level: string, database_max_days: ?int, file_max_days: ?int},
          *     design: array{logo_path: string},
          *     notification: array{enabled: bool, ...},
@@ -83,9 +84,68 @@ final class CleverAgeUiProcessExtension extends Extension implements PrependExte
     }
 
     /**
-     * Update default configuration for migrations, twig form theme, assets ...
+     * Configure the other bundles: Monolog handlers, migrations path, Messenger transport and security.
+     *
+     * The Messenger configuration is prepended (the application configuration wins). The other ones are appended, so
+     * they override the application configuration: in particular the security one replaces the provider, login form
+     * and logout of the application "main" firewall, unless the "security.configure_firewall" option is false.
      */
     public function prepend(ContainerBuilder $container): void
+    {
+        if ($container->hasExtension('monolog')) {
+            $this->configureMonolog($container);
+        }
+        if ($container->hasExtension('doctrine_migrations')) {
+            $container->loadFromExtension(
+                'doctrine_migrations',
+                [
+                    'migrations_paths' => ['CleverAge\UiProcessBundle\Migrations' => __DIR__.'/../Migrations'],
+                ]
+            );
+        }
+        $container->prependExtensionConfig(
+            'framework',
+            [
+                'messenger' => [
+                    'transport' => [
+                        [
+                            'name' => 'execute_process',
+                            'dsn' => 'doctrine://default',
+                            'retry_strategy' => ['max_retries' => 0],
+                        ],
+                    ],
+                    'routing' => [
+                        ProcessExecuteMessage::class => 'execute_process',
+                    ],
+                ],
+            ]
+        );
+        if ($container->hasExtension('security') && $this->isFirewallConfigured($container)) {
+            $this->configureSecurity($container);
+        }
+    }
+
+    /**
+     * The "security.configure_firewall" option, read before the bundle configuration is processed: the last value
+     * defined wins, as when it is processed.
+     */
+    private function isFirewallConfigured(ContainerBuilder $container): bool
+    {
+        $configureFirewall = true;
+        foreach ($container->getExtensionConfig($this->getAlias()) as $config) {
+            if (!\is_array($config['security'] ?? null) || !\array_key_exists('configure_firewall', $config['security'])) {
+                continue;
+            }
+            $configureFirewall = $config['security']['configure_firewall'];
+            if (!\is_bool($configureFirewall)) {
+                throw new InvalidConfigurationException(\sprintf('The "%s.security.configure_firewall" option must be a boolean, "%s" given: parameters and environment variables are not supported, as it is read before they are resolved.', $this->getAlias(), get_debug_type($configureFirewall)));
+            }
+        }
+
+        return $configureFirewall;
+    }
+
+    private function configureMonolog(ContainerBuilder $container): void
     {
         $container->loadFromExtension(
             'monolog',
@@ -112,29 +172,10 @@ final class CleverAgeUiProcessExtension extends Extension implements PrependExte
                 ],
             ]
         );
-        $container->loadFromExtension(
-            'doctrine_migrations',
-            [
-                'migrations_paths' => ['CleverAge\UiProcessBundle\Migrations' => __DIR__.'/../Migrations'],
-            ]
-        );
-        $container->prependExtensionConfig(
-            'framework',
-            [
-                'messenger' => [
-                    'transport' => [
-                        [
-                            'name' => 'execute_process',
-                            'dsn' => 'doctrine://default',
-                            'retry_strategy' => ['max_retries' => 0],
-                        ],
-                    ],
-                    'routing' => [
-                        ProcessExecuteMessage::class => 'execute_process',
-                    ],
-                ],
-            ]
-        );
+    }
+
+    private function configureSecurity(ContainerBuilder $container): void
+    {
         $container->loadFromExtension(
             'security',
             [
