@@ -28,6 +28,7 @@ use CleverAge\UiProcessBundle\Controller\Admin\Security\LoginController;
 use CleverAge\UiProcessBundle\Controller\Admin\Security\LogoutController;
 use CleverAge\UiProcessBundle\Controller\Admin\UserCrudController;
 use CleverAge\UiProcessBundle\DependencyInjection\CleverAgeUiProcessExtension;
+use CleverAge\UiProcessBundle\DependencyInjection\Compiler\CheckDoctrineLazyGhostObjectsPass;
 use CleverAge\UiProcessBundle\DependencyInjection\Configuration;
 use CleverAge\UiProcessBundle\Entity\User;
 use CleverAge\UiProcessBundle\EventSubscriber\ProcessEventSubscriber;
@@ -69,6 +70,7 @@ use PHPUnit\Framework\Attributes\UsesClass;
 #[UsesClass(ProcessExecutionExtension::class)]
 #[UsesClass(ProcessExtension::class)]
 #[UsesClass(CleverAgeUiProcessBundle::class)]
+#[UsesClass(CheckDoctrineLazyGhostObjectsPass::class)]
 #[UsesClass(CleverAgeUiProcessExtension::class)]
 #[UsesClass(Configuration::class)]
 #[UsesClass(ProcessEventSubscriber::class)]

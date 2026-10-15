@@ -16,6 +16,7 @@ namespace CleverAge\UiProcessBundle\Tests\Functional;
 use CleverAge\ProcessBundle\Manager\ProcessManager;
 use CleverAge\UiProcessBundle\CleverAgeUiProcessBundle;
 use CleverAge\UiProcessBundle\DependencyInjection\CleverAgeUiProcessExtension;
+use CleverAge\UiProcessBundle\DependencyInjection\Compiler\CheckDoctrineLazyGhostObjectsPass;
 use CleverAge\UiProcessBundle\DependencyInjection\Configuration;
 use CleverAge\UiProcessBundle\Entity\ProcessExecution;
 use CleverAge\UiProcessBundle\Event\ProcessExecutionEndedEvent;
@@ -38,6 +39,7 @@ use PHPUnit\Framework\Attributes\UsesClass;
 #[CoversClass(ProcessExecutionNotifier::class)]
 #[CoversClass(ProcessExecutionEndedEvent::class)]
 #[UsesClass(CleverAgeUiProcessBundle::class)]
+#[UsesClass(CheckDoctrineLazyGhostObjectsPass::class)]
 #[UsesClass(CleverAgeUiProcessExtension::class)]
 #[UsesClass(Configuration::class)]
 #[UsesClass(ProcessExecution::class)]

@@ -34,6 +34,13 @@ be marked as failed.
 
 See [not responding executions](reference/04-process_executions_and_logs.md#not-responding-executions).
 
+## Cannot unset readonly property ... from scope Proxies\__CG__\...
+
+The entities of the bundle have readonly properties, not supported by the legacy proxies of Doctrine ORM 2. With
+ORM 2, enable the lazy ghost objects (`doctrine.orm.enable_lazy_ghost_objects: true`, see
+[database](index.md#database)) or upgrade to Doctrine ORM 3. Since the bundle checks this setting when the container
+is compiled, this error is replaced by an explicit message.
+
 ## PHP Fatal error: Allowed memory size of xxx bytes exhausted
 
 When the `store_in_database` option is enabled with a low `database_level`, the process may generate many

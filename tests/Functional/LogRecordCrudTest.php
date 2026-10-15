@@ -23,6 +23,7 @@ use CleverAge\UiProcessBundle\Controller\Admin\ProcessExecutionCrudController;
 use CleverAge\UiProcessBundle\Controller\Admin\ProcessScheduleCrudController;
 use CleverAge\UiProcessBundle\Controller\Admin\UserCrudController;
 use CleverAge\UiProcessBundle\DependencyInjection\CleverAgeUiProcessExtension;
+use CleverAge\UiProcessBundle\DependencyInjection\Compiler\CheckDoctrineLazyGhostObjectsPass;
 use CleverAge\UiProcessBundle\DependencyInjection\Configuration;
 use CleverAge\UiProcessBundle\Entity\LogRecord;
 use CleverAge\UiProcessBundle\Entity\ProcessExecution;
@@ -58,6 +59,7 @@ use PHPUnit\Framework\Attributes\UsesClass;
 #[UsesClass(ProcessExtension::class)]
 #[UsesClass(LogLevelExtensionRuntime::class)]
 #[UsesClass(CleverAgeUiProcessBundle::class)]
+#[UsesClass(CheckDoctrineLazyGhostObjectsPass::class)]
 #[UsesClass(ProcessExecutionCrudController::class)]
 #[UsesClass(ProcessScheduleCrudController::class)]
 #[UsesClass(UserCrudController::class)]

@@ -15,12 +15,15 @@ namespace CleverAge\UiProcessBundle\Tests;
 
 use CleverAge\UiProcessBundle\CleverAgeUiProcessBundle;
 use CleverAge\UiProcessBundle\DependencyInjection\CleverAgeUiProcessExtension;
+use CleverAge\UiProcessBundle\DependencyInjection\Compiler\CheckDoctrineLazyGhostObjectsPass;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 #[CoversClass(CleverAgeUiProcessBundle::class)]
 #[UsesClass(CleverAgeUiProcessExtension::class)]
+#[UsesClass(CheckDoctrineLazyGhostObjectsPass::class)]
 class CleverAgeUiProcessBundleTest extends TestCase
 {
     public function testPathIsTheBundleRootDirectory(): void
@@ -38,5 +41,17 @@ class CleverAgeUiProcessBundleTest extends TestCase
 
         self::assertInstanceOf(CleverAgeUiProcessExtension::class, $extension);
         self::assertSame('clever_age_ui_process', $extension->getAlias());
+    }
+
+    public function testDoctrineLazyGhostObjectsCheckIsRegistered(): void
+    {
+        $container = new ContainerBuilder();
+        (new CleverAgeUiProcessBundle())->build($container);
+
+        $passes = array_filter(
+            $container->getCompilerPassConfig()->getPasses(),
+            static fn (object $pass): bool => $pass instanceof CheckDoctrineLazyGhostObjectsPass,
+        );
+        self::assertCount(1, $passes);
     }
 }
