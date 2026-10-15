@@ -12,7 +12,22 @@ assignees: ''
 
 ### Reproduction
 
-<!-- Steps to reproduce: page or command, process configuration involved (if any), actions performed, actual result (screenshot, logs, exception) -->
+<!-- Process configuration involved, if any: minimal, ideally a demo.* process from https://github.com/cleverage/process-bundle-demo -->
+
+```yaml
+clever_age_process:
+    configurations:
+        demo.<name>:
+            tasks:
+                <task>:
+                    task: <code> # code of the task, given on its reference page
+                    options: {}
+                    outputs: [debug]
+                debug:
+                    task: debug
+```
+
+<!-- Steps to reproduce: page or command, actions performed, actual result (screenshot, logs, exception) -->
 
 1. ...
 2. ...
