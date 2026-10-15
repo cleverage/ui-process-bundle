@@ -42,8 +42,13 @@ use CleverAge\UiProcessBundle\Twig\Extension\ProcessExtension;
 use CleverAge\UiProcessBundle\Validator\CronExpressionValidator;
 use CleverAge\UiProcessBundle\Validator\EveryExpressionValidator;
 use CleverAge\UiProcessBundle\Validator\IsValidProcessCodeValidator;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
+use EasyCorp\Bundle\EasyAdminBundle\Contracts\Field\FieldInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\TestWith;
 use PHPUnit\Framework\Attributes\UsesClass;
+use Symfony\Component\DomCrawler\Crawler;
+use Symfony\Component\Form\FormFactoryInterface;
 
 #[CoversClass(ProcessScheduleCrudController::class)]
 #[UsesClass(EnumField::class)]
@@ -182,6 +187,132 @@ class ProcessScheduleCrudTest extends FunctionalTestCase
         self::assertDoesNotMatchRegularExpression('/\d{4}-\d{2}-\d{2}T04:00:00/', $crawler->filter('table')->text());
     }
 
+    /**
+     * The "execution_user" context key is reserved in the schedules too, as in the launch form.
+     */
+    public function testExecutionUserIsAReservedContextKey(): void
+    {
+        $controller = static::getContainer()->get(ProcessScheduleCrudController::class);
+        self::assertInstanceOf(ProcessScheduleCrudController::class, $controller);
+        $entryOptions = null;
+        foreach ($controller->configureFields(Crud::PAGE_EDIT) as $field) {
+            if ($field instanceof FieldInterface && 'context' === $field->getAsDto()->getProperty()) {
+                $entryOptions = $field->getAsDto()->getFormTypeOptions()['entry_options'] ?? null;
+            }
+        }
+        self::assertIsArray($entryOptions);
+        /** @var array<string, mixed> $rowOptions */
+        $rowOptions = $entryOptions + ['csrf_protection' => false];
+
+        $formFactory = static::getContainer()->get('form.factory');
+        self::assertInstanceOf(FormFactoryInterface::class, $formFactory);
+        $row = $formFactory->create(ProcessContextType::class, null, $rowOptions);
+        $row->submit(['key' => 'execution_user', 'value' => 'someone@example.com']);
+
+        self::assertFalse($row->isValid());
+        $errors = $row->get('key')->getErrors();
+        self::assertCount(1, $errors);
+        self::assertSame('The context key "execution_user" is reserved: it is set to the email of the connected user.', $errors[0]->getMessage());
+    }
+
+    /**
+     * The keys of the context rows follow the same rules as in the launch form.
+     */
+    #[TestWith(['a b', 'The context key "a b" is not valid: use letters, digits, "_", "-" and ":", starting with a letter, a digit or "_", and not only digits.'])]
+    #[TestWith(['execution_user', 'The context key "execution_user" is reserved: it is set to the email of the connected user.'])]
+    public function testCreateWithAnInvalidContextKey(string $key, string $error): void
+    {
+        $this->login();
+
+        $crawler = $this->client->request('GET', '/process/process-schedule/new');
+        $form = $crawler->selectButton('Create')->form();
+        /** @var array<string, array<string, mixed>> $values */
+        $values = $form->getPhpValues();
+        $values['ProcessSchedule']['process'] = 'test.process';
+        $values['ProcessSchedule']['type'] = 'cron';
+        $values['ProcessSchedule']['expression'] = '*/5 * * * *';
+        $values['ProcessSchedule']['context'] = [['key' => 'delimiter', 'value' => ';'], ['key' => $key, 'value' => 'value']];
+        $crawler = $this->client->request($form->getMethod(), $form->getUri(), $values);
+
+        self::assertResponseStatusCodeSame(422);
+        self::assertSame([$error], $this->getFieldErrors($crawler, 'ProcessSchedule_context_1_key'));
+        self::assertSame([], $this->getFieldErrors($crawler, 'ProcessSchedule_context_0_key'));
+        self::assertSame([], $this->getEntityManager()->getRepository(ProcessSchedule::class)->findAll());
+    }
+
+    public function testCreateWithAValidContextKey(): void
+    {
+        $this->login();
+
+        $crawler = $this->client->request('GET', '/process/process-schedule/new');
+        $form = $crawler->selectButton('Create')->form();
+        /** @var array<string, array<string, mixed>> $values */
+        $values = $form->getPhpValues();
+        $values['ProcessSchedule']['process'] = 'test.process';
+        $values['ProcessSchedule']['type'] = 'cron';
+        $values['ProcessSchedule']['expression'] = '*/5 * * * *';
+        $values['ProcessSchedule']['context'] = [['key' => 'delimiter', 'value' => ';']];
+        $this->client->request($form->getMethod(), $form->getUri(), $values);
+
+        self::assertResponseRedirects();
+        $this->getEntityManager()->clear();
+        $schedules = $this->getEntityManager()->getRepository(ProcessSchedule::class)->findAll();
+        self::assertCount(1, $schedules);
+        self::assertSame([['key' => 'delimiter', 'value' => ';']], $schedules[0]->getContext());
+    }
+
+    /**
+     * A schedule saved before the rules on the context keys: it is saved again only once its key is fixed, and its
+     * "enabled" toggle of the index page is not affected.
+     */
+    public function testScheduleWithAContextKeyNowInvalid(): void
+    {
+        $this->login();
+        $schedule = $this->createSchedule(ProcessScheduleType::CRON, '0 4 * * *');
+        $schedule->setContext([['key' => 'execution_user', 'value' => 'someone@example.com']]);
+        $this->getEntityManager()->flush();
+        $id = $schedule->getId();
+
+        // The toggle of the index page (an AJAX PATCH request): no form validation
+        $crawler = $this->client->request('GET', '/process/process-schedule');
+        self::assertResponseIsSuccessful();
+        $toggleUrl = (string) $crawler->filter('[data-toggle-url]')->attr('data-toggle-url');
+        self::assertStringContainsString('fieldName=enabled', $toggleUrl);
+        $this->client->xmlHttpRequest('PATCH', $toggleUrl.'&newValue=false');
+        self::assertResponseIsSuccessful();
+        $this->getEntityManager()->clear();
+        $schedule = $this->getEntityManager()->find(ProcessSchedule::class, $id);
+        self::assertNotNull($schedule);
+        self::assertFalse($schedule->isEnabled());
+        self::assertSame([['key' => 'execution_user', 'value' => 'someone@example.com']], $schedule->getContext());
+
+        // Saved unchanged: refused
+        $crawler = $this->client->request('GET', '/process/process-schedule/'.$id.'/edit');
+        self::assertResponseIsSuccessful();
+        $form = $crawler->selectButton('Save changes')->form();
+        /** @var array<string, array<string, mixed>> $values */
+        $values = $form->getPhpValues();
+        $values['ProcessSchedule']['expression'] = '0 5 * * *';
+        $crawler = $this->client->request($form->getMethod(), $form->getUri(), $values);
+        self::assertResponseStatusCodeSame(422);
+        self::assertSame(
+            ['The context key "execution_user" is reserved: it is set to the email of the connected user.'],
+            $this->getFieldErrors($crawler, 'ProcessSchedule_context_0_key')
+        );
+        $this->getEntityManager()->clear();
+        self::assertSame('0 4 * * *', $this->getEntityManager()->find(ProcessSchedule::class, $id)?->getExpression());
+
+        // Saved once the key is fixed
+        $values['ProcessSchedule']['context'] = [['key' => 'user', 'value' => 'someone@example.com']];
+        $this->client->request($form->getMethod(), $form->getUri(), $values);
+        self::assertResponseRedirects();
+        $this->getEntityManager()->clear();
+        $schedule = $this->getEntityManager()->find(ProcessSchedule::class, $id);
+        self::assertNotNull($schedule);
+        self::assertSame('0 5 * * *', $schedule->getExpression());
+        self::assertSame([['key' => 'user', 'value' => 'someone@example.com']], $schedule->getContext());
+    }
+
     public function testEntityFqcn(): void
     {
         self::assertSame(ProcessSchedule::class, ProcessScheduleCrudController::getEntityFqcn());
@@ -197,5 +328,18 @@ class ProcessScheduleCrudTest extends FunctionalTestCase
         $this->getEntityManager()->flush();
 
         return $schedule;
+    }
+
+    /**
+     * The error messages displayed under the form field with the given id.
+     *
+     * @return list<string>
+     */
+    private function getFieldErrors(Crawler $crawler, string $id): array
+    {
+        $widget = $crawler->filter('#'.$id)->closest('.form-widget');
+        self::assertNotNull($widget, \sprintf('No field "%s".', $id));
+
+        return $widget->filter('.invalid-feedback')->each(static fn (Crawler $error): string => trim($error->text()));
     }
 }
