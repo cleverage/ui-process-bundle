@@ -15,6 +15,7 @@ namespace CleverAge\UiProcessBundle\Controller\Admin\Process;
 
 use CleverAge\ProcessBundle\Exception\MissingProcessException;
 use CleverAge\UiProcessBundle\Entity\User;
+use CleverAge\UiProcessBundle\Form\ContextValueNormalizer;
 use CleverAge\UiProcessBundle\Form\Type\LaunchType;
 use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
 use CleverAge\UiProcessBundle\Message\ProcessExecuteMessage;
@@ -23,7 +24,6 @@ use EasyCorp\Bundle\EasyAdminBundle\Contracts\Context\AdminContextInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Provider\AdminContextProvider;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
@@ -77,31 +77,35 @@ class LaunchAction extends AbstractController
             LaunchType::class,
             null,
             [
-                'constraints' => $uiOptions['constraints'],
+                'constraints' => $uiOptions['form']['constraints'],
                 'process_code' => $processCode,
+                // Not resolved again by the form type
+                'ui_options' => $uiOptions,
             ]
         );
         if (false === $form->isSubmitted()) {
-            $default = $uiOptions['default'];
-            if (false === $form->get('input')->getConfig()->getType()->getInnerType() instanceof TextType
-                && isset($default['input'])
-            ) {
-                unset($default['input']);
-            }
-            $form->setData($default);
+            $form->setData($this->processConfigurationsManager->buildLaunchFormDefaults($uiOptions));
         }
         $form->handleRequest($this->requestStack->getMainRequest());
         if ($form->isSubmitted() && $form->isValid()) {
+            // Normalized after the validation: the constraints apply to the typed values
+            $normalizer = new ContextValueNormalizer();
             $input = $form->get('input')->getData();
             if ($input instanceof UploadedFile) {
                 $filename = \sprintf('%s/%s.%s', $uploadDirectory, Uuid::v4(), $input->getClientOriginalExtension());
                 (new Filesystem())->dumpFile($filename, $input->getContent());
                 $input = $filename;
+            } else {
+                $input = $normalizer->normalize($input, 'input');
             }
             /** @var string $processCode */
             $processCode = $form->getConfig()->getOption('process_code');
-            /** @var array<string, mixed> $context */
-            $context = $form->get('context')->getData();
+            /** @var array<int|string, mixed> $data */
+            $data = $form->get('context')->getData() ?? [];
+            $context = [];
+            foreach ($data as $key => $value) {
+                $context[(string) $key] = $normalizer->normalize($value, (string) $key);
+            }
             $this->dispatch($processCode, $input, $context);
             $this->addFlash(
                 'success',
@@ -128,10 +132,8 @@ class LaunchAction extends AbstractController
         $message = new ProcessExecuteMessage(
             $processCode,
             $input,
-            array_merge(
-                ['execution_user' => $this->getUser()?->getEmail()],
-                $context
-            )
+            // The connected user always wins over a context value
+            [ProcessExecuteMessage::EXECUTION_USER_KEY => $this->getUser()?->getEmail()] + $context
         );
         $this->messageBus->dispatch($message);
     }

@@ -1,6 +1,98 @@
 Upgrade Guide
 =============
 
+## v3.3
+
+### Deprecated UI options of the launch form
+
+The `entrypoint_type`, `default` and `constraints` UI options are deprecated in favor of the new `form` option (see
+[process UI options](docs/reference/02-process_ui_options.md#form-fields)), and will be removed in 4.0:
+
+| Deprecated option   | Replacement                                                                       |
+|---------------------|-----------------------------------------------------------------------------------|
+| `entrypoint_type`   | `form.input.type`                                                                 |
+| `default.input`     | `form.input.default`                                                              |
+| `default.context`   | `form.context.<key>.default` (or a free pair with `form.allow_extra_context`)     |
+| `constraints`       | `form.constraints`                                                                |
+
+```yaml
+# Before (3.2)
+options:
+    ui:
+        ui_launch_mode: form
+        entrypoint_type: file
+        default:
+            context:
+                - key: delimiter
+                  value: ','
+        constraints:
+            - Collection:
+                  fields:
+                      input:
+                          - File: { extensions: [csv] }
+                      context:
+                          - Collection:
+                                fields:
+                                    delimiter:
+                                        - Choice: { choices: [',', ';'] }
+
+# After (3.3)
+options:
+    ui:
+        ui_launch_mode: form
+        form:
+            input:
+                type: file
+                options:
+                    constraints:
+                        - File:
+                              # A CSV file is often detected as "text/plain" (semicolon delimiter, few lines): allow it explicitly
+                              extensions:
+                                  csv: ['text/csv', 'text/plain', 'application/csv', 'text/x-csv', 'text/x-comma-separated-values']
+            context:
+                delimiter:
+                    type: choice
+                    default: ','
+                    options:
+                        choices: { 'Comma (,)': ',', 'Semicolon (;)': ';' }
+```
+
+- Mixing a deprecated option and its replacement (e.g. `entrypoint_type` and `form.input`, or `constraints` and
+  `form.constraints`) raises an `InvalidOptionsException`.
+- The HTML names of the free context pairs of the launch form change from `launch[context][<index>][key|value]` to
+  `launch[context][extra][<index>][key|value]`: update the functional tests of your application that submit this
+  form.
+- The `context` child of `LaunchType` is now a compound `FormType` (the declared fields, then the `extra`
+  `CollectionType` of the free pairs) instead of a `CollectionType`: update the form theme blocks of your application
+  (`_launch_context_entry_*` becomes `_launch_context_extra_entry_*`), the form type extensions and the code using
+  `$form->get('context')`.
+- The duplicated keys of `default.context` are merged, the last pair wins (two pairs were displayed).
+- A process using a deprecated option triggers its deprecations each time its UI options are resolved (process list,
+  launch form, executions list): expect them in the deprecation logs until the process is migrated.
+
+### Context keys of the launch form and the schedules
+
+- The key of a free context pair (launch form and schedules) must contain letters, digits, `_`, `-` and `:`, start with
+  a letter, a digit or `_`, and not be only digits, like a declared context key.
+- The `execution_user` context value is always the email of the connected user when a process is launched from the
+  UI: a free pair `execution_user` is refused in the launch form and in the schedules, and `execution_user` cannot be
+  declared in `form.context`.
+- Existing schedules whose context contains a key that is no longer valid (or `execution_user`) keep running unchanged:
+  the cron does not validate their context. But they cannot be saved from the UI until the key is renamed (or the
+  pair removed), even to change another field: rename it, and update the process accordingly (e.g. its `{{ key }}`
+  contextualized options), as renaming the key changes the context received by the process. Enabling or disabling a
+  schedule from the list is not affected (no form).
+- The same applies to the deprecated `default.context` option: a pair whose key is not valid pre-fills a row that
+  prevents the launch form from being submitted, until the user changes it; the process configuration is not
+  reported as invalid. Rename the key (or move it to `form.context`).
+
+### Invalid notification and logs options
+
+`ProcessConfigurationsManager` now resolves only the requested option: invalid `notification` or `logs` options of a
+process are no longer reported by the process list. They are only reported when they are used: at the end of an
+execution, by the notifier in the Messenger worker (no notification is sent), and by the
+`cleverage:ui-process:purge-logs` command.
+
 ## v3.0
 
 ### Import routes

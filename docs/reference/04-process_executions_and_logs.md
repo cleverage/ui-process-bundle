@@ -31,7 +31,7 @@ Executions are stored in the `process_execution` table (`CleverAge\UiProcessBund
 | `heartbeatAt` | Last sign of life of the running process, see [not responding executions](#not-responding-executions). |
 | `logFilename` | Name of the log file.                                                                               |
 | `report`      | Associative array, see [report](#report).                                                          |
-| `context`     | Process context (including `execution_user` when launched from the UI).                             |
+| `context`     | Process context (including `execution_user` when launched from the UI, reserved in the launch form and the schedules). |
 
 ### Executions list
 
@@ -192,6 +192,9 @@ clever_age_process:
             tasks:
                 # ...
 ```
+
+Invalid `logs` options raise an options resolver error when the purge command runs (since 3.3, they are no longer
+reported by the process list): run the command with `--dry-run` after changing them.
 
 Schedule the command, e.g. every night with a cron:
 

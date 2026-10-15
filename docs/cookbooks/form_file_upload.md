@@ -17,25 +17,24 @@ clever_age_process:
                     source: CSV upload
                     target: Logs
                     ui_launch_mode: form
-                    entrypoint_type: file
-                    default:
+                    form:
+                        input:
+                            type: file
+                            options:
+                                label: CSV file
+                                constraints:
+                                    - NotNull: ~
+                                    - File:
+                                          # A CSV file is often detected as "text/plain" (semicolon delimiter, few lines): allow it explicitly
+                                          extensions:
+                                              csv: ['text/csv', 'text/plain', 'application/csv', 'text/x-csv', 'text/x-comma-separated-values']
                         context:
-                            - key: delimiter
-                              value: ','
-                    constraints:
-                        - Collection:
-                              fields:
-                                  input:
-                                      - NotNull: ~
-                                      - File:
-                                            extensions: [csv]
-                                  context:
-                                      - Collection:
-                                            fields:
-                                                delimiter:
-                                                    - Choice:
-                                                          choices: [',', ';']
-                                                          message: 'delimiter context must be , or ;. {{ value }} given.'
+                            delimiter:
+                                type: choice
+                                default: ','
+                                options:
+                                    label: Delimiter
+                                    choices: { 'Comma (,)': ',', 'Semicolon (;)': ';' }
             tasks:
                 log_file:
                     service: '@CleverAge\ProcessBundle\Task\Reporting\LoggerTask'
@@ -62,17 +61,16 @@ clever_age_process:
 How it works:
 - `ui_launch_mode: form` makes the "Launch" action of the process list open a form instead of a confirmation modal
   (see [launch modes](../reference/02-process_ui_options.md#launch-modes)).
-- `entrypoint_type: file` turns the `input` field into a file upload. As the process has an `entry_point`, the field
-  is required. The uploaded file is saved in the `upload_directory` directory and its path is sent to the
-  `log_file` task (see [launch form](../reference/02-process_ui_options.md#launch-form)).
-- `default.context` pre-fills a `delimiter` line in the context collection
-  (see [default values](../reference/02-process_ui_options.md#default-values)). It is injected into the
-  `InputCsvReaderTask` through the `{{ delimiter }}` contextualized option, exactly like `-c delimiter:";"` on the
-  console.
-- `constraints` validate the whole form data (`input` and `context`): the process is not queued while the file is not
-  a CSV or the delimiter is not `,` or `;` (see [constraints](../reference/02-process_ui_options.md#constraints)).
-  As the `Collection` constraint rejects extra fields, users cannot add other context values: add
-  `allowExtraFields: true` to allow them.
+- `form.input` with `type: file` turns the `input` field into a file upload. As the process has an `entry_point`, the
+  field is required (HTML attribute); its `NotNull` and `File` constraints are checked by the server: the process is
+  not queued while no file is uploaded or the file is not a CSV, and the error is displayed under the field. The
+  uploaded file is saved in the `upload_directory` directory and its path is sent to the `log_file` task (see
+  [launch form](../reference/02-process_ui_options.md#launch-form)).
+- `form.context.delimiter` adds a `delimiter` select, pre-selected on `,`
+  (see [form fields](../reference/02-process_ui_options.md#form-fields)). A value outside of the choices is refused by
+  the field itself. The selected value is injected into the `InputCsvReaderTask` through the `{{ delimiter }}`
+  contextualized option, exactly like `-c delimiter:";"` on the console.
+- Users can still add free key/value pairs to the context: set `form.allow_extra_context: false` to forbid them.
 - On submit, a message is sent to the `execute_process` transport, so a `messenger:consume execute_process` worker
   must be running (see [messenger](../reference/08-messenger.md)). The connected user email is added to the context
   as `execution_user`.
@@ -92,4 +90,4 @@ curl --location 'https://your-domain.com/http/process/execute' \
 --form 'context[delimiter]=";"'
 ```
 
-Note that the launch form `constraints` are not applied to HTTP API calls.
+Note that the launch form fields and constraints are not applied to HTTP API calls.

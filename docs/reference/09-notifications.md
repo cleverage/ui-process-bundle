@@ -77,7 +77,9 @@ clever_age_process:
 | `recipients` | `array[]`  | Recipients, with an `email` and/or a `phone` (required by the `email` and `sms` channels). Empty: the `admin_recipients` of the notifier. |
 
 A key missing (or `null`) in the process options is inherited from the bundle configuration. Invalid process options
-raise an options resolver error.
+raise an options resolver error when the notification is sent, at the end of an execution, in the Messenger worker:
+no notification is then sent. Since 3.3, they are no longer reported by the process list, check them when you change
+them.
 
 Statuses
 --------

@@ -16,6 +16,11 @@ namespace CleverAge\UiProcessBundle\Message;
 readonly class ProcessExecuteMessage
 {
     /**
+     * The context key set to the email of the connected user when a process is launched from the UI.
+     */
+    public const EXECUTION_USER_KEY = 'execution_user';
+
+    /**
      * @param array<string, mixed> $context
      */
     public function __construct(public string $code, public mixed $input, public array $context = [])
