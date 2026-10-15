@@ -72,7 +72,8 @@ class TestKernel extends Kernel
     {
         $container->import(__DIR__.'/config/packages.yaml');
         // Doctrine ORM 2 (lowest dependencies): lazy ghost proxies, as configured by the Symfony recipe, the legacy
-        // proxies cannot unset the readonly properties of the entities (ProcessExecution::$code...)
+        // proxies cannot unset the readonly properties of the entities (ProcessExecution::$code...), see
+        // CheckDoctrineLazyGhostObjectsPass
         if (method_exists(ProxyFactory::class, 'resetUninitializedProxy')) {
             $container->extension('doctrine', ['orm' => ['enable_lazy_ghost_objects' => true]]);
         }

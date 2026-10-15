@@ -20,6 +20,7 @@ use CleverAge\UiProcessBundle\Controller\Admin\ProcessExecutionCrudController;
 use CleverAge\UiProcessBundle\Controller\Admin\ProcessScheduleCrudController;
 use CleverAge\UiProcessBundle\Controller\Admin\UserCrudController;
 use CleverAge\UiProcessBundle\DependencyInjection\CleverAgeUiProcessExtension;
+use CleverAge\UiProcessBundle\DependencyInjection\Compiler\CheckDoctrineLazyGhostObjectsPass;
 use CleverAge\UiProcessBundle\DependencyInjection\Configuration;
 use CleverAge\UiProcessBundle\Entity\User;
 use CleverAge\UiProcessBundle\EventSubscriber\ProcessEventSubscriber;
@@ -45,6 +46,7 @@ use Symfony\Component\PasswordHasher\Hasher\Pbkdf2PasswordHasher;
 #[UsesClass(ProcessExecutionExtension::class)]
 #[UsesClass(ProcessExtension::class)]
 #[UsesClass(CleverAgeUiProcessBundle::class)]
+#[UsesClass(CheckDoctrineLazyGhostObjectsPass::class)]
 #[UsesClass(LogRecordCrudController::class)]
 #[UsesClass(ProcessExecutionCrudController::class)]
 #[UsesClass(ProcessScheduleCrudController::class)]

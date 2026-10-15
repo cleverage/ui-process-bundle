@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace CleverAge\UiProcessBundle;
 
+use CleverAge\UiProcessBundle\DependencyInjection\Compiler\CheckDoctrineLazyGhostObjectsPass;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 
 class CleverAgeUiProcessBundle extends Bundle
@@ -21,5 +23,13 @@ class CleverAgeUiProcessBundle extends Bundle
     public function getPath(): string
     {
         return \dirname(__DIR__);
+    }
+
+    #[\Override]
+    public function build(ContainerBuilder $container): void
+    {
+        parent::build($container);
+
+        $container->addCompilerPass(new CheckDoctrineLazyGhostObjectsPass());
     }
 }

@@ -97,6 +97,17 @@ doctrine:
         naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
 ```
 
+With Doctrine ORM 2, the lazy ghost objects must be enabled (also set by the Symfony recipe of the DoctrineBundle): the
+entities of the bundle have readonly properties, which the legacy proxies of ORM 2 cannot handle. Without it, the
+container compilation fails with an explicit message. Doctrine ORM 3 always uses lazy ghost (or native lazy) objects.
+
+```yaml
+# config/packages/doctrine.yaml, with Doctrine ORM 2 only
+doctrine:
+    orm:
+        enable_lazy_ghost_objects: true
+```
+
 The bundle registers its own Doctrine migrations (`CleverAge\UiProcessBundle\Migrations`). Run them, then create a
 first user:
 

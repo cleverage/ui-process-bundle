@@ -15,6 +15,7 @@ namespace CleverAge\UiProcessBundle\Tests\Repository;
 
 use CleverAge\UiProcessBundle\CleverAgeUiProcessBundle;
 use CleverAge\UiProcessBundle\DependencyInjection\CleverAgeUiProcessExtension;
+use CleverAge\UiProcessBundle\DependencyInjection\Compiler\CheckDoctrineLazyGhostObjectsPass;
 use CleverAge\UiProcessBundle\DependencyInjection\Configuration;
 use CleverAge\UiProcessBundle\Entity\LogRecord;
 use CleverAge\UiProcessBundle\Entity\ProcessExecution;
@@ -31,6 +32,7 @@ use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 #[CoversClass(ProcessExecutionRepository::class)]
 #[UsesClass(CleverAgeUiProcessBundle::class)]
+#[UsesClass(CheckDoctrineLazyGhostObjectsPass::class)]
 #[UsesClass(CleverAgeUiProcessExtension::class)]
 #[UsesClass(Configuration::class)]
 #[UsesClass(ProcessEventSubscriber::class)]
