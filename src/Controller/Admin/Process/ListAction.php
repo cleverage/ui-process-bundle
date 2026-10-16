@@ -37,7 +37,7 @@ class ListAction extends AbstractController
     {
         // Accessed directly, not through the dashboard: the template needs the EasyAdmin context
         if (!$this->adminContextProvider->getContext() instanceof AdminContextInterface) {
-            return $this->redirectToRoute('process', ['routeName' => 'cleverage_ui_process_list']);
+            return $this->redirectToRoute('cleverage_ui_process', ['routeName' => 'cleverage_ui_process_list']);
         }
 
         return $this->render(

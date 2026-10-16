@@ -1,0 +1,6 @@
+services:
+    cleverage_ui_process.routing.deprecated_easyadmin_route_alias_loader:
+        class: CleverAge\UiProcessBundle\Routing\DeprecatedEasyAdminRouteAliasLoader
+        public: false
+        tags:
+            - { name: routing.loader }

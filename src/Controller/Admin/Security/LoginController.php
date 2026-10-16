@@ -27,7 +27,7 @@ class LoginController extends AbstractController
             '@CleverAgeUiProcess/admin/login.html.twig',
             [
                 'page_title' => 'Login',
-                'target_path' => $this->generateUrl('process'),
+                'target_path' => $this->generateUrl('cleverage_ui_process'),
                 'error' => $authenticationUtils->getLastAuthenticationError(),
                 'last_username' => $authenticationUtils->getLastUsername(),
             ]

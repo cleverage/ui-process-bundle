@@ -40,7 +40,7 @@
                                 <i class="fas fa-rocket"></i>
                             </a>
                         {% else %}
-                            <a class="px-1" data-toggle="tooltip" data-placement="top" title="{{ 'Launch'|trans }}" href="{{ url('process', {routeName: 'cleverage_ui_process_launch', process: process.code}) }}">
+                            <a class="px-1" data-toggle="tooltip" data-placement="top" title="{{ 'Launch'|trans }}" href="{{ url('cleverage_ui_process', {routeName: 'cleverage_ui_process_launch', process: process.code}) }}">
                                 <i class="fas fa-rocket"></i>
                             </a>
                         {% endif %}
@@ -50,7 +50,7 @@
                             data-placement="top"
                             title="{{ 'View executions'|trans }}"
                             href="{{ url(
-                                'process',
+                                'cleverage_ui_process',
                                 {
                                     crudAction: 'index',
                                     crudControllerFqcn: 'CleverAge\\UiProcessBundle\\Controller\\Admin\\ProcessExecutionCrudController',
@@ -71,7 +71,7 @@
                         id="{{ process.code }}"
                         title="{{ 'Run process'|trans }} {{ process.code }}"
                         message="{{ 'Do you really want to run process %process% in background'|trans({'%process%': process.code}) }} ?"
-                        confirmUrl="{{ url('process', {routeName: 'cleverage_ui_process_launch', process: process.code}) }}"
+                        confirmUrl="{{ url('cleverage_ui_process', {routeName: 'cleverage_ui_process_launch', process: process.code}) }}"
                 />
             {% endfor %}
         {% endblock %}

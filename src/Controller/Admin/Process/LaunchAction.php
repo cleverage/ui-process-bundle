@@ -54,7 +54,7 @@ class LaunchAction extends AbstractController
     ): Response {
         // Accessed directly, not through the dashboard: the template needs the EasyAdmin context
         if (!$this->adminContextProvider->getContext() instanceof AdminContextInterface) {
-            return $this->redirectToRoute('process', ['routeName' => 'cleverage_ui_process_launch'] + ($this->requestStack->getMainRequest()?->query->all() ?? []));
+            return $this->redirectToRoute('cleverage_ui_process', ['routeName' => 'cleverage_ui_process_launch'] + ($this->requestStack->getMainRequest()?->query->all() ?? []));
         }
         $processCode = (string) $this->requestStack->getMainRequest()?->query->get('process');
         if ('' === $processCode) {
@@ -71,7 +71,7 @@ class LaunchAction extends AbstractController
                 'Process has been added to queue. It will start as soon as possible'
             );
 
-            return $this->redirectToRoute('process', ['routeName' => 'cleverage_ui_process_list']);
+            return $this->redirectToRoute('cleverage_ui_process', ['routeName' => 'cleverage_ui_process_list']);
         }
         $form = $this->createForm(
             LaunchType::class,
@@ -108,7 +108,7 @@ class LaunchAction extends AbstractController
                 'Process has been added to queue. It will start as soon as possible'
             );
 
-            return $this->redirectToRoute('process', ['routeName' => 'cleverage_ui_process_list']);
+            return $this->redirectToRoute('cleverage_ui_process', ['routeName' => 'cleverage_ui_process_list']);
         }
         $this->adminContextProvider->getContext()->getAssets()->addJsAsset(Asset::fromEasyAdminAssetPackage('field-collection.js')->getAsDto());
 

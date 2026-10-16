@@ -21,6 +21,7 @@ use CleverAge\UiProcessBundle\Entity\LogRecord;
 use CleverAge\UiProcessBundle\Entity\ProcessExecution;
 use CleverAge\UiProcessBundle\EventSubscriber\ProcessEventSubscriber;
 use CleverAge\UiProcessBundle\Repository\ProcessExecutionRepository;
+use CleverAge\UiProcessBundle\Routing\DeprecatedEasyAdminRouteAliasLoader;
 use CleverAge\UiProcessBundle\Tests\App\TestKernel;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\EntityManagerInterface;
@@ -34,6 +35,7 @@ use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 #[UsesClass(CleverAgeUiProcessBundle::class)]
 #[UsesClass(CheckDoctrineLazyGhostObjectsPass::class)]
 #[UsesClass(CleverAgeUiProcessExtension::class)]
+#[UsesClass(DeprecatedEasyAdminRouteAliasLoader::class)]
 #[UsesClass(Configuration::class)]
 #[UsesClass(ProcessEventSubscriber::class)]
 #[UsesClass(LogRecord::class)]

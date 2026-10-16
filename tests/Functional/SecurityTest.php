@@ -36,6 +36,7 @@ use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
 use CleverAge\UiProcessBundle\Monolog\Handler\DoctrineProcessHandler;
 use CleverAge\UiProcessBundle\Monolog\Handler\ProcessHandler;
 use CleverAge\UiProcessBundle\Repository\ProcessExecutionRepository;
+use CleverAge\UiProcessBundle\Routing\DeprecatedEasyAdminRouteAliasLoader;
 use CleverAge\UiProcessBundle\Security\HttpProcessExecutionAuthenticator;
 use CleverAge\UiProcessBundle\Twig\Extension\LogLevelExtension;
 use CleverAge\UiProcessBundle\Twig\Extension\MD5Extension;
@@ -72,6 +73,7 @@ use PHPUnit\Framework\Attributes\UsesClass;
 #[UsesClass(CleverAgeUiProcessBundle::class)]
 #[UsesClass(CheckDoctrineLazyGhostObjectsPass::class)]
 #[UsesClass(CleverAgeUiProcessExtension::class)]
+#[UsesClass(DeprecatedEasyAdminRouteAliasLoader::class)]
 #[UsesClass(Configuration::class)]
 #[UsesClass(ProcessEventSubscriber::class)]
 #[UsesClass(DoctrineProcessHandler::class)]
