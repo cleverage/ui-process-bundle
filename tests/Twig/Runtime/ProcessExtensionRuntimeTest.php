@@ -74,8 +74,8 @@ class ProcessExtensionRuntimeTest extends TestCase
     public function testGetUiOptionsWithAForm(): void
     {
         $configuration = new ProcessConfiguration('demo.process', [], ['ui' => ['ui_launch_mode' => 'form', 'form' => [
-            'input' => ['type' => 'file'],
-            'context' => ['delimiter' => ['type' => 'choice', 'default' => ',', 'options' => ['choices' => [',' => ',']]]],
+            'input' => ['type' => FileType::class],
+            'context' => ['delimiter' => ['type' => ChoiceType::class, 'default' => ',', 'options' => ['choices' => [',' => ',']]]],
             'allow_extra_context' => false,
         ]]]);
         $registry = $this->createStub(ProcessConfigurationRegistry::class);

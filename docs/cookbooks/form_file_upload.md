@@ -19,7 +19,7 @@ clever_age_process:
                     ui_launch_mode: form
                     form:
                         input:
-                            type: file
+                            type: Symfony\Component\Form\Extension\Core\Type\FileType
                             options:
                                 label: CSV file
                                 constraints:
@@ -30,7 +30,7 @@ clever_age_process:
                                               csv: ['text/csv', 'text/plain', 'application/csv', 'text/x-csv', 'text/x-comma-separated-values']
                         context:
                             delimiter:
-                                type: choice
+                                type: Symfony\Component\Form\Extension\Core\Type\ChoiceType
                                 default: ','
                                 options:
                                     label: Delimiter
@@ -61,12 +61,12 @@ clever_age_process:
 How it works:
 - `ui_launch_mode: form` makes the "Launch" action of the process list open a form instead of a confirmation modal
   (see [launch modes](../reference/02-process_ui_options.md#launch-modes)).
-- `form.input` with `type: file` turns the `input` field into a file upload. As the process has an `entry_point`, the
+- `form.input` with a `FileType` type turns the `input` field into a file upload. As the process has an `entry_point`, the
   field is required (HTML attribute); its `NotNull` and `File` constraints are checked by the server: the process is
   not queued while no file is uploaded or the file is not a CSV, and the error is displayed under the field. The
   uploaded file is saved in the `upload_directory` directory and its path is sent to the `log_file` task (see
   [launch form](../reference/02-process_ui_options.md#launch-form)).
-- `form.context.delimiter` adds a `delimiter` select, pre-selected on `,`
+- `form.context.delimiter` (a `ChoiceType`) adds a `delimiter` select, pre-selected on `,`
   (see [form fields](../reference/02-process_ui_options.md#form-fields)). A value outside of the choices is refused by
   the field itself. The selected value is injected into the `InputCsvReaderTask` through the `{{ delimiter }}`
   contextualized option, exactly like `-c delimiter:";"` on the console.

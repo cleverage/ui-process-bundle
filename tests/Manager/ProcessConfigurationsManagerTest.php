@@ -24,8 +24,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\TestWith;
 use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
-use Symfony\Bridge\Doctrine\Form\Type\EntityType;
-use Symfony\Component\Form\Extension\Core\Type;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
@@ -45,47 +44,6 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 #[UsesClass(NotificationTrigger::class)]
 class ProcessConfigurationsManagerTest extends TestCase
 {
-    /**
-     * The form type aliases of the launch form fields, in their documented order.
-     */
-    private const FORM_TYPE_ALIASES = [
-        'text' => TextType::class,
-        'textarea' => TextareaType::class,
-        'email' => Type\EmailType::class,
-        'password' => Type\PasswordType::class,
-        'search' => Type\SearchType::class,
-        'url' => Type\UrlType::class,
-        'tel' => Type\TelType::class,
-        'hidden' => Type\HiddenType::class,
-        'integer' => Type\IntegerType::class,
-        'number' => Type\NumberType::class,
-        'money' => Type\MoneyType::class,
-        'percent' => Type\PercentType::class,
-        'range' => Type\RangeType::class,
-        'checkbox' => Type\CheckboxType::class,
-        'radio' => Type\RadioType::class,
-        'choice' => ChoiceType::class,
-        'enum' => Type\EnumType::class,
-        'country' => Type\CountryType::class,
-        'currency' => Type\CurrencyType::class,
-        'language' => Type\LanguageType::class,
-        'locale' => Type\LocaleType::class,
-        'timezone' => Type\TimezoneType::class,
-        'date' => Type\DateType::class,
-        'datetime' => Type\DateTimeType::class,
-        'time' => Type\TimeType::class,
-        'birthday' => Type\BirthdayType::class,
-        'week' => Type\WeekType::class,
-        'dateinterval' => Type\DateIntervalType::class,
-        'color' => Type\ColorType::class,
-        'file' => FileType::class,
-        'uuid' => Type\UuidType::class,
-        'ulid' => Type\UlidType::class,
-        'collection' => Type\CollectionType::class,
-        'repeated' => Type\RepeatedType::class,
-        'entity' => EntityType::class,
-    ];
-
     public function testPublicAndPrivateProcesses(): void
     {
         $manager = $this->createManager([
@@ -225,33 +183,12 @@ class ProcessConfigurationsManagerTest extends TestCase
         $this->resolveUi(['entrypoint_type' => 'csv']);
     }
 
-    public function testFormInputAlias(): void
+    public function testFormInput(): void
     {
-        [$options, $deprecations] = $this->resolveUi(['form' => ['input' => ['type' => 'file', 'options' => ['label' => 'CSV file']]]]);
+        [$options, $deprecations] = $this->resolveUi(['form' => ['input' => ['type' => FileType::class, 'options' => ['label' => 'CSV file']]]]);
 
         self::assertSame([], $deprecations);
         self::assertSame(['type' => FileType::class, 'options' => ['label' => 'CSV file'], 'default' => null], $options['form']['input']);
-    }
-
-    /**
-     * @param class-string $class
-     */
-    #[DataProvider('provideFormTypeAliases')]
-    public function testFormTypeAlias(string $alias, string $class): void
-    {
-        [$options] = $this->resolveUi(['form' => ['input' => ['type' => $alias]]]);
-
-        self::assertSame($class, $options['form']['input']['type']);
-    }
-
-    /**
-     * @return iterable<string, array{string, class-string}>
-     */
-    public static function provideFormTypeAliases(): iterable
-    {
-        foreach (self::FORM_TYPE_ALIASES as $alias => $class) {
-            yield $alias => [$alias, $class];
-        }
     }
 
     /**
@@ -281,13 +218,12 @@ class ProcessConfigurationsManagerTest extends TestCase
      */
     public static function provideInvalidFormTypes(): iterable
     {
-        $aliases = implode(', ', array_map(static fn (string $alias): string => \sprintf('"%s"', $alias), array_keys(self::FORM_TYPE_ALIASES)));
-        $unknown = static fn (string $type): string => \sprintf('The type "%s" of the launch form field "form.input" of the process "test.process" is neither a form type alias (%s) nor an existing class.', $type, $aliases);
+        $unknown = static fn (string $type): string => \sprintf('The type "%s" of the launch form field "form.input" of the process "test.process" must be the FQCN of a form type, the class does not exist.', $type);
 
-        yield 'unknown alias' => ['foo', $unknown('foo')];
+        // The short names of the form types are not supported
+        yield 'short name' => ['file', $unknown('file')];
         yield 'missing class' => ['App\Missing', $unknown('App\Missing')];
         yield 'not a form type' => [\stdClass::class, 'The type "stdClass" of the launch form field "form.input" of the process "test.process" must implement "Symfony\Component\Form\FormTypeInterface".'];
-        yield 'button alias' => ['submit', $unknown('submit')];
         yield 'button class' => [SubmitType::class, \sprintf('The type "%s" of the launch form field "form.input" of the process "test.process" is a button type, it holds no data.', SubmitType::class)];
     }
 
@@ -413,11 +349,11 @@ class ProcessConfigurationsManagerTest extends TestCase
     public static function provideInvalidFileFields(): iterable
     {
         yield 'file in the context' => [
-            ['context' => ['data' => ['type' => 'file']]],
+            ['context' => ['data' => ['type' => FileType::class]]],
             'The launch form field "form.context.data" of the process "test.process" is a file field: file fields are only supported for the input.',
         ];
         yield 'file with a default value' => [
-            ['input' => ['type' => 'file', 'default' => 'data.csv']],
+            ['input' => ['type' => FileType::class, 'default' => 'data.csv']],
             'The launch form field "form.input" of the process "test.process" is a file field, it cannot have a default value.',
         ];
         yield 'multiple files' => [
@@ -480,7 +416,7 @@ class ProcessConfigurationsManagerTest extends TestCase
     {
         $this->expectException(InvalidOptionsException::class);
         $this->expectExceptionMessage('The "entrypoint_type" and "form.input" UI options of the process "test.process" cannot be used together, use "form.input" only.');
-        $this->resolveUi(['entrypoint_type' => 'text', 'form' => ['input' => ['type' => 'text']]]);
+        $this->resolveUi(['entrypoint_type' => 'text', 'form' => ['input' => ['type' => TextType::class]]]);
     }
 
     /**
@@ -532,11 +468,11 @@ class ProcessConfigurationsManagerTest extends TestCase
             ['type' => FileType::class, 'options' => [], 'default' => null],
         ];
         yield 'declared input without default' => [
-            ['form' => ['input' => ['type' => 'textarea']], 'default' => ['input' => 'data.csv']],
+            ['form' => ['input' => ['type' => TextareaType::class]], 'default' => ['input' => 'data.csv']],
             ['type' => TextareaType::class, 'options' => [], 'default' => 'data.csv'],
         ];
         yield 'declared file input without default' => [
-            ['form' => ['input' => ['type' => 'file']], 'default' => ['input' => 'data.csv']],
+            ['form' => ['input' => ['type' => FileType::class]], 'default' => ['input' => 'data.csv']],
             ['type' => FileType::class, 'options' => [], 'default' => null],
         ];
     }
@@ -544,7 +480,7 @@ class ProcessConfigurationsManagerTest extends TestCase
     public function testDeprecatedContextDefaultIsFolded(): void
     {
         [$options] = $this->resolveUi([
-            'form' => ['context' => ['delimiter' => ['type' => 'text'], 'comment' => null]],
+            'form' => ['context' => ['delimiter' => ['type' => TextType::class], 'comment' => null]],
             'default' => ['context' => [['key' => 'delimiter', 'value' => ','], ['key' => 'delimiter', 'value' => ';']]],
         ]);
 
@@ -616,8 +552,8 @@ class ProcessConfigurationsManagerTest extends TestCase
         [, $deprecations] = $this->resolveUi([
             'ui_launch_mode' => 'form',
             'form' => [
-                'input' => ['type' => 'file', 'options' => ['constraints' => [['NotNull' => null]]]],
-                'context' => ['delimiter' => ['type' => 'choice', 'default' => ',', 'options' => ['choices' => [',' => ',']]]],
+                'input' => ['type' => FileType::class, 'options' => ['constraints' => [['NotNull' => null]]]],
+                'context' => ['delimiter' => ['type' => ChoiceType::class, 'default' => ',', 'options' => ['choices' => [',' => ',']]]],
                 'allow_extra_context' => false,
                 'constraints' => [],
             ],
@@ -666,7 +602,7 @@ class ProcessConfigurationsManagerTest extends TestCase
         yield 'new format' => [
             ['form' => [
                 'input' => ['default' => 'data.csv'],
-                'context' => ['delimiter' => ['default' => ','], 'comment' => null, 'dry_run' => ['type' => 'checkbox', 'default' => false]],
+                'context' => ['delimiter' => ['default' => ','], 'comment' => null, 'dry_run' => ['type' => CheckboxType::class, 'default' => false]],
             ]],
             ['input' => 'data.csv', 'context' => ['delimiter' => ',', 'comment' => null, 'dry_run' => false]],
         ];
@@ -681,7 +617,7 @@ class ProcessConfigurationsManagerTest extends TestCase
             ],
             ['input' => null, 'context' => ['delimiter' => ';', 'comment' => 'none', 'foo' => 'bar']],
         ];
-        yield 'file input' => [['form' => ['input' => ['type' => 'file']]], ['input' => null, 'context' => []]];
+        yield 'file input' => [['form' => ['input' => ['type' => FileType::class]]], ['input' => null, 'context' => []]];
         // The last row of a key wins, the free keys keep the order of their first row
         yield 'duplicated free keys' => [
             ['default' => ['context' => [['key' => 'foo', 'value' => 'a'], ['key' => 'bar', 'value' => 'b'], ['key' => 'foo', 'value' => 'c']]]],

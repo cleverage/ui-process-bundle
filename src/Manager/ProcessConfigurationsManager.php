@@ -18,7 +18,6 @@ use CleverAge\ProcessBundle\Exception\MissingProcessException;
 use CleverAge\ProcessBundle\Registry\ProcessConfigurationRegistry;
 use CleverAge\ProcessBundle\Validator\ConstraintLoader;
 use CleverAge\UiProcessBundle\Notifier\NotificationTrigger;
-use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\ButtonTypeInterface;
 use Symfony\Component\Form\Extension\Core\Type;
 use Symfony\Component\Form\FormConfigBuilder;
@@ -77,49 +76,6 @@ use Symfony\Component\Validator\Constraint;
  */
 final readonly class ProcessConfigurationsManager
 {
-    /**
-     * The form type aliases of the launch form fields: the block prefixes of the Symfony core data types, and "entity".
-     *
-     * @var array<string, class-string>
-     */
-    private const FORM_TYPE_ALIASES = [
-        'text' => Type\TextType::class,
-        'textarea' => Type\TextareaType::class,
-        'email' => Type\EmailType::class,
-        'password' => Type\PasswordType::class,
-        'search' => Type\SearchType::class,
-        'url' => Type\UrlType::class,
-        'tel' => Type\TelType::class,
-        'hidden' => Type\HiddenType::class,
-        'integer' => Type\IntegerType::class,
-        'number' => Type\NumberType::class,
-        'money' => Type\MoneyType::class,
-        'percent' => Type\PercentType::class,
-        'range' => Type\RangeType::class,
-        'checkbox' => Type\CheckboxType::class,
-        'radio' => Type\RadioType::class,
-        'choice' => Type\ChoiceType::class,
-        'enum' => Type\EnumType::class,
-        'country' => Type\CountryType::class,
-        'currency' => Type\CurrencyType::class,
-        'language' => Type\LanguageType::class,
-        'locale' => Type\LocaleType::class,
-        'timezone' => Type\TimezoneType::class,
-        'date' => Type\DateType::class,
-        'datetime' => Type\DateTimeType::class,
-        'time' => Type\TimeType::class,
-        'birthday' => Type\BirthdayType::class,
-        'week' => Type\WeekType::class,
-        'dateinterval' => Type\DateIntervalType::class,
-        'color' => Type\ColorType::class,
-        'file' => Type\FileType::class,
-        'uuid' => Type\UuidType::class,
-        'ulid' => Type\UlidType::class,
-        'collection' => Type\CollectionType::class,
-        'repeated' => Type\RepeatedType::class,
-        'entity' => EntityType::class,
-    ];
-
     /**
      * The form options of a launch form field that break the mapping of the context or the default values.
      */
@@ -404,7 +360,7 @@ final readonly class ProcessConfigurationsManager
     private static function resolveField(array $spec, string $path, string $processCode, bool $isInput): array
     {
         $fieldResolver = new OptionsResolver();
-        $fieldResolver->setDefaults(['type' => 'text', 'options' => [], 'default' => null]);
+        $fieldResolver->setDefaults(['type' => Type\TextType::class, 'options' => [], 'default' => null]);
         $fieldResolver->setAllowedTypes('type', 'string');
         $fieldResolver->setAllowedTypes('options', 'array');
         $fieldResolver->setNormalizer('type', static fn (Options $options, string $type): string => self::resolveFormType($type, $path, $processCode));
@@ -450,9 +406,9 @@ final readonly class ProcessConfigurationsManager
      */
     private static function resolveFormType(string $type, string $path, string $processCode): string
     {
-        $class = self::FORM_TYPE_ALIASES[$type] ?? ltrim($type, '\\');
+        $class = ltrim($type, '\\');
         if (!class_exists($class)) {
-            throw new InvalidOptionsException(\sprintf('The type "%s" of the launch form field "%s" of the process "%s" is neither a form type alias (%s) nor an existing class.', $type, $path, $processCode, implode(', ', array_map(static fn (string $alias): string => \sprintf('"%s"', $alias), array_keys(self::FORM_TYPE_ALIASES)))));
+            throw new InvalidOptionsException(\sprintf('The type "%s" of the launch form field "%s" of the process "%s" must be the FQCN of a form type, the class does not exist.', $type, $path, $processCode));
         }
         if (!is_subclass_of($class, FormTypeInterface::class)) {
             throw new InvalidOptionsException(\sprintf('The type "%s" of the launch form field "%s" of the process "%s" must implement "%s".', $type, $path, $processCode, FormTypeInterface::class));

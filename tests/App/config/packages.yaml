@@ -102,12 +102,12 @@ clever_age_process:
                     form:
                         context:
                             delimiter:
-                                type: choice
+                                type: Symfony\Component\Form\Extension\Core\Type\ChoiceType
                                 default: ','
                                 options:
                                     choices: { 'Comma': ',', 'Semicolon': ';' }
                             dry_run:
-                                type: checkbox
+                                type: Symfony\Component\Form\Extension\Core\Type\CheckboxType
                                 options: { required: false }
             tasks:
                 data:
@@ -121,10 +121,10 @@ clever_age_process:
                     form:
                         context:
                             from:
-                                type: date
+                                type: Symfony\Component\Form\Extension\Core\Type\DateType
                                 options: { widget: single_text, input: datetime_immutable, required: false }
                             to:
-                                type: date
+                                type: Symfony\Component\Form\Extension\Core\Type\DateType
                                 default: '2026-01-02'
                                 options: { widget: single_text, input: string }
             tasks:
@@ -138,7 +138,7 @@ clever_age_process:
                     ui_launch_mode: form
                     form:
                         input:
-                            type: file
+                            type: Symfony\Component\Form\Extension\Core\Type\FileType
                             options:
                                 constraints:
                                     - File:
@@ -147,7 +147,7 @@ clever_age_process:
                                               csv: ['text/csv', 'text/plain', 'application/csv', 'text/x-csv', 'text/x-comma-separated-values']
                         context:
                             delimiter:
-                                type: choice
+                                type: Symfony\Component\Form\Extension\Core\Type\ChoiceType
                                 default: ','
                                 options:
                                     choices: { 'Comma': ',', 'Semicolon': ';' }
@@ -199,7 +199,7 @@ clever_age_process:
                     form:
                         context:
                             choice:
-                                type: enum
+                                type: Symfony\Component\Form\Extension\Core\Type\EnumType
                                 options: { class: CleverAge\UiProcessBundle\Tests\Form\Fixtures\PureEnum }
             tasks:
                 data:

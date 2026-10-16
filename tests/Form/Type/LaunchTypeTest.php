@@ -62,12 +62,12 @@ class LaunchTypeTest extends TypeTestCase
                 'input' => ['options' => ['required' => false]],
                 'context' => [
                     'delimiter' => [
-                        'type' => 'choice',
+                        'type' => ChoiceType::class,
                         'default' => ',',
                         'options' => ['label' => 'Delimiter', 'choices' => ['Comma' => ',', 'Semicolon' => ';']],
                     ],
-                    'dry_run' => ['type' => 'checkbox', 'default' => false, 'options' => ['required' => false]],
-                    'limit' => ['type' => 'integer', 'options' => ['constraints' => [['Positive' => null]]]],
+                    'dry_run' => ['type' => CheckboxType::class, 'default' => false, 'options' => ['required' => false]],
+                    'limit' => ['type' => IntegerType::class, 'options' => ['constraints' => [['Positive' => null]]]],
                 ],
             ]]], 'data'),
             'strict.process' => $this->rawProcess(['ui' => ['ui_launch_mode' => 'form', 'form' => [

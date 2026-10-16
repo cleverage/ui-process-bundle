@@ -61,7 +61,7 @@ options:
         ui_launch_mode: form
         form:
             input:
-                type: file
+                type: Symfony\Component\Form\Extension\Core\Type\FileType
                 options:
                     constraints:
                         - File:
@@ -70,7 +70,7 @@ options:
                                   csv: ['text/csv', 'text/plain', 'application/csv', 'text/x-csv', 'text/x-comma-separated-values']
             context:
                 delimiter:
-                    type: choice
+                    type: Symfony\Component\Form\Extension\Core\Type\ChoiceType
                     default: ','
                     options:
                         choices: { 'Comma (,)': ',', 'Semicolon (;)': ';' }
