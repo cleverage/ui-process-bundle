@@ -16,6 +16,7 @@ namespace CleverAge\UiProcessBundle\Manager;
 use CleverAge\ProcessBundle\Configuration\ProcessConfiguration;
 use CleverAge\ProcessBundle\Registry\ProcessConfigurationRegistry;
 use CleverAge\ProcessBundle\Validator\ConstraintLoader;
+use CleverAge\UiProcessBundle\Form\LaunchFormOptionsResolver;
 use CleverAge\UiProcessBundle\Notifier\NotificationTrigger;
 use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
 use Symfony\Component\OptionsResolver\Options;
@@ -23,6 +24,8 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraint;
 
 /**
+ * @phpstan-import-type LaunchFormOptions from LaunchFormOptionsResolver
+ *
  * @phpstan-type UiOptions array{
  *      'source': ?string,
  *      'target': ?string,
@@ -30,7 +33,8 @@ use Symfony\Component\Validator\Constraint;
  *      'entrypoint_type': string,
  *      'constraints': Constraint[],
  *      'run': ?bool,
- *      'default': array{'input': mixed, 'context': array<array{'key': int|string, 'value': int|string}>}
+ *      'default': array{'input': mixed, 'context': array<array{'key': int|string, 'value': int|string}>},
+ *      'form': mixed
  *  }
  * @phpstan-type NotificationOptions array{
  *      'enabled': ?bool,
@@ -45,8 +49,10 @@ use Symfony\Component\Validator\Constraint;
  */
 final readonly class ProcessConfigurationsManager
 {
-    public function __construct(private ProcessConfigurationRegistry $registry)
-    {
+    public function __construct(
+        private ProcessConfigurationRegistry $registry,
+        private LaunchFormOptionsResolver $launchFormOptionsResolver = new LaunchFormOptionsResolver(),
+    ) {
     }
 
     /** @return ProcessConfiguration[] */
@@ -62,6 +68,9 @@ final readonly class ProcessConfigurationsManager
     }
 
     /**
+     * The "form" option is not resolved (see getLaunchFormOptions()): an invalid launch form only breaks the launch
+     * page of the process.
+     *
      * @return UiOptions|null
      */
     public function getUiOptions(string $processCode): ?array
@@ -73,6 +82,26 @@ final readonly class ProcessConfigurationsManager
         $configuration = $this->registry->getProcessConfiguration($processCode);
 
         return $this->resolveOptions($configuration->getOptions())['ui'];
+    }
+
+    /**
+     * The launch form of the process: the "form" UI option, the deprecated "entrypoint_type", "default" and
+     * "constraints" UI options folded into it (their deprecations are triggered), and the initial data of the form.
+     *
+     * @internal
+     *
+     * @return LaunchFormOptions|null
+     */
+    public function getLaunchFormOptions(string $processCode): ?array
+    {
+        $uiOptions = $this->getUiOptions($processCode);
+        if (null === $uiOptions) {
+            return null;
+        }
+        /** @var array<int|string, mixed> $ui */
+        $ui = $this->registry->getProcessConfiguration($processCode)->getOptions()['ui'] ?? [];
+
+        return $this->launchFormOptionsResolver->resolve($ui, $uiOptions, $processCode);
     }
 
     /**
@@ -180,6 +209,8 @@ final readonly class ProcessConfigurationsManager
                     'constraints' => [],
                     'run' => null,
                     'default' => [],
+                    // Resolved by getLaunchFormOptions()
+                    'form' => [],
                 ]
             );
             $uiResolver->setAllowedValues('entrypoint_type', ['text', 'file']);

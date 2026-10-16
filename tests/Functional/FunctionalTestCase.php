@@ -111,4 +111,26 @@ abstract class FunctionalTestCase extends WebTestCase
 
         return $matches[1];
     }
+
+    /**
+     * The user deprecations triggered by the callback.
+     *
+     * @return list<string>
+     */
+    protected function collectDeprecations(\Closure $callback): array
+    {
+        $deprecations = [];
+        set_error_handler(static function (int $errno, string $errstr) use (&$deprecations): bool {
+            $deprecations[] = $errstr;
+
+            return true;
+        }, \E_USER_DEPRECATED);
+        try {
+            $callback();
+        } finally {
+            restore_error_handler();
+        }
+
+        return $deprecations;
+    }
 }

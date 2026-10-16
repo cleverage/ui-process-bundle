@@ -93,6 +93,161 @@ clever_age_process:
             tasks:
                 data:
                     service: '@CleverAge\ProcessBundle\Task\DummyTask'
+        test.form_fields:
+            description: 'Process launched with the UI form, with declared context fields'
+            entry_point: data
+            options:
+                ui:
+                    ui_launch_mode: form
+                    form:
+                        context:
+                            delimiter:
+                                type: Symfony\Component\Form\Extension\Core\Type\ChoiceType
+                                default: ','
+                                options:
+                                    choices: { 'Comma': ',', 'Semicolon': ';' }
+                            dry_run:
+                                type: Symfony\Component\Form\Extension\Core\Type\CheckboxType
+            tasks:
+                data:
+                    service: '@CleverAge\ProcessBundle\Task\DummyTask'
+        test.form_fields_date:
+            description: 'Process launched with the UI form, with declared date fields'
+            entry_point: data
+            options:
+                ui:
+                    ui_launch_mode: form
+                    form:
+                        context:
+                            from:
+                                type: Symfony\Component\Form\Extension\Core\Type\DateType
+                                options: { widget: single_text, input: datetime_immutable, required: false }
+                            to:
+                                type: Symfony\Component\Form\Extension\Core\Type\DateType
+                                default: '2026-01-02'
+                                options: { widget: single_text, input: string }
+            tasks:
+                data:
+                    service: '@CleverAge\ProcessBundle\Task\DummyTask'
+        test.form_upload:
+            description: 'Process launched with the UI form, declared file input and context fields'
+            entry_point: data
+            options:
+                ui:
+                    ui_launch_mode: form
+                    form:
+                        input:
+                            type: Symfony\Component\Form\Extension\Core\Type\FileType
+                            options:
+                                constraints:
+                                    - File:
+                                          # A CSV file is often detected as "text/plain" (semicolon delimiter, few lines): allow it explicitly
+                                          extensions:
+                                              csv: ['text/csv', 'text/plain', 'application/csv', 'text/x-csv', 'text/x-comma-separated-values']
+                        context:
+                            delimiter:
+                                type: Symfony\Component\Form\Extension\Core\Type\ChoiceType
+                                default: ','
+                                options:
+                                    choices: { 'Comma': ',', 'Semicolon': ';' }
+            tasks:
+                data:
+                    service: '@CleverAge\ProcessBundle\Task\DummyTask'
+        test.form_custom_constraint:
+            description: 'Process launched with the UI form, with a field constraint given by its FQCN'
+            options:
+                ui:
+                    ui_launch_mode: form
+                    form:
+                        context:
+                            count:
+                                type: Symfony\Component\Form\Extension\Core\Type\IntegerType
+                                options:
+                                    constraints:
+                                        - CleverAge\UiProcessBundle\Tests\App\Validator\Even: ~
+            tasks:
+                data:
+                    service: '@CleverAge\ProcessBundle\Task\DummyTask'
+        test.form_strict:
+            description: 'Process launched with the UI form, without free context'
+            entry_point: data
+            options:
+                ui:
+                    ui_launch_mode: form
+                    form:
+                        context:
+                            delimiter:
+                                default: ','
+                        allow_extra_context: false
+            tasks:
+                data:
+                    service: '@CleverAge\ProcessBundle\Task\DummyTask'
+        test.form_global_constraints:
+            description: 'Process launched with the UI form, with global constraints on a declared context field'
+            entry_point: data
+            options:
+                ui:
+                    ui_launch_mode: form
+                    form:
+                        context:
+                            code: ~
+                        constraints:
+                            - Collection:
+                                  fields:
+                                      input: ~
+                                      context:
+                                          - Collection:
+                                                allowExtraFields: true
+                                                fields:
+                                                    code:
+                                                        - NotBlank: ~
+            tasks:
+                data:
+                    service: '@CleverAge\ProcessBundle\Task\DummyTask'
+        test.form_enum:
+            description: 'Process launched with the UI form, with a pure enum field'
+            entry_point: data
+            options:
+                ui:
+                    ui_launch_mode: form
+                    form:
+                        context:
+                            choice:
+                                type: Symfony\Component\Form\Extension\Core\Type\EnumType
+                                options: { class: CleverAge\UiProcessBundle\Tests\Form\Fixtures\PureEnum }
+            tasks:
+                data:
+                    service: '@CleverAge\ProcessBundle\Task\DummyTask'
+        test.form_enum_default:
+            description: 'Process launched with the UI form, with a backed enum field and its default value'
+            options:
+                ui:
+                    ui_launch_mode: form
+                    form:
+                        context:
+                            delimiter:
+                                type: Symfony\Component\Form\Extension\Core\Type\EnumType
+                                default: !php/enum CleverAge\UiProcessBundle\Tests\Form\Fixtures\StringBackedEnum::Comma
+                                options: { class: CleverAge\UiProcessBundle\Tests\Form\Fixtures\StringBackedEnum }
+            tasks:
+                data:
+                    service: '@CleverAge\ProcessBundle\Task\DummyTask'
+        test.form_object:
+            description: 'Process launched with the UI form, with a field returning an object that is not stringable'
+            entry_point: data
+            options:
+                ui:
+                    ui_launch_mode: form
+                    form:
+                        input:
+                            type: CleverAge\UiProcessBundle\Tests\App\Form\EntityIdType
+                            options: { required: false }
+                        context:
+                            entity:
+                                type: CleverAge\UiProcessBundle\Tests\App\Form\EntityIdType
+            tasks:
+                data:
+                    service: '@CleverAge\ProcessBundle\Task\DummyTask'
         test.upload:
             description: 'Process launched with the UI form, file input'
             entry_point: data

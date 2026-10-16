@@ -16,6 +16,7 @@ namespace CleverAge\UiProcessBundle\Form\Type;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\Choice;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
 /** @template-extends AbstractType<null> */
@@ -23,13 +24,24 @@ class ProcessContextType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+        $keyConstraints = [new NotBlank()];
+        /** @var string[] $reservedKeys */
+        $reservedKeys = $options['reserved_keys'];
+        if ([] !== $reservedKeys) {
+            // The keys of the fields of the launch form
+            $keyConstraints[] = new Choice(
+                choices: $reservedKeys,
+                message: 'The context key {{ value }} is a field of the launch form, use this field instead.',
+                match: false
+            );
+        }
         $builder->add(
             'key',
             null,
             [
                 'label' => 'Context Key',
                 'attr' => ['placeholder' => 'key'],
-                'constraints' => [new NotBlank()],
+                'constraints' => $keyConstraints,
             ]
         )->add(
             'value',
@@ -44,5 +56,7 @@ class ProcessContextType extends AbstractType
 
     public function configureOptions(OptionsResolver $resolver): void
     {
+        $resolver->setDefault('reserved_keys', []);
+        $resolver->setAllowedTypes('reserved_keys', 'string[]');
     }
 }

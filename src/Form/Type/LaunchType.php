@@ -14,18 +14,25 @@ declare(strict_types=1);
 namespace CleverAge\UiProcessBundle\Form\Type;
 
 use CleverAge\ProcessBundle\Configuration\TaskConfiguration;
+use CleverAge\ProcessBundle\Exception\MissingProcessException;
 use CleverAge\ProcessBundle\Registry\ProcessConfigurationRegistry;
+use CleverAge\UiProcessBundle\Form\LaunchFormOptionsResolver;
 use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\CallbackTransformer;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
-use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
-use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Form\FormEvent;
+use Symfony\Component\Form\FormEvents;
+use Symfony\Component\Form\FormInterface;
+use Symfony\Component\Form\FormView;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-/** @template-extends AbstractType<array<string, mixed>> */
+/**
+ * @phpstan-import-type LaunchFormOptions from LaunchFormOptionsResolver
+ *
+ * @template-extends AbstractType<array<string, mixed>>
+ */
 class LaunchType extends AbstractType
 {
     public function __construct(
@@ -39,41 +46,83 @@ class LaunchType extends AbstractType
         /** @var string $code */
         $code = $options['process_code'];
         $configuration = $this->registry->getProcessConfiguration($code);
-        $uiOptions = $this->configurationsManager->getUiOptions($code);
-        if (isset($uiOptions['entrypoint_type'])) {
-            $builder->add(
-                'input',
-                'file' === $uiOptions['entrypoint_type'] ? FileType::class : TextType::class,
+        /** @var LaunchFormOptions $form */
+        $form = $options['launch_form'] ?? $this->configurationsManager->getLaunchFormOptions($code) ?? throw MissingProcessException::create($code);
+
+        // A "required" form option of the input takes precedence
+        $builder->add(
+            'input',
+            $form['input']['type'],
+            $form['input']['options'] + ['required' => $configuration->getEntryPoint() instanceof TaskConfiguration]
+        );
+
+        // Not "required: false": a child of a form that is not required is never required (HTML attribute), the
+        // declared fields follow their own "required" option, not required by default (a required checkbox must be
+        // checked); the free context pairs are not required
+        $context = $builder->create('context', FormType::class);
+        foreach ($form['context'] as $key => $field) {
+            $context->add($key, $field['type'], $field['options'] + ['required' => false]);
+        }
+        if ($form['allow_extra_context']) {
+            $context->add(
+                'extra',
+                CollectionType::class,
                 [
-                    'required' => $configuration->getEntryPoint() instanceof TaskConfiguration,
+                    'entry_type' => ProcessContextType::class,
+                    'entry_options' => ['reserved_keys' => array_keys($form['context'])],
+                    'allow_add' => true,
+                    'allow_delete' => true,
+                    'required' => false,
+                    'mapped' => false,
+                    'label' => [] === $form['context'] ? false : 'Context (key/value)',
                 ]
             );
+            // On POST_SET_DATA: the data mapper resets the unmapped children with their configured data after PRE_SET_DATA
+            $context->addEventListener(FormEvents::POST_SET_DATA, static function (FormEvent $event) use ($form): void {
+                /** @var array<string, mixed> $data */
+                $data = $event->getData() ?? [];
+                $rows = [];
+                foreach (array_diff_key($data, $form['context']) as $key => $value) {
+                    $rows[] = ['key' => $key, 'value' => $value];
+                }
+                $event->getForm()->get('extra')->setData($rows);
+            });
         }
-        $builder->add(
-            'context',
-            CollectionType::class,
-            [
-                'entry_type' => ProcessContextType::class,
-                'allow_add' => true,
-                'allow_delete' => true,
-                'required' => false,
-            ]
-        );
-        $builder->get('context')->addModelTransformer(new CallbackTransformer(
-            static fn ($data) => $data ?? [],
-            // A row without key is left out (it is reported by the NotBlank constraint of ProcessContextType): a null
-            // key is deprecated as array offset, and an empty key breaks the property paths of the process constraints
-            static fn (?array $data) => array_column(
-                array_filter($data ?? [], static fn ($row): bool => \is_array($row) && null !== ($row['key'] ?? null) && '' !== $row['key']),
-                'value',
-                'key'
-            ),
-        ));
+        $context->addEventListener(FormEvents::SUBMIT, static function (FormEvent $event) use ($form): void {
+            /** @var array<string, mixed> $data */
+            $data = $event->getData() ?? [];
+            $extra = [];
+            if ($event->getForm()->has('extra')) {
+                /** @var array<mixed> $rows */
+                $rows = $event->getForm()->get('extra')->getData() ?? [];
+                // A row without key is left out (it is reported by the NotBlank constraint of ProcessContextType): a
+                // null key is deprecated as array offset, and an empty key breaks the property paths of the process
+                // constraints
+                $extra = array_column(
+                    array_filter($rows, static fn ($row): bool => \is_array($row) && null !== ($row['key'] ?? null) && '' !== $row['key']),
+                    'value',
+                    'key'
+                );
+            }
+            // The declared keys take precedence, a free row with a declared key is reported by ProcessContextType
+            $event->setData(array_intersect_key($data, $form['context']) + $extra);
+        });
+        $builder->add($context);
+    }
+
+    public function finishView(FormView $view, FormInterface $form, array $options): void
+    {
+        // The context group itself is not required: its label is rendered as before 3.3, without the required mark
+        $view['context']->vars['required'] = false;
     }
 
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setRequired('process_code');
+        // @internal The launch form of the process, as resolved by ProcessConfigurationsManager::getLaunchFormOptions():
+        // resolved from the process code when null
+        $resolver->setDefault('launch_form', null);
+        $resolver->setAllowedTypes('launch_form', ['null', 'array']);
     }
 
     #[\Override]
