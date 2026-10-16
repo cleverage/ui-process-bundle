@@ -22,7 +22,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-#[Route('/process/list', name: 'process_list')]
+#[Route('/process/list', name: 'cleverage_ui_process_list')]
 #[IsGranted('ROLE_USER')]
 class ListAction extends AbstractController
 {
@@ -37,7 +37,7 @@ class ListAction extends AbstractController
     {
         // Accessed directly, not through the dashboard: the template needs the EasyAdmin context
         if (!$this->adminContextProvider->getContext() instanceof AdminContextInterface) {
-            return $this->redirectToRoute('process', ['routeName' => 'process_list']);
+            return $this->redirectToRoute('cleverage_ui_process', ['routeName' => 'cleverage_ui_process_list']);
         }
 
         return $this->render(

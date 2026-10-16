@@ -20,14 +20,14 @@ use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
 class LoginController extends AbstractController
 {
-    #[Route('/process/login', name: 'process_login')]
+    #[Route('/process/login', name: 'cleverage_ui_process_login')]
     public function __invoke(AuthenticationUtils $authenticationUtils): Response
     {
         return $this->render(
             '@CleverAgeUiProcess/admin/login.html.twig',
             [
                 'page_title' => 'Login',
-                'target_path' => $this->generateUrl('process'),
+                'target_path' => $this->generateUrl('cleverage_ui_process'),
                 'error' => $authenticationUtils->getLastAuthenticationError(),
                 'last_username' => $authenticationUtils->getLastUsername(),
             ]

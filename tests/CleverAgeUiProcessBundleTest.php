@@ -16,6 +16,7 @@ namespace CleverAge\UiProcessBundle\Tests;
 use CleverAge\UiProcessBundle\CleverAgeUiProcessBundle;
 use CleverAge\UiProcessBundle\DependencyInjection\CleverAgeUiProcessExtension;
 use CleverAge\UiProcessBundle\DependencyInjection\Compiler\CheckDoctrineLazyGhostObjectsPass;
+use CleverAge\UiProcessBundle\Routing\DeprecatedEasyAdminRouteAliasLoader;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
@@ -23,6 +24,7 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 #[CoversClass(CleverAgeUiProcessBundle::class)]
 #[UsesClass(CleverAgeUiProcessExtension::class)]
+#[UsesClass(DeprecatedEasyAdminRouteAliasLoader::class)]
 #[UsesClass(CheckDoctrineLazyGhostObjectsPass::class)]
 class CleverAgeUiProcessBundleTest extends TestCase
 {

@@ -1,12 +1,12 @@
 HTTP API
 ========
 
-A process can be launched from another application with an HTTP `POST` request on the `http_process_execute` route.
+A process can be launched from another application with an HTTP `POST` request on the `cleverage_ui_process_http_execute` route.
 
 Endpoint
 --------
 
-* **Route**: `http_process_execute`
+* **Route**: `cleverage_ui_process_http_execute`
 * **Path**: `/http/process/execute`
 * **Method**: `POST`
 * **Authentication**: `Authorization: Bearer <token>` header

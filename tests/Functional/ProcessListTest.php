@@ -29,6 +29,7 @@ use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
 use CleverAge\UiProcessBundle\Monolog\Handler\DoctrineProcessHandler;
 use CleverAge\UiProcessBundle\Monolog\Handler\ProcessHandler;
 use CleverAge\UiProcessBundle\Repository\ProcessExecutionRepository;
+use CleverAge\UiProcessBundle\Routing\DeprecatedEasyAdminRouteAliasLoader;
 use CleverAge\UiProcessBundle\Security\HttpProcessExecutionAuthenticator;
 use CleverAge\UiProcessBundle\Twig\Extension\LogLevelExtension;
 use CleverAge\UiProcessBundle\Twig\Extension\MD5Extension;
@@ -60,6 +61,7 @@ use PHPUnit\Framework\Attributes\UsesClass;
 #[UsesClass(ProcessScheduleCrudController::class)]
 #[UsesClass(UserCrudController::class)]
 #[UsesClass(CleverAgeUiProcessExtension::class)]
+#[UsesClass(DeprecatedEasyAdminRouteAliasLoader::class)]
 #[UsesClass(Configuration::class)]
 #[UsesClass(ProcessEventSubscriber::class)]
 class ProcessListTest extends FunctionalTestCase
@@ -78,7 +80,7 @@ class ProcessListTest extends FunctionalTestCase
     {
         $this->login();
 
-        $crawler = $this->client->request('GET', '/process?routeName=process_list');
+        $crawler = $this->client->request('GET', '/process?routeName=cleverage_ui_process_list');
 
         self::assertResponseIsSuccessful();
         $text = $crawler->filter('table')->text();
@@ -87,16 +89,29 @@ class ProcessListTest extends FunctionalTestCase
         self::assertStringNotContainsString('test.private', $text);
     }
 
+    /**
+     * The URLs built with the former route name (e.g. bookmarks) keep working: the route alias is deprecated.
+     */
+    public function testDeprecatedRouteName(): void
+    {
+        $this->login();
+
+        $crawler = $this->client->request('GET', '/process?routeName=process_list');
+
+        self::assertResponseIsSuccessful();
+        self::assertStringContainsString('test.process', $crawler->filter('table')->text());
+    }
+
     public function testUsersMenuIsReservedToAdmins(): void
     {
         $this->login();
-        $crawler = $this->client->request('GET', '/process?routeName=process_list');
+        $crawler = $this->client->request('GET', '/process?routeName=cleverage_ui_process_list');
         self::assertStringNotContainsString('User List', $crawler->filter('nav, aside, .sidebar, body')->first()->text());
 
         $this->client->restart();
         $this->client->disableReboot();
         $this->client->loginUser($this->createUser('admin@example.com', ['ROLE_ADMIN']), 'main');
-        $crawler = $this->client->request('GET', '/process?routeName=process_list');
+        $crawler = $this->client->request('GET', '/process?routeName=cleverage_ui_process_list');
         self::assertStringContainsString('User List', $crawler->filter('body')->text());
     }
 
@@ -107,7 +122,7 @@ class ProcessListTest extends FunctionalTestCase
         $this->getEntityManager()->flush();
         $this->client->loginUser($user, 'main');
 
-        $crawler = $this->client->request('GET', '/process?routeName=process_list');
+        $crawler = $this->client->request('GET', '/process?routeName=cleverage_ui_process_list');
 
         self::assertResponseIsSuccessful();
         // EasyAdmin labels translated in the user locale
@@ -124,7 +139,7 @@ class ProcessListTest extends FunctionalTestCase
 
         $this->client->request('GET', '/process/list');
 
-        self::assertResponseRedirects('/process?routeName=process_list');
+        self::assertResponseRedirects('/process?routeName=cleverage_ui_process_list');
         $this->client->followRedirect();
         self::assertResponseIsSuccessful();
     }

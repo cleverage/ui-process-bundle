@@ -36,6 +36,7 @@ use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
 use CleverAge\UiProcessBundle\Monolog\Handler\DoctrineProcessHandler;
 use CleverAge\UiProcessBundle\Monolog\Handler\ProcessHandler;
 use CleverAge\UiProcessBundle\Repository\ProcessExecutionRepository;
+use CleverAge\UiProcessBundle\Routing\DeprecatedEasyAdminRouteAliasLoader;
 use CleverAge\UiProcessBundle\Security\HttpProcessExecutionAuthenticator;
 use CleverAge\UiProcessBundle\Twig\Extension\LogLevelExtension;
 use CleverAge\UiProcessBundle\Twig\Extension\MD5Extension;
@@ -72,6 +73,7 @@ use PHPUnit\Framework\Attributes\UsesClass;
 #[UsesClass(CleverAgeUiProcessBundle::class)]
 #[UsesClass(CheckDoctrineLazyGhostObjectsPass::class)]
 #[UsesClass(CleverAgeUiProcessExtension::class)]
+#[UsesClass(DeprecatedEasyAdminRouteAliasLoader::class)]
 #[UsesClass(Configuration::class)]
 #[UsesClass(ProcessEventSubscriber::class)]
 #[UsesClass(DoctrineProcessHandler::class)]
@@ -84,8 +86,8 @@ class SecurityTest extends FunctionalTestCase
     public static function provideProtectedUrls(): iterable
     {
         yield 'dashboard' => ['/process'];
-        yield 'process list' => ['/process?routeName=process_list'];
-        yield 'process launch' => ['/process?routeName=process_launch&process=test.process'];
+        yield 'process list' => ['/process?routeName=cleverage_ui_process_list'];
+        yield 'process launch' => ['/process?routeName=cleverage_ui_process_launch&process=test.process'];
         yield 'executions' => ['/process/process-execution'];
         yield 'logs' => ['/process/log-record'];
         yield 'scheduler' => ['/process/process-schedule'];

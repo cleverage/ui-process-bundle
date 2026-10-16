@@ -24,11 +24,11 @@ class LogoutController extends AbstractController
     {
     }
 
-    #[Route('/process/logout', name: 'process_logout')]
+    #[Route('/process/logout', name: 'cleverage_ui_process_logout')]
     public function __invoke(): Response
     {
         $this->security->logout();
 
-        return $this->redirectToRoute('process_login');
+        return $this->redirectToRoute('cleverage_ui_process_login');
     }
 }

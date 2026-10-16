@@ -37,6 +37,7 @@ use CleverAge\UiProcessBundle\Monolog\Handler\ProcessHandler;
 use CleverAge\UiProcessBundle\Notifier\NotificationTrigger;
 use CleverAge\UiProcessBundle\Notifier\ProcessExecutionNotifier;
 use CleverAge\UiProcessBundle\Repository\ProcessExecutionRepository;
+use CleverAge\UiProcessBundle\Routing\DeprecatedEasyAdminRouteAliasLoader;
 use CleverAge\UiProcessBundle\Security\HttpProcessExecutionAuthenticator;
 use CleverAge\UiProcessBundle\StopChecker\ProcessExecutionStopChecker;
 use CleverAge\UiProcessBundle\Twig\Extension\LogLevelExtension;
@@ -62,6 +63,7 @@ use Symfony\Component\PasswordHasher\Hasher\Pbkdf2PasswordHasher;
 #[UsesClass(ProcessScheduleCrudController::class)]
 #[UsesClass(UserCrudController::class)]
 #[UsesClass(CleverAgeUiProcessExtension::class)]
+#[UsesClass(DeprecatedEasyAdminRouteAliasLoader::class)]
 #[UsesClass(Configuration::class)]
 #[UsesClass(ProcessExecution::class)]
 #[UsesClass(User::class)]

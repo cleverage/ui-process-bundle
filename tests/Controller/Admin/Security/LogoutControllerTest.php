@@ -34,7 +34,7 @@ class LogoutControllerTest extends TestCase
         $security = $this->createMock(Security::class);
         $security->expects(self::once())->method('logout');
         $router = $this->createStub(RouterInterface::class);
-        $router->method('generate')->willReturnCallback(static fn (string $route, array $parameters, int $type): string => UrlGeneratorInterface::ABSOLUTE_PATH === $type && 'process_login' === $route ? '/process/login' : '');
+        $router->method('generate')->willReturnCallback(static fn (string $route, array $parameters, int $type): string => UrlGeneratorInterface::ABSOLUTE_PATH === $type && 'cleverage_ui_process_login' === $route ? '/process/login' : '');
         $container = new Container();
         $container->set('router', $router);
 

@@ -18,11 +18,11 @@ security:
             provider: process_user_provider
             custom_authenticator: [cleverage_ui_process.security.http_process_execution_authenticator]
             form_login:
-                login_path: process_login
-                check_path: process_login
+                login_path: cleverage_ui_process_login
+                check_path: cleverage_ui_process_login
             logout:
-                path: process_logout
-                target: process_login
+                path: cleverage_ui_process_logout
+                target: cleverage_ui_process_login
                 clear_site_data: '*'
 ```
 
@@ -51,10 +51,10 @@ environment variable): the bundle no longer adds any `security` configuration, n
 firewall. Configure them in your application, on the firewall and with the provider of your choice. The UI requires:
 
 - a user provider of the `CleverAge\UiProcessBundle\Entity\User` entity, by `email`;
-- a firewall covering the UI routes, with a login form on the `process_login` route and the logout on the
-  `process_logout` route;
+- a firewall covering the UI routes, with a login form on the `cleverage_ui_process_login` route and the logout on the
+  `cleverage_ui_process_logout` route;
 - the `cleverage_ui_process.security.http_process_execution_authenticator` authenticator on the firewall covering the
-  `http_process_execute` route, for the [HTTP API](06-http_api.md).
+  `cleverage_ui_process_http_execute` route, for the [HTTP API](06-http_api.md).
 
 For instance, with the same behaviour as the bundle configuration on a firewall dedicated to the UI:
 
@@ -79,11 +79,11 @@ security:
             provider: process_user_provider
             custom_authenticator: [cleverage_ui_process.security.http_process_execution_authenticator]
             form_login:
-                login_path: process_login
-                check_path: process_login
+                login_path: cleverage_ui_process_login
+                check_path: cleverage_ui_process_login
             logout:
-                path: process_logout
-                target: process_login
+                path: cleverage_ui_process_logout
+                target: cleverage_ui_process_login
                 clear_site_data: '*'
         main:
             # ... your application firewall
@@ -132,11 +132,24 @@ Routes
 
 Routes are imported with `@CleverAgeUiProcessBundle/config/routes/*.yaml` (see [installation](../index.md#import-routes)).
 
-| Route name                   | Path                            | Description                                                                                  |
-|------------------------------|---------------------------------|----------------------------------------------------------------------------------------------|
-| `process`                    | `/process`                      | EasyAdmin dashboard, redirects to the executions list. CRUD pages are sub-routes of it.     |
-| `process_login`              | `/process/login`                | Login form.                                                                                  |
-| `process_logout`             | `/process/logout`               | Logout.                                                                                      |
-| `process_list`               | `/process/list`                 | List of public processes.                                                                    |
-| `process_launch`             | `/process/launch?process=<code>` | Launch a process (confirmation, form or direct, see [launch modes](02-process_ui_options.md#launch-modes)). |
-| `http_process_execute`       | `/http/process/execute` (POST)  | [HTTP API](06-http_api.md).                                                                  |
+| Route name                          | Former name (deprecated) | Path                             | Description                                                                                  |
+|-------------------------------------|--------------------------|----------------------------------|----------------------------------------------------------------------------------------------|
+| `cleverage_ui_process`              | `process`                | `/process`                       | EasyAdmin dashboard, redirects to the executions list. CRUD pages are sub-routes of it.     |
+| `cleverage_ui_process_login`        | `process_login`          | `/process/login`                 | Login form.                                                                                  |
+| `cleverage_ui_process_logout`       | `process_logout`         | `/process/logout`                | Logout.                                                                                      |
+| `cleverage_ui_process_list`         | `process_list`           | `/process/list`                  | List of public processes.                                                                    |
+| `cleverage_ui_process_launch`       | `process_launch`         | `/process/launch?process=<code>` | Launch a process (confirmation, form or direct, see [launch modes](02-process_ui_options.md#launch-modes)). |
+| `cleverage_ui_process_http_execute` | `http_process_execute`   | `/http/process/execute` (POST)   | [HTTP API](06-http_api.md).                                                                  |
+
+The routes of the CRUD pages are generated by EasyAdmin from the dashboard route name:
+`cleverage_ui_process_<crud>_<action>` (e.g. `cleverage_ui_process_process_execution_index`), formerly
+`process_<crud>_<action>`.
+
+The former route names are deprecated aliases since 3.3 (`config/routes/deprecated_aliases.yaml`), removed in 4.0:
+generating a URL with them, or opening a `?routeName=<former name>` URL of the dashboard, still works and triggers a
+deprecation.
+
+The EasyAdmin routes (the dashboard and its CRUD pages) are generated by the `easyadmin.routes` loader imported by
+`config/routes/easyadmin.yaml`. This loader generates the routes of **every** dashboard, including the ones of your
+application: a `prefix` set on the import of the bundle routes also applies to the dashboards of your application, and
+`easyadmin.routes` must not be imported a second time.
