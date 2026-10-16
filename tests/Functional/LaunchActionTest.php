@@ -524,7 +524,8 @@ class LaunchActionTest extends FunctionalTestCase
         $form = $crawler->selectButton('Launch')->form();
         /** @var array<string, array<string, mixed>> $values */
         $values = $form->getPhpValues();
-        $values['launch']['context'] = ['choice' => $crawler->filter('select[name="launch[context][choice]"] option')->attr('value')];
+        // The first option is the empty choice of a field that is not required
+        $values['launch']['context'] = ['choice' => $crawler->filter('select[name="launch[context][choice]"] option:not([value=""])')->attr('value')];
         $this->client->request($form->getMethod(), $form->getUri(), $values);
 
         self::assertResponseRedirects();

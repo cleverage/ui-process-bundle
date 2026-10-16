@@ -57,10 +57,11 @@ class LaunchType extends AbstractType
         );
 
         // Not "required: false": a child of a form that is not required is never required (HTML attribute), the
-        // declared fields follow their own "required" option; the free context pairs are not required
+        // declared fields follow their own "required" option, not required by default (a required checkbox must be
+        // checked); the free context pairs are not required
         $context = $builder->create('context', FormType::class);
         foreach ($form['context'] as $key => $field) {
-            $context->add($key, $field['type'], $field['options']);
+            $context->add($key, $field['type'], $field['options'] + ['required' => false]);
         }
         if ($form['allow_extra_context']) {
             $context->add(

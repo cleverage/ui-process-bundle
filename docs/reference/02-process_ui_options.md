@@ -133,10 +133,10 @@ options:
                     options:
                         label: Delimiter
                         choices: { 'Comma (,)': ',', 'Semicolon (;)': ';' }
+                        required: true
                 dry_run:
                     type: Symfony\Component\Form\Extension\Core\Type\CheckboxType
-                    default: false
-                    options: { required: false }
+                    default: false   # not required by default: it can be left unchecked
                 comment: ~        # a TextType field without default value
             allow_extra_context: true
             constraints: []
@@ -179,8 +179,11 @@ The `extensions` option of the `File` constraint also checks the detected MIME t
 often detected as `text/plain` (semicolon delimiter, single column, few lines): list the accepted MIME types per
 extension (`extensions: { csv: ['text/csv', 'text/plain'] }`).
 
-`options.required` is only the HTML `required` attribute (Symfony default: `true`, including for a `CheckboxType`, which
-must then be checked): the server-side validation relies on `options.constraints` (e.g. `NotBlank`).
+`options.required` is only the HTML `required` attribute: the server-side validation relies on `options.constraints`
+(e.g. `NotBlank`). The declared context fields are not required by default (unlike the Symfony default, a required
+`CheckboxType` must be checked, and a select that is not required has an empty choice): set `options.required: true`
+to mark one as required. The input is required when the
+process defines an `entry_point` (see [launch form](#launch-form)).
 
 The `data`, `mapped`, `property_path` and `inherit_data` options are not supported (they break the mapping of the
 context and of the default values): use `default` for the initial value.

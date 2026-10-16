@@ -35,6 +35,7 @@ clever_age_process:
                                 options:
                                     label: Delimiter
                                     choices: { 'Comma (,)': ',', 'Semicolon (;)': ';' }
+                                    required: true   # a select that is not required has an empty choice
             tasks:
                 log_file:
                     service: '@CleverAge\ProcessBundle\Task\Reporting\LoggerTask'

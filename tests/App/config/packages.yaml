@@ -108,7 +108,6 @@ clever_age_process:
                                     choices: { 'Comma': ',', 'Semicolon': ';' }
                             dry_run:
                                 type: Symfony\Component\Form\Extension\Core\Type\CheckboxType
-                                options: { required: false }
             tasks:
                 data:
                     service: '@CleverAge\ProcessBundle\Task\DummyTask'

@@ -66,9 +66,9 @@ class LaunchTypeTest extends TypeTestCase
                     'delimiter' => [
                         'type' => ChoiceType::class,
                         'default' => ',',
-                        'options' => ['label' => 'Delimiter', 'choices' => ['Comma' => ',', 'Semicolon' => ';']],
+                        'options' => ['label' => 'Delimiter', 'choices' => ['Comma' => ',', 'Semicolon' => ';'], 'required' => true],
                     ],
-                    'dry_run' => ['type' => CheckboxType::class, 'default' => false, 'options' => ['required' => false]],
+                    'dry_run' => ['type' => CheckboxType::class, 'default' => false],
                     'limit' => ['type' => IntegerType::class, 'options' => ['constraints' => [['Positive' => null]]]],
                 ],
             ]]], 'data'),
@@ -288,9 +288,10 @@ class LaunchTypeTest extends TypeTestCase
         $context = $view->children['context'];
 
         self::assertFalse($context->vars['required'], 'The context group is not rendered as required');
-        self::assertTrue($context->children['delimiter']->vars['required'], 'Symfony default');
-        self::assertTrue($context->children['limit']->vars['required'], 'Symfony default');
-        self::assertFalse($context->children['dry_run']->vars['required'], 'The required option of the field is configured');
+        self::assertTrue($context->children['delimiter']->vars['required'], 'The required option of the field is configured');
+        // Not the Symfony default: a required checkbox must be checked
+        self::assertFalse($context->children['limit']->vars['required'], 'Not required by default');
+        self::assertFalse($context->children['dry_run']->vars['required'], 'Not required by default');
         self::assertFalse($context->children['extra']->vars['required'], 'The free context pairs are not required');
     }
 

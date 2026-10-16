@@ -74,6 +74,7 @@ options:
                     default: ','
                     options:
                         choices: { 'Comma (,)': ',', 'Semicolon (;)': ';' }
+                        required: true
 ```
 
 - Mixing a deprecated option and its replacement (e.g. `entrypoint_type` and `form.input`, or `constraints` and
