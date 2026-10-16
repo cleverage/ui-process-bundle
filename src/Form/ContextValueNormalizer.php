@@ -15,6 +15,8 @@ namespace CleverAge\UiProcessBundle\Form;
 
 /**
  * Converts the typed data of the launch form (enums, dates, durations, objects...) into values that can be given to a process.
+ *
+ * @internal
  */
 final class ContextValueNormalizer
 {
