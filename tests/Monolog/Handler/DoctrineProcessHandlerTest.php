@@ -154,6 +154,19 @@ class DoctrineProcessHandlerTest extends TestCase
         $handler->flush();
     }
 
+    public function testResetDropsTheRecordsNotWritten(): void
+    {
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager->method('isOpen')->willReturn(true);
+        $entityManager->expects(self::never())->method('persist');
+
+        $handler = $this->createHandler($entityManager, new ProcessExecution('test.process', 'test.log'));
+        $handler->handle($this->createRecord(Level::Info, 'not written'));
+        $handler->reset();
+        $handler->flush();
+        $handler->disable(); // no flush on destruction
+    }
+
     private function createHandler(EntityManagerInterface $entityManager, ?ProcessExecution $processExecution): DoctrineProcessHandler
     {
         $processExecutionManager = new ProcessExecutionManager($this->createRepositoryStub());

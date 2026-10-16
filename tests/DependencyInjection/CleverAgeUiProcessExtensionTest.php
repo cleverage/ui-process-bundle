@@ -44,6 +44,9 @@ class CleverAgeUiProcessExtensionTest extends TestCase
 
         // Services of every config/services/*.yaml file are loaded
         self::assertTrue($container->hasDefinition('cleverage_ui_process.manager.process_execution'));
+        // Stateful services, reset between two messages of a worker
+        self::assertSame([['method' => 'reset']], $container->getDefinition('cleverage_ui_process.manager.process_execution')->getTag('kernel.reset'));
+        self::assertSame([['method' => 'reset']], $container->getDefinition('cleverage_ui_process.monolog_handler.doctrine_process')->getTag('kernel.reset'));
         self::assertTrue($container->hasParameter('upload_directory'));
 
         self::assertSame(

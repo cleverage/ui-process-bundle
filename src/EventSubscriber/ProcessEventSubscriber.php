@@ -55,9 +55,7 @@ final readonly class ProcessEventSubscriber implements EventSubscriberInterface
         if ($event->getProcessCode() === $this->processExecutionManager->getCurrentProcessExecution()?->getCode()) {
             $this->processExecutionManager->getCurrentProcessExecution()->setStatus(ProcessExecutionStatus::Finish);
             $this->processExecutionManager->getCurrentProcessExecution()->end();
-            $this->processExecutionManager->save()->unsetProcessExecution($event->getProcessCode());
-            $this->processHandler->close();
-            $this->dispatchEnded($event);
+            $this->endProcessExecution($event);
         }
     }
 
@@ -68,10 +66,23 @@ final readonly class ProcessEventSubscriber implements EventSubscriberInterface
                 $this->isStopped($event->getProcessError()) ? ProcessExecutionStatus::Stopped : ProcessExecutionStatus::Failed
             );
             $this->processExecutionManager->getCurrentProcessExecution()->end();
-            $this->processExecutionManager->save()->unsetProcessExecution($event->getProcessCode());
-            $this->processHandler->close();
-            $this->dispatchEnded($event);
+            $this->endProcessExecution($event);
         }
+    }
+
+    /**
+     * Save the ended process execution, then forget it even if the save fails (it would stay the current one, and the
+     * next process would be attached to it).
+     */
+    private function endProcessExecution(ProcessEvent $event): void
+    {
+        try {
+            $this->processExecutionManager->save();
+        } finally {
+            $this->processExecutionManager->unsetProcessExecution($event->getProcessCode());
+            $this->processHandler->close();
+        }
+        $this->dispatchEnded($event);
     }
 
     /**

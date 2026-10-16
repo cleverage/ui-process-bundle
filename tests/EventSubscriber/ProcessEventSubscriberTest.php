@@ -33,6 +33,7 @@ use PHPUnit\Framework\Attributes\TestWith;
 use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\EventDispatcher\EventDispatcher;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 #[CoversClass(ProcessEventSubscriber::class)]
 #[UsesClass(DoctrineProcessHandler::class)]
@@ -136,6 +137,38 @@ class ProcessEventSubscriberTest extends TestCase
 
         self::assertSame($expectedStatus, $processExecution->status);
         self::assertInstanceOf(\DateTimeImmutable::class, $processExecution->endDate);
+        self::assertNull($processExecutionManager->getCurrentProcessExecution());
+        self::assertFalse($processHandler->hasFilename());
+    }
+
+    /**
+     * The process execution is forgotten even if it cannot be saved: the next process is not attached to it.
+     *
+     * @param 'success'|'fail' $method
+     */
+    #[DataProvider('provideEnds')]
+    public function testProcessEndWhenTheSaveFails(string $method, ProcessExecutionStatus $expectedStatus): void
+    {
+        $repository = $this->createStub(ProcessExecutionRepository::class);
+        $repository->method('getManaged')->willReturnArgument(0);
+        $repository->method('save')->willThrowException(new \RuntimeException('Database error'));
+        $processExecutionManager = new ProcessExecutionManager($repository);
+        $processExecutionManager->setCurrentProcessExecution(new ProcessExecution('test.process', 'test.log'));
+        $processHandler = new ProcessHandler('/var/log/process', $processExecutionManager);
+        $processHandler->setFilename('test.process/test.log');
+        $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
+        $eventDispatcher->expects(self::never())->method('dispatch');
+        $doctrineProcessHandler = new DoctrineProcessHandler();
+        $doctrineProcessHandler->disable();
+        $subscriber = new ProcessEventSubscriber($processHandler, $doctrineProcessHandler, $processExecutionManager, $eventDispatcher);
+
+        try {
+            $subscriber->{$method}(new ProcessEvent('test.process'));
+            self::fail('The save error should be thrown');
+        } catch (\RuntimeException $exception) {
+            self::assertSame('Database error', $exception->getMessage());
+        }
+
         self::assertNull($processExecutionManager->getCurrentProcessExecution());
         self::assertFalse($processHandler->hasFilename());
     }

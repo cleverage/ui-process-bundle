@@ -4,6 +4,8 @@ services:
         public: false
         arguments:
             - '@cleverage_ui_process.repository.process_execution'
+        tags:
+            - { name: kernel.reset, method: reset }
 
     cleverage_ui_process.manager.process_configuration:
         class: CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager

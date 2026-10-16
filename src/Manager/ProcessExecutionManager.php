@@ -15,8 +15,9 @@ namespace CleverAge\UiProcessBundle\Manager;
 
 use CleverAge\UiProcessBundle\Entity\ProcessExecution;
 use CleverAge\UiProcessBundle\Repository\ProcessExecutionRepository;
+use Symfony\Contracts\Service\ResetInterface;
 
-class ProcessExecutionManager
+class ProcessExecutionManager implements ResetInterface
 {
     private ?ProcessExecution $currentProcessExecution = null;
 
@@ -58,6 +59,16 @@ class ProcessExecutionManager
     public function getLastProcessExecution(): ?ProcessExecution
     {
         return $this->lastProcessExecution;
+    }
+
+    /**
+     * Forget the current and last process executions, e.g. between two messages of a long-running worker: the end of
+     * an execution may have failed before unsetProcessExecution(), the next process would be attached to it.
+     */
+    public function reset(): void
+    {
+        $this->currentProcessExecution = null;
+        $this->lastProcessExecution = null;
     }
 
     public function unsetProcessExecution(string $processCode): self
