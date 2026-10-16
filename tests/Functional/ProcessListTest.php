@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace CleverAge\UiProcessBundle\Tests\Functional;
 
+use CleverAge\UiProcessBundle\CacheWarmer\LaunchFormsCacheWarmer;
 use CleverAge\UiProcessBundle\CleverAgeUiProcessBundle;
 use CleverAge\UiProcessBundle\Controller\Admin\LogRecordCrudController;
 use CleverAge\UiProcessBundle\Controller\Admin\Process\ListAction;
@@ -27,6 +28,8 @@ use CleverAge\UiProcessBundle\DependencyInjection\Configuration;
 use CleverAge\UiProcessBundle\Entity\User;
 use CleverAge\UiProcessBundle\EventSubscriber\ProcessEventSubscriber;
 use CleverAge\UiProcessBundle\Form\LaunchFormOptionsResolver;
+use CleverAge\UiProcessBundle\Form\Type\LaunchType;
+use CleverAge\UiProcessBundle\Form\Type\ProcessContextType;
 use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
 use CleverAge\UiProcessBundle\Monolog\Handler\DoctrineProcessHandler;
 use CleverAge\UiProcessBundle\Monolog\Handler\ProcessHandler;
@@ -60,6 +63,9 @@ use PHPUnit\Framework\Attributes\UsesClass;
 #[UsesClass(CheckDoctrineLazyGhostObjectsPass::class)]
 #[UsesClass(LaunchFormOptionsResolver::class)]
 #[UsesClass(CheckLaunchFormsPass::class)]
+#[UsesClass(ProcessContextType::class)]
+#[UsesClass(LaunchType::class)]
+#[UsesClass(LaunchFormsCacheWarmer::class)]
 #[UsesClass(LogRecordCrudController::class)]
 #[UsesClass(ProcessExecutionCrudController::class)]
 #[UsesClass(ProcessScheduleCrudController::class)]
@@ -118,6 +124,19 @@ class ProcessListTest extends FunctionalTestCase
 
         self::assertResponseIsSuccessful();
         self::assertSame([], $deprecations);
+    }
+
+    /**
+     * The launch forms of the test application are built with its form factory, its type extensions and its
+     * constraint validators, each time the container is built.
+     */
+    public function testLaunchFormsAreCheckedWhenTheContainerIsBuilt(): void
+    {
+        $warmer = static::getContainer()->get(LaunchFormsCacheWarmer::class);
+        self::assertInstanceOf(LaunchFormsCacheWarmer::class, $warmer);
+        self::assertFalse($warmer->isOptional());
+
+        self::assertSame([], $warmer->warmUp(sys_get_temp_dir()));
     }
 
     public function testUsersMenuIsReservedToAdmins(): void

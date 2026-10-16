@@ -1,0 +1,5 @@
+services:
+    CleverAge\UiProcessBundle\CacheWarmer\:
+        resource: '../../src/CacheWarmer/'
+        autowire: true
+        autoconfigure: true

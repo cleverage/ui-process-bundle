@@ -42,9 +42,16 @@ clever_age_process:
 
 Every key is optional: a process without `options.ui` is displayed and launched with a confirmation modal. Unknown
 keys, or invalid values, raise an options resolver error when the process list is displayed. The `form` option (and
-its interaction with the deprecated options) is not resolved by the process list: it is checked when the container
-is compiled (an invalid launch form fails the compilation, e.g. `cache:clear`, with a message naming the process),
-and resolved again when the launch form of the process is displayed.
+its interaction with the deprecated options) is not resolved by the process list. It is checked each time the
+container is built (`cache:clear`, `cache:warmup`, or the automatic rebuild in debug mode), with a message naming the
+process:
+- its structure when the container is compiled (types, keys, file fields, default values of the enum fields,
+  constraints, conflicts with the deprecated options);
+- then the launch form is built with the form factory of the application: the options of the form types (with the
+  type extensions of the application), the default values of the fields, and the validators of the constraints
+  (nested constraints included).
+
+It is resolved again when the launch form of the process is displayed.
 
 The `notification` key, next to `ui`, configures the [notification](09-notifications.md) of the end of the process
 executions. The `logs` key, next to `ui`, configures the [log retention](04-process_executions_and_logs.md#log-retention)
@@ -159,9 +166,9 @@ or `_`). A purely numeric key (e.g. `123`, even quoted in YAML) is not supported
 `type` is the FQCN of a form type: a Symfony core type (`Symfony\Component\Form\Extension\Core\Type\*`), a type of a
 bridge (e.g. `Symfony\Bridge\Doctrine\Form\Type\EntityType`, if installed) or a type of your project. It must implement
 `Symfony\Component\Form\FormTypeInterface` and must not be a button type; the short names (`text`, `choice`...) are
-not supported. Only the existence of the class is checked when the container is compiled: a form type with
-dependencies must be a service (tag `form.type`, autoconfigured by default), and an option that the type does not
-define (e.g. `choices` on a `TextType` field) fails when the form is built (500 on the launch page).
+not supported. A form type with dependencies must be a service (tag `form.type`, autoconfigured by default). An
+option that the type does not define (e.g. `choices` on a `TextType` field), or an invalid option value, fails when
+the container is built (see [YAML configuration](#yaml-configuration)).
 
 ### Constraints of a field
 
