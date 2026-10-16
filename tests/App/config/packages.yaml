@@ -219,6 +219,20 @@ clever_age_process:
             tasks:
                 data:
                     service: '@CleverAge\ProcessBundle\Task\DummyTask'
+        test.form_enum_default:
+            description: 'Process launched with the UI form, with a backed enum field and its default value'
+            options:
+                ui:
+                    ui_launch_mode: form
+                    form:
+                        context:
+                            delimiter:
+                                type: Symfony\Component\Form\Extension\Core\Type\EnumType
+                                default: !php/enum CleverAge\UiProcessBundle\Tests\Form\Fixtures\StringBackedEnum::Comma
+                                options: { class: CleverAge\UiProcessBundle\Tests\Form\Fixtures\StringBackedEnum }
+            tasks:
+                data:
+                    service: '@CleverAge\ProcessBundle\Task\DummyTask'
         test.form_object:
             description: 'Process launched with the UI form, with a field returning an object that is not stringable'
             entry_point: data

@@ -39,6 +39,7 @@ use CleverAge\UiProcessBundle\Routing\DeprecatedEasyAdminRouteAliasLoader;
 use CleverAge\UiProcessBundle\Security\HttpProcessExecutionAuthenticator;
 use CleverAge\UiProcessBundle\Tests\Form\Fixtures\Entity;
 use CleverAge\UiProcessBundle\Tests\Form\Fixtures\PureEnum;
+use CleverAge\UiProcessBundle\Tests\Form\Fixtures\StringBackedEnum;
 use CleverAge\UiProcessBundle\Twig\Extension\LogLevelExtension;
 use CleverAge\UiProcessBundle\Twig\Extension\MD5Extension;
 use CleverAge\UiProcessBundle\Twig\Extension\ProcessExecutionExtension;
@@ -488,6 +489,26 @@ class LaunchActionTest extends FunctionalTestCase
         $messages = $this->getDispatchedMessages();
         self::assertCount(1, $messages);
         self::assertSame(['execution_user' => 'user@example.com', 'code' => 'ABC'], $messages[0]->context);
+    }
+
+    /**
+     * The default value of an enum field is an enum case, given with the "!php/enum" YAML tag.
+     */
+    public function testEnumFieldDefault(): void
+    {
+        $this->login();
+
+        $crawler = $this->client->request('GET', '/process?routeName=cleverage_ui_process_launch&process=test.form_enum_default');
+        self::assertResponseIsSuccessful();
+        self::assertSame(',', $crawler->filter('select[name="launch[context][delimiter]"] option[selected]')->attr('value'));
+
+        $this->client->submit($crawler->selectButton('Launch')->form());
+
+        self::assertResponseRedirects();
+        $messages = $this->getDispatchedMessages();
+        self::assertCount(1, $messages);
+        // The value of the case of the backed enum
+        self::assertSame(['execution_user' => 'user@example.com', 'delimiter' => StringBackedEnum::Comma->value], $messages[0]->context);
     }
 
     public function testPureEnumField(): void

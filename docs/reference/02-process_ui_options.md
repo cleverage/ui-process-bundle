@@ -184,6 +184,9 @@ context and of the default values): use `default` for the initial value.
 - for `DateType`, `DateTimeType` and `TimeType`, the YAML value is a string: set `options.input: string` (with the matching
   `options.input_format`), or keep a `null` default, otherwise the string cannot be transformed;
 - for `ChoiceType`, the default value is one of the choices values;
+- for `EnumType`, the default value is a case of the enum of `options.class` (a list of cases with
+  `options.multiple: true`), given with the `!php/enum` YAML tag: `default: !php/enum App\Enum\Status::Active`. Any
+  other value is refused when the launch form is resolved;
 - for `DateIntervalType`, the YAML value is a string: set `options.input: string` (an ISO 8601 duration such as `P1D`), or
   keep a `null` default.
 

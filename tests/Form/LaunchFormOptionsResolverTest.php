@@ -19,6 +19,8 @@ use CleverAge\UiProcessBundle\Form\Type\ProcessContextType;
 use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
 use CleverAge\UiProcessBundle\Notifier\NotificationTrigger;
 use CleverAge\UiProcessBundle\Tests\App\Validator\Even;
+use CleverAge\UiProcessBundle\Tests\Form\Fixtures\PureEnum;
+use CleverAge\UiProcessBundle\Tests\Form\Fixtures\StringBackedEnum;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\TestWith;
@@ -26,6 +28,7 @@ use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\EnumType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
@@ -311,6 +314,54 @@ class LaunchFormOptionsResolverTest extends TestCase
             InvalidOptionsException::class,
             'The option "allow_extra_context" with value "yes" is expected to be of type "bool"',
         ];
+    }
+
+    #[DataProvider('provideValidEnumDefaults')]
+    public function testValidEnumDefault(mixed $default, bool $multiple): void
+    {
+        [$form] = $this->resolveLaunchForm(['form' => ['context' => ['delimiter' => [
+            'type' => EnumType::class,
+            'default' => $default,
+            'options' => ['class' => StringBackedEnum::class, 'multiple' => $multiple],
+        ]]]]);
+
+        self::assertSame($default, $form['context']['delimiter']['default']);
+    }
+
+    /**
+     * @return iterable<string, array{mixed, bool}>
+     */
+    public static function provideValidEnumDefaults(): iterable
+    {
+        yield 'case' => [StringBackedEnum::Comma, false];
+        yield 'no default' => [null, false];
+        yield 'list of cases' => [[StringBackedEnum::Comma], true];
+        yield 'empty list' => [[], true];
+    }
+
+    /**
+     * @param array<string, mixed> $options
+     */
+    #[DataProvider('provideInvalidEnumDefaults')]
+    public function testInvalidEnumDefault(mixed $default, array $options, string $enum, string $given): void
+    {
+        $this->expectException(InvalidOptionsException::class);
+        $this->expectExceptionMessage(\sprintf('The default value of the launch form field "form.context.delimiter" of the process "test.process" must be a case of the enum "%s" (with "multiple", a list of cases), "%s" given: use the "!php/enum" YAML tag, e.g. "default: !php/enum App\\Enum\\Status::Active".', $enum, $given));
+        $this->resolveLaunchForm(['form' => ['context' => ['delimiter' => ['type' => EnumType::class, 'default' => $default, 'options' => $options]]]]);
+    }
+
+    /**
+     * @return iterable<string, array{mixed, array<string, mixed>, string, string}>
+     */
+    public static function provideInvalidEnumDefaults(): iterable
+    {
+        $options = ['class' => StringBackedEnum::class];
+
+        yield 'scalar' => [',', $options, StringBackedEnum::class, 'string'];
+        yield 'case of another enum' => [PureEnum::Foo, $options, StringBackedEnum::class, PureEnum::class];
+        yield 'list without multiple' => [[StringBackedEnum::Comma], $options, StringBackedEnum::class, 'array'];
+        yield 'list of scalars' => [[','], $options + ['multiple' => true], StringBackedEnum::class, 'string'];
+        yield 'without class' => [',', [], 'options.class', 'string'];
     }
 
     public function testFormConstraints(): void

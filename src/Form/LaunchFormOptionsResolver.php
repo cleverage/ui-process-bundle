@@ -16,6 +16,7 @@ namespace CleverAge\UiProcessBundle\Form;
 use CleverAge\ProcessBundle\Validator\ConstraintLoader;
 use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
 use Symfony\Component\Form\ButtonTypeInterface;
+use Symfony\Component\Form\Extension\Core\Type\EnumType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormConfigBuilder;
@@ -186,8 +187,28 @@ final class LaunchFormOptionsResolver
                 throw new InvalidOptionsException(\sprintf('The launch form field "%s" of the process "%s" cannot upload multiple files.', $path, $processCode));
             }
         }
+        if (is_a($field['type'], EnumType::class, true) && null !== $field['default']) {
+            $this->checkEnumDefault($field, $path, $processCode);
+        }
 
         return $field;
+    }
+
+    /**
+     * The default value of an enum field is an enum case (a list of cases with "multiple"): a YAML scalar would not be
+     * transformed by the field.
+     *
+     * @param LaunchFormField $field
+     */
+    private function checkEnumDefault(array $field, string $path, string $processCode): void
+    {
+        $class = $field['options']['class'] ?? null;
+        $cases = true === ($field['options']['multiple'] ?? false) && \is_array($field['default']) ? $field['default'] : [$field['default']];
+        foreach ($cases as $case) {
+            if (!$case instanceof \UnitEnum || (\is_string($class) && !$case instanceof $class)) {
+                throw new InvalidOptionsException(\sprintf('The default value of the launch form field "%s" of the process "%s" must be a case of the enum "%s" (with "multiple", a list of cases), "%s" given: use the "!php/enum" YAML tag, e.g. "default: !php/enum App\\Enum\\Status::Active".', $path, $processCode, \is_string($class) ? $class : 'options.class', get_debug_type($case)));
+            }
+        }
     }
 
     /**
