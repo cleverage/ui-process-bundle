@@ -18,6 +18,7 @@ use CleverAge\UiProcessBundle\Controller\Admin\ProcessExecutionCrudController;
 use CleverAge\UiProcessBundle\Controller\Admin\UserCrudController;
 use CleverAge\UiProcessBundle\Entity\User;
 use CleverAge\UiProcessBundle\Message\ProcessExecuteMessage;
+use Monolog\Level;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -34,9 +35,7 @@ final class CleverAgeUiProcessExtension extends Extension implements PrependExte
     {
         $this->findServices($container, __DIR__.'/../../config/services');
 
-        /** @var string $env */
-        $env = $container->getParameter('kernel.environment');
-        $configuration = new Configuration($env);
+        $configuration = $this->getConfiguration($configs, $container);
         /** @var array{
          *     security: array{roles: list<string>, configure_firewall: bool},
          *     logs: array{store_in_database: bool, database_level: string, file_level: string, report_increment_level: string, database_max_days: ?int, file_max_days: ?int},
@@ -46,6 +45,7 @@ final class CleverAgeUiProcessExtension extends Extension implements PrependExte
          * } $config
          */
         $config = $this->processConfiguration($configuration, $configs);
+        $this->validateLogLevels($config['logs'], $container);
 
         $container->getDefinition(UserCrudController::class)
             ->setArgument('$roles', array_combine($config['security']['roles'], $config['security']['roles']));
@@ -81,6 +81,54 @@ final class CleverAgeUiProcessExtension extends Extension implements PrependExte
             }
             $container->removeDefinition('cleverage_ui_process.notifier.process_execution');
         }
+    }
+
+    /**
+     * The log levels are validated here instead of in the configuration tree, so that environment variables are
+     * still allowed: an environment variable is only resolved at runtime (its value is then validated by Monolog).
+     *
+     * @param array{database_level: mixed, file_level: mixed, report_increment_level: mixed, ...} $logs
+     */
+    private function validateLogLevels(array $logs, ContainerBuilder $container): void
+    {
+        $levels = [
+            // Logger::toMonologLevel() of the handlers: a level name (case-insensitive) or value
+            'database_level' => true,
+            'file_level' => true,
+            // Level::fromName() of ProcessHandler::setReportIncrementLevel(): a level name (case-insensitive)
+            'report_increment_level' => false,
+        ];
+        foreach ($levels as $option => $valueAllowed) {
+            $level = $logs[$option];
+            $usedEnvs = [];
+            $container->resolveEnvPlaceholders($level, null, $usedEnvs);
+            if ([] !== $usedEnvs) {
+                continue;
+            }
+            if ($valueAllowed && (\is_int($level) || (\is_string($level) && is_numeric($level)))) {
+                $valid = Level::tryFrom((int) $level) instanceof Level;
+            } else {
+                $valid = \is_string($level) && \in_array(strtoupper($level), Level::NAMES, true);
+            }
+            if (!$valid) {
+                throw new InvalidConfigurationException(\sprintf('Invalid configuration for path "%s.logs.%s": invalid Monolog level %s, use one of: %s.', $this->getAlias(), $option, json_encode($level), implode(', ', Level::NAMES)));
+            }
+        }
+    }
+
+    /**
+     * The default log levels depend on the kernel environment, so the configuration cannot be instantiated without it
+     * by the parent method (used by config:dump-reference, debug:config and the PHP config builders).
+     *
+     * @param array<mixed> $config
+     */
+    #[\Override]
+    public function getConfiguration(array $config, ContainerBuilder $container): Configuration
+    {
+        /** @var string $env */
+        $env = $container->getParameter('kernel.environment');
+
+        return new Configuration($env);
     }
 
     /**

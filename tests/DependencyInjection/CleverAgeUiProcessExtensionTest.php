@@ -22,11 +22,14 @@ use CleverAge\UiProcessBundle\Entity\User;
 use CleverAge\UiProcessBundle\Message\ProcessExecuteMessage;
 use CleverAge\UiProcessBundle\Notifier\NotificationTrigger;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
+use Symfony\Component\Config\Definition\Processor;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\Extension;
+use Symfony\Component\DependencyInjection\ParameterBag\EnvPlaceholderParameterBag;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 
 #[CoversClass(CleverAgeUiProcessExtension::class)]
@@ -75,6 +78,79 @@ class CleverAgeUiProcessExtensionTest extends TestCase
             ['enabled' => false, 'statuses' => ['failed', 'finish_with_report'], 'channels' => [], 'recipients' => []],
             $container->getDefinition('cleverage_ui_process.notifier.process_execution')->getArgument('$defaultOptions')
         );
+    }
+
+    /**
+     * @return iterable<string, array{string, mixed}>
+     */
+    public static function provideInvalidLogLevels(): iterable
+    {
+        yield 'unknown name' => ['database_level', 'Verbose'];
+        yield 'unknown value' => ['file_level', 150];
+        yield 'not a level' => ['file_level', true];
+        yield 'empty' => ['file_level', ''];
+        yield 'report increment level value' => ['report_increment_level', 300];
+        yield 'unknown report increment level' => ['report_increment_level', 'Loud'];
+    }
+
+    #[DataProvider('provideInvalidLogLevels')]
+    public function testInvalidLogLevel(string $option, mixed $level): void
+    {
+        $this->expectException(InvalidConfigurationException::class);
+        $this->expectExceptionMessage(\sprintf('Invalid configuration for path "clever_age_ui_process.logs.%s": invalid Monolog level %s, use one of: DEBUG, INFO, NOTICE, WARNING, ERROR, CRITICAL, ALERT, EMERGENCY.', $option, json_encode($level)));
+
+        (new CleverAgeUiProcessExtension())->load([['logs' => [$option => $level]]], $this->createContainer('prod'));
+    }
+
+    /**
+     * @return iterable<string, array{string, int|string}>
+     */
+    public static function provideValidLogLevels(): iterable
+    {
+        yield 'name' => ['database_level', 'Error'];
+        yield 'lower case name' => ['file_level', 'error'];
+        yield 'value' => ['file_level', 400];
+        yield 'numeric string' => ['database_level', '400'];
+        yield 'report increment level, upper case name' => ['report_increment_level', 'ERROR'];
+    }
+
+    #[DataProvider('provideValidLogLevels')]
+    public function testValidLogLevel(string $option, int|string $level): void
+    {
+        $container = $this->createContainer('prod');
+        (new CleverAgeUiProcessExtension())->load([['logs' => [$option => $level]]], $container);
+
+        // Passed as is to the handlers
+        $fileHandler = $container->getDefinition('cleverage_ui_process.monolog_handler.process');
+        $configured = match ($option) {
+            'database_level' => $container->getDefinition('cleverage_ui_process.monolog_handler.doctrine_process')->getArgument('$level'),
+            'file_level' => $fileHandler->getArgument('$level'),
+            default => $fileHandler->getMethodCalls(),
+        };
+        self::assertSame('report_increment_level' === $option ? [['setReportIncrementLevel', [$level]]] : $level, $configured);
+    }
+
+    /**
+     * Environment variables are resolved at runtime: not validated when the container is compiled.
+     */
+    public function testLogLevelFromAnEnvironmentVariable(): void
+    {
+        $container = $this->createContainer('prod', new EnvPlaceholderParameterBag());
+        $placeholder = $container->getParameterBag()->get('env(UI_LOG_LEVEL)');
+        self::assertIsString($placeholder);
+
+        (new CleverAgeUiProcessExtension())->load([['logs' => ['file_level' => $placeholder, 'report_increment_level' => $placeholder]]], $container);
+
+        self::assertSame($placeholder, $container->getDefinition('cleverage_ui_process.monolog_handler.process')->getArgument('$level'));
+    }
+
+    public function testGetConfigurationUsesTheKernelEnvironment(): void
+    {
+        $configuration = (new CleverAgeUiProcessExtension())->getConfiguration([], $this->createContainer('dev'));
+
+        /** @var array{logs: array{file_level: string}} $config */
+        $config = (new Processor())->processConfiguration($configuration, []);
+        self::assertSame('Debug', $config['logs']['file_level']);
     }
 
     public function testLoadWithNotificationConfiguration(): void
@@ -293,15 +369,17 @@ class CleverAgeUiProcessExtensionTest extends TestCase
         self::assertSame(['secret' => 'app'], $framework[1]);
     }
 
-    private function createContainer(string $env): ContainerBuilder
+    private function createContainer(string $env, ParameterBag $parameterBag = new ParameterBag()): ContainerBuilder
     {
-        return new ContainerBuilder(new ParameterBag([
+        $parameterBag->add([
             'kernel.environment' => $env,
             'kernel.debug' => false,
             'kernel.project_dir' => sys_get_temp_dir(),
             'kernel.logs_dir' => sys_get_temp_dir().'/logs',
             'kernel.cache_dir' => sys_get_temp_dir().'/cache',
-        ]));
+        ]);
+
+        return new ContainerBuilder($parameterBag);
     }
 
     private function createExtension(string $alias): Extension
