@@ -132,8 +132,10 @@ class LaunchAction extends AbstractController
         $message = new ProcessExecuteMessage(
             $processCode,
             $input,
-            // The connected user always wins over a context value
-            [ProcessExecuteMessage::EXECUTION_USER_KEY => $this->getUser()?->getEmail()] + $context
+            array_merge(
+                ['execution_user' => $this->getUser()?->getEmail()],
+                $context
+            )
         );
         $this->messageBus->dispatch($message);
     }

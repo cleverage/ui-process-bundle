@@ -68,10 +68,7 @@ class LaunchType extends AbstractType
                 CollectionType::class,
                 [
                     'entry_type' => ProcessContextType::class,
-                    'entry_options' => [
-                        'reserved_keys' => array_keys($form['context']),
-                        'key_constraints' => [ProcessContextType::createExecutionUserConstraint()],
-                    ],
+                    'entry_options' => ['reserved_keys' => array_keys($form['context'])],
                     'allow_add' => true,
                     'allow_delete' => true,
                     'required' => false,

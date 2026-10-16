@@ -108,8 +108,6 @@ class ProcessScheduleCrudController extends AbstractCrudController
                 ->setFormTypeOption('entry_type', ProcessContextType::class)
                 ->hideOnIndex()
                 ->setFormTypeOption('entry_options.label', 'Context (key/value)')
-                // As in the launch form: set to the email of the connected user when a process is launched from the UI
-                ->setFormTypeOption('entry_options.key_constraints', [ProcessContextType::createExecutionUserConstraint()])
                 ->setFormTypeOption('label', '')
                 ->setFormTypeOption('required', false),
         ];

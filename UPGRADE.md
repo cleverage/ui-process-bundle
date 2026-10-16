@@ -93,10 +93,7 @@ options:
 
 - The key of a free context pair (launch form and schedules) must contain letters, digits, `_`, `-` and `:`, start with
   a letter, a digit or `_`, and not be only digits, like a declared context key.
-- The `execution_user` context value is always the email of the connected user when a process is launched from the
-  UI: a free pair `execution_user` is refused in the launch form and in the schedules, and `execution_user` cannot be
-  declared in `form.context`.
-- Existing schedules whose context contains a key that is no longer valid (or `execution_user`) keep running unchanged:
+- Existing schedules whose context contains a key that is no longer valid keep running unchanged:
   the cron does not validate their context. But they cannot be saved from the UI until the key is renamed (or the
   pair removed), even to change another field: rename it, and update the process accordingly (e.g. its `{{ key }}`
   contextualized options), as renaming the key changes the context received by the process. Enabling or disabling a

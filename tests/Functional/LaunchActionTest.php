@@ -289,25 +289,6 @@ class LaunchActionTest extends FunctionalTestCase
         self::assertSame([], $this->getDispatchedMessages());
     }
 
-    public function testExtraContextRowWithTheExecutionUserKey(): void
-    {
-        $this->login();
-
-        $crawler = $this->client->request('GET', '/process?routeName=cleverage_ui_process_launch&process=test.form');
-        $form = $crawler->selectButton('Launch')->form();
-        /** @var array<string, array<string, mixed>> $values */
-        $values = $form->getPhpValues();
-        $values['launch']['context'] = ['extra' => [['key' => 'execution_user', 'value' => 'someone@example.com']]];
-        $crawler = $this->client->request($form->getMethod(), $form->getUri(), $values);
-
-        self::assertResponseIsSuccessful();
-        self::assertSame(
-            'The context key "execution_user" is reserved: it is set to the email of the connected user.',
-            $this->getFieldError($crawler, 'launch_context_extra_0_key')
-        );
-        self::assertSame([], $this->getDispatchedMessages());
-    }
-
     public function testDateFields(): void
     {
         $this->login();

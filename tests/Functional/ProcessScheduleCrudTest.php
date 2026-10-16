@@ -42,13 +42,10 @@ use CleverAge\UiProcessBundle\Twig\Extension\ProcessExtension;
 use CleverAge\UiProcessBundle\Validator\CronExpressionValidator;
 use CleverAge\UiProcessBundle\Validator\EveryExpressionValidator;
 use CleverAge\UiProcessBundle\Validator\IsValidProcessCodeValidator;
-use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
-use EasyCorp\Bundle\EasyAdminBundle\Contracts\Field\FieldInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\TestWith;
 use PHPUnit\Framework\Attributes\UsesClass;
 use Symfony\Component\DomCrawler\Crawler;
-use Symfony\Component\Form\FormFactoryInterface;
 
 #[CoversClass(ProcessScheduleCrudController::class)]
 #[UsesClass(EnumField::class)]
@@ -188,38 +185,9 @@ class ProcessScheduleCrudTest extends FunctionalTestCase
     }
 
     /**
-     * The "execution_user" context key is reserved in the schedules too, as in the launch form.
-     */
-    public function testExecutionUserIsAReservedContextKey(): void
-    {
-        $controller = static::getContainer()->get(ProcessScheduleCrudController::class);
-        self::assertInstanceOf(ProcessScheduleCrudController::class, $controller);
-        $entryOptions = null;
-        foreach ($controller->configureFields(Crud::PAGE_EDIT) as $field) {
-            if ($field instanceof FieldInterface && 'context' === $field->getAsDto()->getProperty()) {
-                $entryOptions = $field->getAsDto()->getFormTypeOptions()['entry_options'] ?? null;
-            }
-        }
-        self::assertIsArray($entryOptions);
-        /** @var array<string, mixed> $rowOptions */
-        $rowOptions = $entryOptions + ['csrf_protection' => false];
-
-        $formFactory = static::getContainer()->get('form.factory');
-        self::assertInstanceOf(FormFactoryInterface::class, $formFactory);
-        $row = $formFactory->create(ProcessContextType::class, null, $rowOptions);
-        $row->submit(['key' => 'execution_user', 'value' => 'someone@example.com']);
-
-        self::assertFalse($row->isValid());
-        $errors = $row->get('key')->getErrors();
-        self::assertCount(1, $errors);
-        self::assertSame('The context key "execution_user" is reserved: it is set to the email of the connected user.', $errors[0]->getMessage());
-    }
-
-    /**
      * The keys of the context rows follow the same rules as in the launch form.
      */
     #[TestWith(['a b', 'The context key "a b" is not valid: use letters, digits, "_", "-" and ":", starting with a letter, a digit or "_", and not only digits.'])]
-    #[TestWith(['execution_user', 'The context key "execution_user" is reserved: it is set to the email of the connected user.'])]
     public function testCreateWithAnInvalidContextKey(string $key, string $error): void
     {
         $this->login();
@@ -269,7 +237,7 @@ class ProcessScheduleCrudTest extends FunctionalTestCase
     {
         $this->login();
         $schedule = $this->createSchedule(ProcessScheduleType::CRON, '0 4 * * *');
-        $schedule->setContext([['key' => 'execution_user', 'value' => 'someone@example.com']]);
+        $schedule->setContext([['key' => 'a b', 'value' => 'someone@example.com']]);
         $this->getEntityManager()->flush();
         $id = $schedule->getId();
 
@@ -284,7 +252,7 @@ class ProcessScheduleCrudTest extends FunctionalTestCase
         $schedule = $this->getEntityManager()->find(ProcessSchedule::class, $id);
         self::assertNotNull($schedule);
         self::assertFalse($schedule->isEnabled());
-        self::assertSame([['key' => 'execution_user', 'value' => 'someone@example.com']], $schedule->getContext());
+        self::assertSame([['key' => 'a b', 'value' => 'someone@example.com']], $schedule->getContext());
 
         // Saved unchanged: refused
         $crawler = $this->client->request('GET', '/process/process-schedule/'.$id.'/edit');
@@ -296,7 +264,7 @@ class ProcessScheduleCrudTest extends FunctionalTestCase
         $crawler = $this->client->request($form->getMethod(), $form->getUri(), $values);
         self::assertResponseStatusCodeSame(422);
         self::assertSame(
-            ['The context key "execution_user" is reserved: it is set to the email of the connected user.'],
+            ['The context key "a b" is not valid: use letters, digits, "_", "-" and ":", starting with a letter, a digit or "_", and not only digits.'],
             $this->getFieldErrors($crawler, 'ProcessSchedule_context_0_key')
         );
         $this->getEntityManager()->clear();

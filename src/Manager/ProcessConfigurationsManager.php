@@ -17,7 +17,6 @@ use CleverAge\ProcessBundle\Configuration\ProcessConfiguration;
 use CleverAge\ProcessBundle\Exception\MissingProcessException;
 use CleverAge\ProcessBundle\Registry\ProcessConfigurationRegistry;
 use CleverAge\ProcessBundle\Validator\ConstraintLoader;
-use CleverAge\UiProcessBundle\Message\ProcessExecuteMessage;
 use CleverAge\UiProcessBundle\Notifier\NotificationTrigger;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\ButtonTypeInterface;
@@ -407,8 +406,8 @@ final readonly class ProcessConfigurationsManager
                 if ('' === $key || !FormConfigBuilder::isValidName($key)) {
                     throw new InvalidOptionsException(\sprintf('The context key "%s" of "form.context" of the process "%s" is not a valid form field name (letters, digits, "_", "-" and ":", starting with a letter, a digit or "_").', $key, $processCode));
                 }
-                // "extra" is the child of the free context pairs, "execution_user" is set to the email of the connected user
-                if (\in_array($key, ['extra', ProcessExecuteMessage::EXECUTION_USER_KEY], true)) {
+                // "extra" is the child of the free context pairs
+                if ('extra' === $key) {
                     throw new InvalidOptionsException(\sprintf('The context key "%s" of "form.context" of the process "%s" is reserved.', $key, $processCode));
                 }
                 if (null !== $spec && !\is_array($spec)) {

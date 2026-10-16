@@ -21,7 +21,6 @@ use Symfony\Component\Form\Extension\Validator\ValidatorExtension;
 use Symfony\Component\Form\FormExtensionInterface;
 use Symfony\Component\Form\Test\TypeTestCase;
 use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
-use Symfony\Component\Validator\Constraints\Choice;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Validation;
 
@@ -160,24 +159,5 @@ class ProcessContextTypeTest extends TypeTestCase
         self::assertFalse($form->isValid());
         // Reported by the NotBlank constraint only
         self::assertCount(1, $form->get('key')->getErrors());
-    }
-
-    public function testKeyConstraints(): void
-    {
-        $form = $this->factory->create(ProcessContextType::class, null, [
-            'key_constraints' => [new Choice(choices: ['execution_user'], message: 'Reserved key {{ value }}.', match: false)],
-        ]);
-        $form->submit(['key' => 'execution_user', 'value' => 'bar']);
-
-        self::assertFalse($form->isValid());
-        $errors = $form->get('key')->getErrors();
-        self::assertCount(1, $errors);
-        self::assertSame('Reserved key "execution_user".', $errors[0]->getMessage());
-    }
-
-    public function testKeyConstraintsMustBeConstraints(): void
-    {
-        $this->expectException(InvalidOptionsException::class);
-        $this->factory->create(ProcessContextType::class, null, ['key_constraints' => ['NotBlank']]);
     }
 }

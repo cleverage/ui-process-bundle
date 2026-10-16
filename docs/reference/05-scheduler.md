@@ -15,7 +15,7 @@ Schedules are stored in the `process_schedule` table (`CleverAge\UiProcessBundle
 | `type`       | `cron` or `every`.                                                                                                                                      |
 | `expression` | `cron`: a cron expression, e.g. `*/5 * * * *` or `@daily` (see [cron expression triggers](https://symfony.com/doc/current/scheduler.html#cron-expression-triggers)). `every`: a relative time, e.g. `5 seconds`, `1 hour`, `1 day` (see [periodical triggers](https://symfony.com/doc/current/scheduler.html#periodical-triggers)); it must be parsable by `strtotime()`. |
 | `input`      | Optional process input (string, 255 characters max), e.g. a file path.                                                                                  |
-| `context`    | Optional list of key/value pairs, passed as process context. A key contains letters, digits, `_`, `-` and `:`, starts with a letter, a digit or `_`, and is not only digits. The `execution_user` key is reserved (set to the email of the connected user when a process is launched from the UI). |
+| `context`    | Optional list of key/value pairs, passed as process context. A key contains letters, digits, `_`, `-` and `:`, starts with a letter, a digit or `_`, and is not only digits. |
 | `enabled`    | A disabled schedule is not run (default: enabled). It can be switched directly from the schedules list.                                                 |
 
 The schedules list displays the next execution date of the enabled `cron` schedules.

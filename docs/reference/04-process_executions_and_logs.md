@@ -31,7 +31,7 @@ Executions are stored in the `process_execution` table (`CleverAge\UiProcessBund
 | `heartbeatAt` | Last sign of life of the running process, see [not responding executions](#not-responding-executions). |
 | `logFilename` | Name of the log file.                                                                               |
 | `report`      | Associative array, see [report](#report).                                                          |
-| `context`     | Process context (including `execution_user` when launched from the UI, reserved in the launch form and the schedules). |
+| `context`     | Process context (including `execution_user` when launched from the UI).                             |
 
 ### Executions list
 

@@ -80,7 +80,7 @@ Launch modes
 
 In every mode, the process is not executed by the web request: a message is dispatched to the `execute_process`
 Messenger transport and a worker runs it (see [messenger](08-messenger.md)). The UI adds the email of the connected
-user to the process context, under the `execution_user` key: this value always wins, the launch form cannot set it.
+user to the process context, under the `execution_user` key.
 
 ### Launch form
 
@@ -151,7 +151,7 @@ A field spec (`form.input`, `form.context.<key>`) accepts exactly three keys:
 
 The context keys must be valid form field names (letters, digits, `_`, `-` and `:`, starting with a letter, a digit
 or `_`). A purely numeric key (e.g. `123`, even quoted in YAML) is not supported: PHP casts it to an integer. The
-`extra` key (the free context pairs) and the `execution_user` key (the email of the connected user) are reserved.
+`extra` key (the free context pairs) is reserved.
 
 The type aliases are the block prefixes of the Symfony core form types, and `entity`:
 
@@ -208,9 +208,8 @@ added.
 
 The key of a free pair follows the rule of the declared context keys: letters, digits, `_`, `-` and `:`, starting with
 a letter, a digit or `_`, and not only digits. Otherwise, it is reported as a validation error on its key (`The
-context key "a b" is not valid: ...`), and the process is not launched. The same applies to a free pair whose key is:
-- a declared field (`The context key "delimiter" is a field of the launch form, use this field instead.`);
-- `execution_user` (`The context key "execution_user" is reserved: it is set to the email of the connected user.`).
+context key "a b" is not valid: ...`), and the process is not launched. The same applies to a free pair whose key is
+a declared field (`The context key "delimiter" is a field of the launch form, use this field instead.`).
 
 The key format rule also applies to the context pairs of the [schedules](05-scheduler.md).
 

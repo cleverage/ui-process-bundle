@@ -385,13 +385,10 @@ class ProcessConfigurationsManagerTest extends TestCase
     }
 
     /**
-     * The keys are reserved whether the free context is allowed or not: "extra" is the child of the free context
-     * pairs, "execution_user" is set to the email of the connected user.
+     * The key is reserved whether the free context is allowed or not: "extra" is the child of the free context pairs.
      */
     #[TestWith(['extra', true])]
     #[TestWith(['extra', false])]
-    #[TestWith(['execution_user', true])]
-    #[TestWith(['execution_user', false])]
     public function testReservedContextKey(string $key, bool $allowExtraContext): void
     {
         $this->expectException(InvalidOptionsException::class);

@@ -18,7 +18,6 @@ use CleverAge\UiProcessBundle\Form\Type\LaunchType;
 use CleverAge\UiProcessBundle\Form\Type\ProcessContextType;
 use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\TestWith;
 use PHPUnit\Framework\Attributes\UsesClass;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
@@ -214,19 +213,6 @@ class LaunchTypeTest extends TypeTestCase
         self::assertCount(1, $errors);
         self::assertSame('The context key "delimiter" is a field of the launch form, use this field instead.', $errors[0]->getMessage());
         self::assertCount(0, $form->get('context')->get('delimiter')->getErrors());
-    }
-
-    #[TestWith(['text.process'])]
-    #[TestWith(['fields.process'])]
-    public function testExtraContextRowWithTheExecutionUserKey(string $processCode): void
-    {
-        $form = $this->factory->create(LaunchType::class, null, ['process_code' => $processCode]);
-        $form->submit(['context' => ['extra' => [['key' => 'execution_user', 'value' => 'someone@example.com']]]]);
-
-        self::assertFalse($form->isValid());
-        $errors = $form->get('context')->get('extra')->get('0')->get('key')->getErrors();
-        self::assertCount(1, $errors);
-        self::assertSame('The context key "execution_user" is reserved: it is set to the email of the connected user.', $errors[0]->getMessage());
     }
 
     public function testFieldConstraint(): void
