@@ -87,7 +87,7 @@ class ContextValueNormalizerTest extends TestCase
     public function testInvalidValue(mixed $value, string $name, string $debugType): void
     {
         $this->expectException(\LogicException::class);
-        $this->expectExceptionMessage(\sprintf('The value of "%s" ("%s") cannot be used as a process context value: use a form type returning a scalar (e.g. "choice" with scalar choices), or make the class implement \Stringable.', $name, $debugType));
+        $this->expectExceptionMessage(\sprintf('The value of "%s" ("%s") cannot be used as a process context value: use a form type returning a scalar (e.g. a ChoiceType with scalar choices), or make the class implement \Stringable.', $name, $debugType));
         (new ContextValueNormalizer())->normalize($value, 'k');
     }
 

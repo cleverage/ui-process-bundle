@@ -240,6 +240,9 @@ clever_age_process:
                 ui:
                     ui_launch_mode: form
                     form:
+                        input:
+                            type: CleverAge\UiProcessBundle\Tests\App\Form\EntityIdType
+                            options: { required: false }
                         context:
                             entity:
                                 type: CleverAge\UiProcessBundle\Tests\App\Form\EntityIdType

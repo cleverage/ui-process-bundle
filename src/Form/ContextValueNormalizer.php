@@ -62,6 +62,6 @@ final class ContextValueNormalizer
             return (string) $value;
         }
 
-        throw new \LogicException(\sprintf('The value of "%s" ("%s") cannot be used as a process context value: use a form type returning a scalar (e.g. "choice" with scalar choices), or make the class implement \Stringable.', $name, get_debug_type($value)));
+        throw new \LogicException(\sprintf('The value of "%s" ("%s") cannot be used as a process context value: use a form type returning a scalar (e.g. a ChoiceType with scalar choices), or make the class implement \Stringable.', $name, get_debug_type($value)));
     }
 }

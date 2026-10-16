@@ -534,7 +534,7 @@ class LaunchActionTest extends FunctionalTestCase
 
     /**
      * A field whose data is an object that cannot be converted (as an EntityType on an entity that is not
-     * \Stringable): the launch fails with a LogicException (a 500), nothing is dispatched.
+     * \Stringable): the error is displayed under the field, nothing is dispatched.
      */
     public function testContextValueThatCannotBeConverted(): void
     {
@@ -546,23 +546,32 @@ class LaunchActionTest extends FunctionalTestCase
         /** @var array<string, array<string, mixed>> $values */
         $values = $form->getPhpValues();
         $values['launch']['context'] = ['entity' => '42'];
+        $crawler = $this->client->request($form->getMethod(), $form->getUri(), $values);
 
-        $this->client->catchExceptions(false);
-        try {
-            $this->client->request($form->getMethod(), $form->getUri(), $values);
-            self::fail('A LogicException is expected');
-        } catch (\LogicException $exception) {
-            self::assertSame(
-                \sprintf('The value of "entity" ("%s") cannot be used as a process context value: use a form type returning a scalar (e.g. "choice" with scalar choices), or make the class implement \Stringable.', Entity::class),
-                $exception->getMessage()
-            );
-        }
+        self::assertResponseIsSuccessful();
+        self::assertSame(
+            \sprintf('The value of "entity" ("%s") cannot be used as a process context value: use a form type returning a scalar (e.g. a ChoiceType with scalar choices), or make the class implement \Stringable.', Entity::class),
+            $this->getFieldError($crawler, 'launch_context_entity')
+        );
         self::assertSame([], $this->getDispatchedMessages());
+    }
 
-        // Caught by the kernel: a 500
-        $this->client->catchExceptions(true);
-        $this->client->request($form->getMethod(), $form->getUri(), $values);
-        self::assertResponseStatusCodeSame(500);
+    public function testInputThatCannotBeConverted(): void
+    {
+        $this->login();
+
+        $crawler = $this->client->request('GET', '/process?routeName=cleverage_ui_process_launch&process=test.form_object');
+        $form = $crawler->selectButton('Launch')->form();
+        /** @var array<string, array<string, mixed>> $values */
+        $values = $form->getPhpValues();
+        $values['launch']['input'] = '7';
+        $crawler = $this->client->request($form->getMethod(), $form->getUri(), $values);
+
+        self::assertResponseIsSuccessful();
+        self::assertSame(
+            \sprintf('The value of "input" ("%s") cannot be used as a process context value: use a form type returning a scalar (e.g. a ChoiceType with scalar choices), or make the class implement \Stringable.', Entity::class),
+            $this->getFieldError($crawler, 'launch_input')
+        );
         self::assertSame([], $this->getDispatchedMessages());
     }
 

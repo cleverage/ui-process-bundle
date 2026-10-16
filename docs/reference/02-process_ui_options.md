@@ -226,16 +226,18 @@ constraints apply to the typed values):
 | pure enum                                     | its `name`                                                        |
 | `DateTimeInterface`                           | formatted as `DATE_ATOM` (`2026-01-02T03:04:05+01:00`)            |
 | `DateInterval`                                | an ISO 8601 duration with every part (`P0Y0M1DT0H0M0S`), `-` prefixed when inverted |
-| file                                          | refused (`LogicException`): file fields are only supported for the input |
+| file                                          | refused: file fields are only supported for the input             |
 | `Stringable` object                           | its string                                                        |
-| other object                                  | refused (`LogicException`, 500)                                   |
+| other object                                  | refused                                                           |
 
-A declared field left empty gives the `null` value (`false` for a `CheckboxType`).
+A declared field left empty gives the `null` value (`false` for a `CheckboxType`). A value that cannot be converted
+is reported as an error under its field (under the free context pairs for a free pair), and the process is not
+launched.
 
 > **Object data.** The data of some form types is an object (e.g. the entity of an `EntityType`): the `choice_value`
 > option only changes the HTML value of the options, not the data given to the process. Such an object must
-> implement `\Stringable`: its string becomes the context value. Otherwise the launch fails with a `LogicException`
-> ("cannot be used as a process context value"). Prefer a `ChoiceType` field with scalar choices (e.g. the
+> implement `\Stringable`: its string becomes the context value. Otherwise an error is displayed under the field
+> ("cannot be used as a process context value") and the process is not launched. Prefer a `ChoiceType` field with scalar choices (e.g. the
 > identifiers of the entities).
 
 Default values
