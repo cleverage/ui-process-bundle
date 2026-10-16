@@ -4,7 +4,9 @@ Bundle configuration
 YAML Configuration
 ------------------
 
-Every key is optional. Default values are shown below.
+Every key is optional. Default values are shown below (also displayed, with the description of each option, by
+`bin/console config:dump-reference clever_age_ui_process`; `bin/console debug:config clever_age_ui_process` shows the
+current configuration).
 
 ```yaml
 # config/packages/clever_age_ui_process.yaml
@@ -57,7 +59,9 @@ See [process executions & logs](04-process_executions_and_logs.md) for the whole
 See [log retention](04-process_executions_and_logs.md#log-retention).
 
 Levels are Monolog level names (case-insensitive): `Debug`, `Info`, `Notice`, `Warning`, `Error`, `Critical`,
-`Alert`, `Emergency`.
+`Alert`, `Emergency`; `database_level` and `file_level` also accept the level values (`100` to `600`). An invalid level
+fails when the container is compiled (`Invalid configuration for path "clever_age_ui_process.logs.<key>"`). A level
+given by an environment variable is only checked at runtime, by Monolog.
 
 ### design
 

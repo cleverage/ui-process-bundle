@@ -207,6 +207,31 @@ class ConfigurationTest extends TestCase
     }
 
     /**
+     * @return iterable<string, array{string, int|string}>
+     */
+    public static function provideValidLevels(): iterable
+    {
+        yield 'name' => ['database_level', 'Error'];
+        yield 'lower case name' => ['file_level', 'error'];
+        yield 'upper case name' => ['database_level', 'ERROR'];
+        yield 'value' => ['file_level', 400];
+        yield 'numeric string' => ['database_level', '400'];
+        yield 'report increment level, lower case name' => ['report_increment_level', 'error'];
+    }
+
+    /**
+     * Levels kept as is (validated by the extension, see CleverAgeUiProcessExtensionTest).
+     */
+    #[DataProvider('provideValidLevels')]
+    public function testValidLevel(string $option, int|string $level): void
+    {
+        $config = $this->process('prod', ['logs' => [$option => $level]]);
+
+        self::assertIsArray($config['logs']);
+        self::assertSame($level, $config['logs'][$option]);
+    }
+
+    /**
      * @param array<string, mixed> $config
      */
     #[DataProvider('provideInvalidConfigurations')]
