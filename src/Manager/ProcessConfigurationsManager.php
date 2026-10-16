@@ -152,10 +152,7 @@ final readonly class ProcessConfigurationsManager
 
         $configuration = $this->registry->getProcessConfiguration($processCode);
 
-        /** @var UiOptions $options */
-        $options = $this->resolveOptions($configuration->getOptions(), $processCode, 'ui')['ui'];
-
-        return $options;
+        return $this->resolveOptions($configuration->getOptions(), $processCode)['ui'];
     }
 
     /**
@@ -203,10 +200,7 @@ final readonly class ProcessConfigurationsManager
 
         $configuration = $this->registry->getProcessConfiguration($processCode);
 
-        /** @var NotificationOptions $options */
-        $options = $this->resolveOptions($configuration->getOptions(), $processCode, 'notification')['notification'];
-
-        return $options;
+        return $this->resolveOptions($configuration->getOptions(), $processCode)['notification'];
     }
 
     /**
@@ -222,102 +216,78 @@ final readonly class ProcessConfigurationsManager
 
         $configuration = $this->registry->getProcessConfiguration($processCode);
 
-        /** @var LogsOptions $options */
-        $options = $this->resolveOptions($configuration->getOptions(), $processCode, 'logs')['logs'];
-
-        return $options;
+        return $this->resolveOptions($configuration->getOptions(), $processCode)['logs'];
     }
 
     /**
-     * Resolves the given option only: the other ones are only checked as arrays, so that an invalid option (e.g. the
-     * launch form) does not break the others (e.g. the notification of the executions or the purge of the logs).
+     * @param array<int|string, mixed> $options
      *
-     * @param array<int|string, mixed>   $options
-     * @param 'ui'|'notification'|'logs' $option
-     *
-     * @return array{'ui': array<mixed>, 'notification': array<mixed>, 'logs': array<mixed>}
+     * @return array{'ui': UiOptions, 'notification': NotificationOptions, 'logs': LogsOptions}
      */
-    private function resolveOptions(array $options, string $processCode, string $option): array
+    private function resolveOptions(array $options, string $processCode): array
     {
         $resolver = new OptionsResolver();
-        $resolver->setDefaults(['notification' => [], 'logs' => [], 'ui' => []]);
-        foreach (['notification', 'logs', 'ui'] as $name) {
-            $resolver->setAllowedTypes($name, 'array');
-        }
-        $resolver->setNormalizer($option, match ($option) {
-            'notification' => static fn (Options $options, array $notification): array => self::resolveNotificationOptions($notification),
-            'logs' => static fn (Options $options, array $logs): array => self::resolveLogsOptions($logs),
-            'ui' => static fn (Options $options, array $ui): array => self::resolveUiOptions($ui, $processCode),
-        });
+        $resolver->setDefault('notification', []);
+        $resolver->setAllowedTypes('notification', 'array');
+        $resolver->setNormalizer('notification', static function (Options $options, array $notification): array {
+            $notificationResolver = new OptionsResolver();
+            $notificationResolver->setDefaults(['enabled' => null, 'statuses' => null, 'channels' => null, 'recipients' => null]);
+            $notificationResolver->setAllowedTypes('enabled', ['null', 'bool']);
+            $notificationResolver->setAllowedTypes('statuses', ['null', 'string[]']);
+            $notificationResolver->setAllowedValues('statuses', static function (?array $statuses): bool {
+                /** @var string[]|null $statusValues */
+                $statusValues = $statuses;
 
-        /**
-         * @var array{'ui': array<mixed>, 'notification': array<mixed>, 'logs': array<mixed>} $resolved
-         */
-        $resolved = $resolver->resolve($options);
-
-        return $resolved;
-    }
-
-    /**
-     * @param array<int|string, mixed> $notification
-     *
-     * @return array<mixed>
-     */
-    private static function resolveNotificationOptions(array $notification): array
-    {
-        $notificationResolver = new OptionsResolver();
-        $notificationResolver->setDefaults(['enabled' => null, 'statuses' => null, 'channels' => null, 'recipients' => null]);
-        $notificationResolver->setAllowedTypes('enabled', ['null', 'bool']);
-        $notificationResolver->setAllowedTypes('statuses', ['null', 'string[]']);
-        $notificationResolver->setAllowedValues('statuses', static function (?array $statuses): bool {
-            /** @var string[]|null $statusValues */
-            $statusValues = $statuses;
-
-            return null === $statusValues || [] === array_diff($statusValues, NotificationTrigger::values());
-        });
-        $notificationResolver->setAllowedTypes('channels', ['null', 'string[]']);
-        $notificationResolver->setAllowedTypes('recipients', ['null', 'array[]']);
-        $notificationResolver->setNormalizer('recipients', static function (Options $options, ?array $recipients): ?array {
-            if (null === $recipients) {
-                return null;
-            }
-            $recipientResolver = new OptionsResolver();
-            $recipientResolver->setDefaults(['email' => null, 'phone' => null]);
-            $recipientResolver->setAllowedTypes('email', ['null', 'string']);
-            $recipientResolver->setAllowedTypes('phone', ['null', 'string']);
-
-            $recipientResolver->setNormalizer('phone', static function (Options $options, ?string $phone): ?string {
-                if (null === $options['email'] && null === $phone) {
-                    throw new InvalidOptionsException('A notification recipient must have an "email" or a "phone".');
+                return null === $statusValues || [] === array_diff($statusValues, NotificationTrigger::values());
+            });
+            $notificationResolver->setAllowedTypes('channels', ['null', 'string[]']);
+            $notificationResolver->setAllowedTypes('recipients', ['null', 'array[]']);
+            $notificationResolver->setNormalizer('recipients', static function (Options $options, ?array $recipients): ?array {
+                if (null === $recipients) {
+                    return null;
                 }
+                $recipientResolver = new OptionsResolver();
+                $recipientResolver->setDefaults(['email' => null, 'phone' => null]);
+                $recipientResolver->setAllowedTypes('email', ['null', 'string']);
+                $recipientResolver->setAllowedTypes('phone', ['null', 'string']);
 
-                return $phone;
+                $recipientResolver->setNormalizer('phone', static function (Options $options, ?string $phone): ?string {
+                    if (null === $options['email'] && null === $phone) {
+                        throw new InvalidOptionsException('A notification recipient must have an "email" or a "phone".');
+                    }
+
+                    return $phone;
+                });
+
+                /** @var array<array<string, mixed>> $recipientRows */
+                $recipientRows = $recipients;
+
+                return array_values(array_map($recipientResolver->resolve(...), $recipientRows));
             });
 
-            /** @var array<array<string, mixed>> $recipientRows */
-            $recipientRows = $recipients;
-
-            return array_values(array_map($recipientResolver->resolve(...), $recipientRows));
+            return $notificationResolver->resolve($notification);
         });
+        $resolver->setDefault('logs', []);
+        $resolver->setAllowedTypes('logs', 'array');
+        $resolver->setNormalizer('logs', static function (Options $options, array $logs): array {
+            $logsResolver = new OptionsResolver();
+            $logsResolver->setDefaults(['database_max_days' => null, 'file_max_days' => null]);
+            foreach (['database_max_days', 'file_max_days'] as $option) {
+                $logsResolver->setAllowedTypes($option, ['null', 'int']);
+                $logsResolver->setAllowedValues($option, static fn (?int $days): bool => null === $days || $days >= 1);
+            }
 
-        return $notificationResolver->resolve($notification);
-    }
+            return $logsResolver->resolve($logs);
+        });
+        $resolver->setDefault('ui', []);
+        $resolver->setAllowedTypes('ui', 'array');
+        $resolver->setNormalizer('ui', static fn (Options $options, array $ui): array => self::resolveUiOptions($ui, $processCode));
+        /**
+         * @var array{'ui': UiOptions, 'notification': NotificationOptions, 'logs': LogsOptions} $options
+         */
+        $options = $resolver->resolve($options);
 
-    /**
-     * @param array<int|string, mixed> $logs
-     *
-     * @return array<mixed>
-     */
-    private static function resolveLogsOptions(array $logs): array
-    {
-        $logsResolver = new OptionsResolver();
-        $logsResolver->setDefaults(['database_max_days' => null, 'file_max_days' => null]);
-        foreach (['database_max_days', 'file_max_days'] as $option) {
-            $logsResolver->setAllowedTypes($option, ['null', 'int']);
-            $logsResolver->setAllowedValues($option, static fn (?int $days): bool => null === $days || $days >= 1);
-        }
-
-        return $logsResolver->resolve($logs);
+        return $options;
     }
 
     /**

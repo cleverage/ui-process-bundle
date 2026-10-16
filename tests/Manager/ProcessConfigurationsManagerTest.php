@@ -723,67 +723,6 @@ class ProcessConfigurationsManagerTest extends TestCase
         self::assertSame([$expected, $expected], $deprecations);
     }
 
-    /**
-     * Each getter resolves only its own option: the deprecations of the UI options are not triggered by the
-     * notification and logs getters.
-     */
-    public function testNoDeprecationsThroughTheNotificationAndLogsOptions(): void
-    {
-        $manager = $this->createManager(['test.process' => $this->rawProcess(['ui' => ['constraints' => []]])]);
-
-        self::assertSame([], $this->collectDeprecations(static fn () => $manager->getNotificationOptions('test.process')));
-        self::assertSame([], $this->collectDeprecations(static fn () => $manager->getLogsOptions('test.process')));
-    }
-
-    /**
-     * An invalid launch form does not break the notification of the executions nor the purge of the logs.
-     */
-    public function testInvalidUiOptionsDoNotBreakTheNotificationAndLogsOptions(): void
-    {
-        $manager = $this->createManager(['test.process' => $this->rawProcess([
-            'ui' => ['form' => ['input' => ['type' => 'App\\Missing']]],
-            'notification' => ['enabled' => true],
-            'logs' => ['file_max_days' => 30],
-        ])]);
-
-        self::assertTrue($manager->getNotificationOptions('test.process')['enabled'] ?? null);
-        self::assertSame(30, $manager->getLogsOptions('test.process')['file_max_days'] ?? null);
-
-        $this->expectException(InvalidOptionsException::class);
-        $manager->getUiOptions('test.process');
-    }
-
-    /**
-     * The other options are only checked as arrays when the UI options are resolved.
-     */
-    public function testInvalidNotificationOptionsDoNotBreakTheUiOptions(): void
-    {
-        $manager = $this->createManager(['test.process' => $this->rawProcess([
-            'ui' => ['source' => 'ERP'],
-            'notification' => ['enabled' => 'yes'],
-            'logs' => ['file_max_days' => 0],
-        ])]);
-
-        self::assertSame('ERP', $manager->getUiOptions('test.process')['source'] ?? null);
-    }
-
-    public function testNewFormatIsNotDeprecatedThroughTheNotificationAndLogsOptions(): void
-    {
-        $manager = $this->createManager(['test.process' => $this->rawProcess(['ui' => [
-            'ui_launch_mode' => 'form',
-            'form' => ['input' => ['type' => 'file'], 'context' => ['delimiter' => ['default' => ',']], 'constraints' => []],
-        ]])]);
-
-        $notification = null;
-        $logs = null;
-        self::assertSame([], $this->collectDeprecations(static function () use ($manager, &$notification, &$logs): void {
-            $notification = $manager->getNotificationOptions('test.process');
-            $logs = $manager->getLogsOptions('test.process');
-        }));
-        self::assertSame(['enabled' => null, 'statuses' => null, 'channels' => null, 'recipients' => null], $notification);
-        self::assertSame(['database_max_days' => null, 'file_max_days' => null], $logs);
-    }
-
     public function testInvalidLaunchMode(): void
     {
         $manager = $this->createManager(['test.process' => $this->rawProcess(['ui' => ['ui_launch_mode' => 'popup']])]);

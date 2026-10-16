@@ -193,9 +193,6 @@ clever_age_process:
                 # ...
 ```
 
-Invalid `logs` options raise an options resolver error when the purge command runs (since 3.3, they are no longer
-reported by the process list): run the command with `--dry-run` after changing them.
-
 Schedule the command, e.g. every night with a cron:
 
 ```

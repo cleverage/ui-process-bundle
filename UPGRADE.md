@@ -89,13 +89,6 @@ options:
 - A process using a deprecated option triggers its deprecations each time its UI options are resolved (process list,
   launch form, executions list): expect them in the deprecation logs until the process is migrated.
 
-### Invalid notification and logs options
-
-`ProcessConfigurationsManager` now resolves only the requested option: invalid `notification` or `logs` options of a
-process are no longer reported by the process list. They are only reported when they are used: at the end of an
-execution, by the notifier in the Messenger worker (no notification is sent), and by the
-`cleverage:ui-process:purge-logs` command.
-
 ## v3.0
 
 ### Import routes
