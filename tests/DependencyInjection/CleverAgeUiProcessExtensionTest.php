@@ -297,8 +297,8 @@ class CleverAgeUiProcessExtensionTest extends TestCase
                 'main' => [
                     'provider' => 'process_user_provider',
                     'custom_authenticator' => ['cleverage_ui_process.security.http_process_execution_authenticator'],
-                    'form_login' => ['login_path' => 'process_login', 'check_path' => 'process_login'],
-                    'logout' => ['path' => 'process_logout', 'target' => 'process_login', 'clear_site_data' => '*'],
+                    'form_login' => ['login_path' => 'cleverage_ui_process_login', 'check_path' => 'cleverage_ui_process_login'],
+                    'logout' => ['path' => 'cleverage_ui_process_logout', 'target' => 'cleverage_ui_process_login', 'clear_site_data' => '*'],
                 ],
             ],
             $security[0]['firewalls']

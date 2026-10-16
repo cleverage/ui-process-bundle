@@ -77,10 +77,10 @@ class LaunchActionTest extends FunctionalTestCase
     {
         $this->login();
 
-        $this->client->request('GET', '/process?routeName=process_launch&process=test.process');
+        $this->client->request('GET', '/process?routeName=cleverage_ui_process_launch&process=test.process');
 
         self::assertResponseRedirects();
-        self::assertStringContainsString('routeName=process_list', (string) $this->client->getResponse()->headers->get('Location'));
+        self::assertStringContainsString('routeName=cleverage_ui_process_list', (string) $this->client->getResponse()->headers->get('Location'));
         $messages = $this->getDispatchedMessages();
         self::assertCount(1, $messages);
         self::assertSame('test.process', $messages[0]->code);
@@ -95,7 +95,7 @@ class LaunchActionTest extends FunctionalTestCase
     {
         $this->login();
 
-        $crawler = $this->client->request('GET', '/process?routeName=process_launch&process=test.form');
+        $crawler = $this->client->request('GET', '/process?routeName=cleverage_ui_process_launch&process=test.form');
 
         self::assertResponseIsSuccessful();
         self::assertSame([], $this->getDispatchedMessages());
@@ -125,7 +125,7 @@ class LaunchActionTest extends FunctionalTestCase
         file_put_contents((string) $file, 'line1');
 
         // test.upload has no "default" UI option: the form must be displayed with empty default values
-        $crawler = $this->client->request('GET', '/process?routeName=process_launch&process=test.upload');
+        $crawler = $this->client->request('GET', '/process?routeName=cleverage_ui_process_launch&process=test.upload');
         self::assertResponseIsSuccessful();
         self::assertCount(0, $crawler->filter('input[name^="launch[context]"]'));
         self::assertCount(1, $crawler->filter('input[type="file"][name="launch[input]"]'));
@@ -159,7 +159,7 @@ class LaunchActionTest extends FunctionalTestCase
     {
         $this->login();
 
-        $crawler = $this->client->request('GET', '/process?routeName=process_launch&process=test.form_constraints');
+        $crawler = $this->client->request('GET', '/process?routeName=cleverage_ui_process_launch&process=test.form_constraints');
         self::assertResponseIsSuccessful();
         $form = $crawler->selectButton('Launch')->form();
         /** @var array<string, array<string, mixed>> $values */
@@ -177,7 +177,7 @@ class LaunchActionTest extends FunctionalTestCase
     {
         $this->login();
 
-        $this->client->request('GET', '/process?routeName=process_launch');
+        $this->client->request('GET', '/process?routeName=cleverage_ui_process_launch');
 
         self::assertResponseStatusCodeSame(500);
     }
@@ -186,7 +186,7 @@ class LaunchActionTest extends FunctionalTestCase
     {
         $this->login();
 
-        $this->client->request('GET', '/process?routeName=process_launch&process=unknown');
+        $this->client->request('GET', '/process?routeName=cleverage_ui_process_launch&process=unknown');
 
         self::assertResponseStatusCodeSame(500);
         self::assertSame([], $this->getDispatchedMessages());
@@ -202,7 +202,7 @@ class LaunchActionTest extends FunctionalTestCase
 
         $this->client->request('GET', '/process/launch?process=test.form');
 
-        self::assertResponseRedirects('/process?routeName=process_launch&process=test.form');
+        self::assertResponseRedirects('/process?routeName=cleverage_ui_process_launch&process=test.form');
         $crawler = $this->client->followRedirect();
         self::assertResponseIsSuccessful();
         self::assertCount(1, $crawler->filter('input[name="launch[input]"]'));

@@ -60,7 +60,7 @@ class ProcessDashboardController extends AbstractDashboardController
         yield MenuItem::linkToDashboard('Dashboard', 'fa fa-home');
         yield MenuItem::subMenu('Process', 'fas fa-gear')->setSubItems(
             [
-                MenuItem::linkToRoute('Process list', 'fas fa-list', 'process_list'),
+                MenuItem::linkToRoute('Process list', 'fas fa-list', 'cleverage_ui_process_list'),
                 MenuItem::linkTo(ProcessExecutionCrudController::class, 'Executions', 'fas fa-rocket'),
                 MenuItem::linkTo(LogRecordCrudController::class, 'Logs', 'fas fa-pen'),
                 MenuItem::linkTo(ProcessScheduleCrudController::class, 'Scheduler', 'fas fa-solid fa-clock'),

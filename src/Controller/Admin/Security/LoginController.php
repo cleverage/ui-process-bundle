@@ -20,7 +20,7 @@ use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
 class LoginController extends AbstractController
 {
-    #[Route('/process/login', name: 'process_login')]
+    #[Route('/process/login', name: 'cleverage_ui_process_login')]
     public function __invoke(AuthenticationUtils $authenticationUtils): Response
     {
         return $this->render(

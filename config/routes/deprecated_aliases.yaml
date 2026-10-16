@@ -1,0 +1,37 @@
+# Former names of the routes of the bundle, deprecated since 3.3: use the cleverage_ui_process_* names
+# The dashboard route ("process") and the EasyAdmin routes generated from it ("process_*") will be renamed in 4.0
+
+process_login:
+    alias: cleverage_ui_process_login
+    deprecated:
+        package: 'cleverage/ui-process-bundle'
+        version: '3.3'
+        message: 'The "%alias_id%" route alias is deprecated, use the "cleverage_ui_process_login" route instead. It will be removed in 4.0.'
+
+process_logout:
+    alias: cleverage_ui_process_logout
+    deprecated:
+        package: 'cleverage/ui-process-bundle'
+        version: '3.3'
+        message: 'The "%alias_id%" route alias is deprecated, use the "cleverage_ui_process_logout" route instead. It will be removed in 4.0.'
+
+process_list:
+    alias: cleverage_ui_process_list
+    deprecated:
+        package: 'cleverage/ui-process-bundle'
+        version: '3.3'
+        message: 'The "%alias_id%" route alias is deprecated, use the "cleverage_ui_process_list" route instead. It will be removed in 4.0.'
+
+process_launch:
+    alias: cleverage_ui_process_launch
+    deprecated:
+        package: 'cleverage/ui-process-bundle'
+        version: '3.3'
+        message: 'The "%alias_id%" route alias is deprecated, use the "cleverage_ui_process_launch" route instead. It will be removed in 4.0.'
+
+http_process_execute:
+    alias: cleverage_ui_process_http_execute
+    deprecated:
+        package: 'cleverage/ui-process-bundle'
+        version: '3.3'
+        message: 'The "%alias_id%" route alias is deprecated, use the "cleverage_ui_process_http_execute" route instead. It will be removed in 4.0.'

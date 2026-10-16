@@ -25,7 +25,7 @@ class HttpProcessExecutionAuthenticatorTest extends TestCase
     public function testSupportsHttpProcessExecuteRoute(): void
     {
         $request = Request::create('/http/process/execute', Request::METHOD_POST);
-        $request->attributes->set('_route', 'http_process_execute');
+        $request->attributes->set('_route', 'cleverage_ui_process_http_execute');
 
         self::assertTrue($this->createAuthenticator()->supports($request));
     }
@@ -33,15 +33,15 @@ class HttpProcessExecutionAuthenticatorTest extends TestCase
     public function testDoesNotSupportGetRequest(): void
     {
         $request = Request::create('/http/process/execute', Request::METHOD_GET);
-        $request->attributes->set('_route', 'http_process_execute');
+        $request->attributes->set('_route', 'cleverage_ui_process_http_execute');
 
         self::assertFalse($this->createAuthenticator()->supports($request));
     }
 
     public function testDoesNotSupportOtherRoutes(): void
     {
-        $request = Request::create('/process', Request::METHOD_POST, ['_route' => 'http_process_execute']);
-        $request->attributes->set('_route', 'process_list');
+        $request = Request::create('/process', Request::METHOD_POST, ['_route' => 'cleverage_ui_process_http_execute']);
+        $request->attributes->set('_route', 'cleverage_ui_process_list');
 
         self::assertFalse($this->createAuthenticator()->supports($request));
     }
