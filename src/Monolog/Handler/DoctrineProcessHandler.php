@@ -85,6 +85,17 @@ class DoctrineProcessHandler extends AbstractProcessingHandler
         $this->records = new ArrayCollection();
     }
 
+    /**
+     * Drop the records not written at the end of the previous process execution (failed flush), e.g. between two
+     * messages of a long-running worker: they would be attached to the next one.
+     */
+    #[\Override]
+    public function reset(): void
+    {
+        parent::reset();
+        $this->records = new ArrayCollection();
+    }
+
     protected function write(LogRecord $record): void
     {
         if (!$this->enabled) {
