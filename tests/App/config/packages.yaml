@@ -154,6 +154,21 @@ clever_age_process:
             tasks:
                 data:
                     service: '@CleverAge\ProcessBundle\Task\DummyTask'
+        test.form_custom_constraint:
+            description: 'Process launched with the UI form, with a field constraint given by its FQCN'
+            options:
+                ui:
+                    ui_launch_mode: form
+                    form:
+                        context:
+                            count:
+                                type: Symfony\Component\Form\Extension\Core\Type\IntegerType
+                                options:
+                                    constraints:
+                                        - CleverAge\UiProcessBundle\Tests\App\Validator\Even: ~
+            tasks:
+                data:
+                    service: '@CleverAge\ProcessBundle\Task\DummyTask'
         test.form_strict:
             description: 'Process launched with the UI form, without free context'
             entry_point: data

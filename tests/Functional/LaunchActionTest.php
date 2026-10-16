@@ -270,6 +270,33 @@ class LaunchActionTest extends FunctionalTestCase
         self::assertSame([], $this->getDispatchedMessages());
     }
 
+    /**
+     * A project-specific constraint, given by its FQCN: its violation is displayed under the field.
+     */
+    public function testFieldConstraintClass(): void
+    {
+        $this->login();
+
+        $crawler = $this->client->request('GET', '/process?routeName=cleverage_ui_process_launch&process=test.form_custom_constraint');
+        $form = $crawler->selectButton('Launch')->form();
+        /** @var array<string, array<string, mixed>> $values */
+        $values = $form->getPhpValues();
+        $values['launch']['context'] = ['count' => '3'];
+        $crawler = $this->client->request($form->getMethod(), $form->getUri(), $values);
+
+        self::assertResponseIsSuccessful();
+        self::assertSame('The value 3 is not even.', $this->getFieldError($crawler, 'launch_context_count'));
+        self::assertSame([], $this->getDispatchedMessages());
+
+        $values['launch']['context'] = ['count' => '4'];
+        $this->client->request($form->getMethod(), $form->getUri(), $values);
+
+        self::assertResponseRedirects();
+        $messages = $this->getDispatchedMessages();
+        self::assertCount(1, $messages);
+        self::assertSame(['execution_user' => 'user@example.com', 'count' => 4], $messages[0]->context);
+    }
+
     public function testExtraContextRowWithADeclaredKey(): void
     {
         $this->login();

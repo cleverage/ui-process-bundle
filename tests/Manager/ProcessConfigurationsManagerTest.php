@@ -19,6 +19,7 @@ use CleverAge\ProcessBundle\Registry\ProcessConfigurationRegistry;
 use CleverAge\UiProcessBundle\Form\Type\ProcessContextType;
 use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
 use CleverAge\UiProcessBundle\Notifier\NotificationTrigger;
+use CleverAge\UiProcessBundle\Tests\App\Validator\Even;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\TestWith;
@@ -243,6 +244,24 @@ class ProcessConfigurationsManagerTest extends TestCase
             self::assertInstanceOf(Length::class, $fieldConstraints[1]);
             self::assertSame(10, $fieldConstraints[1]->max);
         }
+    }
+
+    /**
+     * A project-specific constraint, given by its FQCN.
+     */
+    public function testFieldConstraintClass(): void
+    {
+        [$options] = $this->resolveUi(['form' => ['context' => ['count' => ['options' => ['constraints' => [
+            [Even::class => null],
+            [Even::class => ['message' => 'Odd value.']],
+        ]]]]]]);
+
+        $constraints = $options['form']['context']['count']['options']['constraints'];
+        self::assertIsArray($constraints);
+        self::assertCount(2, $constraints);
+        self::assertInstanceOf(Even::class, $constraints[0]);
+        self::assertInstanceOf(Even::class, $constraints[1]);
+        self::assertSame('Odd value.', $constraints[1]->message);
     }
 
     public function testFieldConstraintsMustBeAnArray(): void
