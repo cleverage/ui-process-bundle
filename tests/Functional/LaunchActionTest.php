@@ -27,6 +27,7 @@ use CleverAge\UiProcessBundle\DependencyInjection\Configuration;
 use CleverAge\UiProcessBundle\Entity\User;
 use CleverAge\UiProcessBundle\EventSubscriber\ProcessEventSubscriber;
 use CleverAge\UiProcessBundle\Form\ContextValueNormalizer;
+use CleverAge\UiProcessBundle\Form\LaunchFormOptionsResolver;
 use CleverAge\UiProcessBundle\Form\Type\LaunchType;
 use CleverAge\UiProcessBundle\Form\Type\ProcessContextType;
 use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
@@ -56,6 +57,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 #[UsesClass(LaunchType::class)]
 #[UsesClass(ProcessContextType::class)]
 #[UsesClass(ContextValueNormalizer::class)]
+#[UsesClass(LaunchFormOptionsResolver::class)]
 #[UsesClass(ProcessConfigurationsManager::class)]
 #[UsesClass(ProcessExecuteMessage::class)]
 #[UsesClass(ProcessExecutionRepository::class)]
@@ -599,26 +601,6 @@ class LaunchActionTest extends FunctionalTestCase
     /**
      * The error message displayed under the form field with the given id.
      */
-    /**
-     * @return list<string>
-     */
-    private function collectDeprecations(\Closure $callback): array
-    {
-        $deprecations = [];
-        set_error_handler(static function (int $errno, string $errstr) use (&$deprecations): bool {
-            $deprecations[] = $errstr;
-
-            return true;
-        }, \E_USER_DEPRECATED);
-        try {
-            $callback();
-        } finally {
-            restore_error_handler();
-        }
-
-        return $deprecations;
-    }
-
     private function getFieldError(Crawler $crawler, string $id): string
     {
         $errors = $crawler->filter('#'.$id)->closest('.form-widget')?->filter('.invalid-feedback');

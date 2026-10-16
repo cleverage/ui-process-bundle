@@ -16,6 +16,7 @@ namespace CleverAge\UiProcessBundle\Form\Type;
 use CleverAge\ProcessBundle\Configuration\TaskConfiguration;
 use CleverAge\ProcessBundle\Exception\MissingProcessException;
 use CleverAge\ProcessBundle\Registry\ProcessConfigurationRegistry;
+use CleverAge\UiProcessBundle\Form\LaunchFormOptionsResolver;
 use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
@@ -28,7 +29,7 @@ use Symfony\Component\Form\FormView;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 /**
- * @phpstan-import-type UiOptions from ProcessConfigurationsManager
+ * @phpstan-import-type LaunchFormOptions from LaunchFormOptionsResolver
  *
  * @template-extends AbstractType<array<string, mixed>>
  */
@@ -45,9 +46,8 @@ class LaunchType extends AbstractType
         /** @var string $code */
         $code = $options['process_code'];
         $configuration = $this->registry->getProcessConfiguration($code);
-        /** @var UiOptions $uiOptions */
-        $uiOptions = $options['ui_options'] ?? $this->configurationsManager->getUiOptions($code) ?? throw MissingProcessException::create($code);
-        $form = $uiOptions['form'];
+        /** @var LaunchFormOptions $form */
+        $form = $options['launch_form'] ?? $this->configurationsManager->getLaunchFormOptions($code) ?? throw MissingProcessException::create($code);
 
         // A "required" form option of the input takes precedence
         $builder->add(
@@ -118,10 +118,10 @@ class LaunchType extends AbstractType
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setRequired('process_code');
-        // The UI options of the process, as resolved by ProcessConfigurationsManager::getUiOptions(): resolved from
-        // the process code when null
-        $resolver->setDefault('ui_options', null);
-        $resolver->setAllowedTypes('ui_options', ['null', 'array']);
+        // @internal The launch form of the process, as resolved by ProcessConfigurationsManager::getLaunchFormOptions():
+        // resolved from the process code when null
+        $resolver->setDefault('launch_form', null);
+        $resolver->setAllowedTypes('launch_form', ['null', 'array']);
     }
 
     #[\Override]

@@ -41,7 +41,9 @@ clever_age_process:
 ```
 
 Every key is optional: a process without `options.ui` is displayed and launched with a confirmation modal. Unknown
-keys, or invalid values, raise an options resolver error when the process list is displayed.
+keys, or invalid values, raise an options resolver error when the process list is displayed. The `form` option (and
+its interaction with the deprecated options) is only resolved when the launch form of the process is displayed: an
+invalid `form` option only breaks the launch page of its process.
 
 The `notification` key, next to `ui`, configures the [notification](09-notifications.md) of the end of the process
 executions. The `logs` key, next to `ui`, configures the [log retention](04-process_executions_and_logs.md#log-retention)
@@ -314,8 +316,7 @@ Migrating from the deprecated options
 -------------------------------------
 
 Since 3.3, `entrypoint_type`, `default` and `constraints` are deprecated (a deprecation is triggered each time the
-UI options of the process are resolved: process list, launch form, executions list; when the option is set, even to
-an empty value), and will be removed in 4.0:
+launch form of the process is displayed, when the option is set, even to an empty value), and will be removed in 4.0:
 
 | Deprecated option   | Replacement                                                                                   |
 |---------------------|-----------------------------------------------------------------------------------------------|

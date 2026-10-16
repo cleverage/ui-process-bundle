@@ -86,8 +86,8 @@ options:
   (`_launch_context_entry_*` becomes `_launch_context_extra_entry_*`), the form type extensions and the code using
   `$form->get('context')`.
 - The duplicated keys of `default.context` are merged, the last pair wins (two pairs were displayed).
-- A process using a deprecated option triggers its deprecations each time its UI options are resolved (process list,
-  launch form, executions list): expect them in the deprecation logs until the process is migrated.
+- A process using a deprecated option triggers its deprecations each time its launch form is displayed: expect them
+  in the deprecation logs until the process is migrated.
 
 ## v3.0
 

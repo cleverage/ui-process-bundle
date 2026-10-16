@@ -102,6 +102,20 @@ class ProcessListTest extends FunctionalTestCase
         self::assertStringContainsString('test.process', $crawler->filter('table')->text());
     }
 
+    /**
+     * The launch form is only resolved by the launch page: the deprecated launch form options of the listed processes
+     * (e.g. "test.form") trigger no deprecation on the list.
+     */
+    public function testListDoesNotResolveTheLaunchForms(): void
+    {
+        $this->login();
+
+        $deprecations = $this->collectDeprecations(fn () => $this->client->request('GET', '/process?routeName=cleverage_ui_process_list'));
+
+        self::assertResponseIsSuccessful();
+        self::assertSame([], $deprecations);
+    }
+
     public function testUsersMenuIsReservedToAdmins(): void
     {
         $this->login();

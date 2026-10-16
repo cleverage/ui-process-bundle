@@ -73,18 +73,19 @@ class LaunchAction extends AbstractController
 
             return $this->redirectToRoute('cleverage_ui_process', ['routeName' => 'cleverage_ui_process_list']);
         }
+        $launchForm = $this->processConfigurationsManager->getLaunchFormOptions($processCode) ?? throw MissingProcessException::create($processCode);
         $form = $this->createForm(
             LaunchType::class,
             null,
             [
-                'constraints' => $uiOptions['form']['constraints'],
+                'constraints' => $launchForm['constraints'],
                 'process_code' => $processCode,
                 // Not resolved again by the form type
-                'ui_options' => $uiOptions,
+                'launch_form' => $launchForm,
             ]
         );
         if (false === $form->isSubmitted()) {
-            $form->setData($this->processConfigurationsManager->buildLaunchFormDefaults($uiOptions));
+            $form->setData($launchForm['data']);
         }
         $form->handleRequest($this->requestStack->getMainRequest());
         if ($form->isSubmitted() && $form->isValid()) {

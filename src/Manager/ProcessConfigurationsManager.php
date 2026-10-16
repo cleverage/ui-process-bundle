@@ -14,44 +14,18 @@ declare(strict_types=1);
 namespace CleverAge\UiProcessBundle\Manager;
 
 use CleverAge\ProcessBundle\Configuration\ProcessConfiguration;
-use CleverAge\ProcessBundle\Exception\MissingProcessException;
 use CleverAge\ProcessBundle\Registry\ProcessConfigurationRegistry;
 use CleverAge\ProcessBundle\Validator\ConstraintLoader;
+use CleverAge\UiProcessBundle\Form\LaunchFormOptionsResolver;
 use CleverAge\UiProcessBundle\Notifier\NotificationTrigger;
-use Symfony\Component\Form\ButtonTypeInterface;
-use Symfony\Component\Form\Extension\Core\Type;
-use Symfony\Component\Form\FormConfigBuilder;
-use Symfony\Component\Form\FormTypeInterface;
-use Symfony\Component\Form\SubmitButtonTypeInterface;
 use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
 use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraint;
 
 /**
- * @phpstan-type FormFieldOptions array{
- *      'type': class-string<FormTypeInterface<mixed>>,
- *      'options': array<string, mixed>,
- *      'default': mixed
- *  }
- * @phpstan-type FormOptions array{
- *      'input': FormFieldOptions,
- *      'context': array<string, FormFieldOptions>,
- *      'allow_extra_context': bool,
- *      'constraints': Constraint[]
- *  }
- * @phpstan-type ResolvedFormOptions array{
- *      'input': FormFieldOptions|null,
- *      'context': array<string, FormFieldOptions>,
- *      'allow_extra_context': bool,
- *      'constraints': Constraint[]
- *  }
- * @phpstan-type ResolvedUiOptions array{
- *      'entrypoint_type': string,
- *      'constraints': Constraint[],
- *      'default': array{'input': mixed, 'context': array<array{'key': int|string, 'value': mixed}>},
- *      'form': ResolvedFormOptions
- *  }
+ * @phpstan-import-type LaunchFormOptions from LaunchFormOptionsResolver
+ *
  * @phpstan-type UiOptions array{
  *      'source': ?string,
  *      'target': ?string,
@@ -59,10 +33,9 @@ use Symfony\Component\Validator\Constraint;
  *      'entrypoint_type': string,
  *      'constraints': Constraint[],
  *      'run': ?bool,
- *      'default': array{'input': mixed, 'context': array<array{'key': int|string, 'value': mixed}>},
- *      'form': FormOptions
+ *      'default': array{'input': mixed, 'context': array<array{'key': int|string, 'value': int|string}>},
+ *      'form': mixed
  *  }
- * @phpstan-type LaunchFormData array{'input': mixed, 'context': array<string, mixed>}
  * @phpstan-type NotificationOptions array{
  *      'enabled': ?bool,
  *      'statuses': ?string[],
@@ -76,13 +49,10 @@ use Symfony\Component\Validator\Constraint;
  */
 final readonly class ProcessConfigurationsManager
 {
-    /**
-     * The form options of a launch form field that break the mapping of the context or the default values.
-     */
-    private const UNSUPPORTED_FIELD_OPTIONS = ['data', 'mapped', 'property_path', 'inherit_data'];
-
-    public function __construct(private ProcessConfigurationRegistry $registry)
-    {
+    public function __construct(
+        private ProcessConfigurationRegistry $registry,
+        private LaunchFormOptionsResolver $launchFormOptionsResolver = new LaunchFormOptionsResolver(),
+    ) {
     }
 
     /** @return ProcessConfiguration[] */
@@ -98,6 +68,9 @@ final readonly class ProcessConfigurationsManager
     }
 
     /**
+     * The "form" option is not resolved (see getLaunchFormOptions()): an invalid launch form only breaks the launch
+     * page of the process.
+     *
      * @return UiOptions|null
      */
     public function getUiOptions(string $processCode): ?array
@@ -108,39 +81,27 @@ final readonly class ProcessConfigurationsManager
 
         $configuration = $this->registry->getProcessConfiguration($processCode);
 
-        return $this->resolveOptions($configuration->getOptions(), $processCode)['ui'];
+        return $this->resolveOptions($configuration->getOptions())['ui'];
     }
 
     /**
-     * The initial data of the launch form of the process: the default value of the input, and the default values of
-     * the context, the declared keys first (in their order of declaration), then the free keys of the deprecated
-     * "default.context" option.
+     * The launch form of the process: the "form" UI option, the deprecated "entrypoint_type", "default" and
+     * "constraints" UI options folded into it (their deprecations are triggered), and the initial data of the form.
      *
-     * @return LaunchFormData
+     * @internal
+     *
+     * @return LaunchFormOptions|null
      */
-    public function getLaunchFormDefaults(string $processCode): array
+    public function getLaunchFormOptions(string $processCode): ?array
     {
-        return $this->buildLaunchFormDefaults($this->getUiOptions($processCode) ?? throw MissingProcessException::create($processCode));
-    }
-
-    /**
-     * The initial data of the launch form, from the UI options already resolved by getUiOptions().
-     *
-     * @param UiOptions $uiOptions
-     *
-     * @return LaunchFormData
-     */
-    public function buildLaunchFormDefaults(array $uiOptions): array
-    {
-        $context = array_map(static fn (array $field): mixed => $field['default'], $uiOptions['form']['context']);
-        foreach ($uiOptions['default']['context'] as $row) {
-            $key = (string) $row['key'];
-            if (!\array_key_exists($key, $uiOptions['form']['context'])) {
-                $context[$key] = $row['value'];
-            }
+        $uiOptions = $this->getUiOptions($processCode);
+        if (null === $uiOptions) {
+            return null;
         }
+        /** @var array<int|string, mixed> $ui */
+        $ui = $this->registry->getProcessConfiguration($processCode)->getOptions()['ui'] ?? [];
 
-        return ['input' => $uiOptions['form']['input']['default'], 'context' => $context];
+        return $this->launchFormOptionsResolver->resolve($ui, $uiOptions, $processCode);
     }
 
     /**
@@ -156,7 +117,7 @@ final readonly class ProcessConfigurationsManager
 
         $configuration = $this->registry->getProcessConfiguration($processCode);
 
-        return $this->resolveOptions($configuration->getOptions(), $processCode)['notification'];
+        return $this->resolveOptions($configuration->getOptions())['notification'];
     }
 
     /**
@@ -172,7 +133,7 @@ final readonly class ProcessConfigurationsManager
 
         $configuration = $this->registry->getProcessConfiguration($processCode);
 
-        return $this->resolveOptions($configuration->getOptions(), $processCode)['logs'];
+        return $this->resolveOptions($configuration->getOptions())['logs'];
     }
 
     /**
@@ -180,7 +141,7 @@ final readonly class ProcessConfigurationsManager
      *
      * @return array{'ui': UiOptions, 'notification': NotificationOptions, 'logs': LogsOptions}
      */
-    private function resolveOptions(array $options, string $processCode): array
+    private function resolveOptions(array $options): array
     {
         $resolver = new OptionsResolver();
         $resolver->setDefault('notification', []);
@@ -237,255 +198,52 @@ final readonly class ProcessConfigurationsManager
         });
         $resolver->setDefault('ui', []);
         $resolver->setAllowedTypes('ui', 'array');
-        $resolver->setNormalizer('ui', static fn (Options $options, array $ui): array => self::resolveUiOptions($ui, $processCode));
+        $resolver->setNormalizer('ui', static function (Options $options, array $ui): array {
+            $uiResolver = new OptionsResolver();
+            $uiResolver->setDefaults(
+                [
+                    'source' => null,
+                    'target' => null,
+                    'entrypoint_type' => 'text',
+                    'ui_launch_mode' => 'modal',
+                    'constraints' => [],
+                    'run' => null,
+                    'default' => [],
+                    // Resolved by getLaunchFormOptions()
+                    'form' => [],
+                ]
+            );
+            $uiResolver->setAllowedValues('entrypoint_type', ['text', 'file']);
+            // Resolved by a normalizer rather than as nested options: nested options defined with setDefault() are
+            // deprecated since symfony/options-resolver 7.3 and removed in 8.0, setOptions() does not exist before 7.3
+            $uiResolver->setAllowedTypes('default', 'array');
+            $uiResolver->setNormalizer('default', static function (Options $options, array $default): array {
+                $defaultResolver = new OptionsResolver();
+                $defaultResolver->setDefaults(['input' => null, 'context' => []]);
+                $defaultResolver->setAllowedTypes('context', 'array[]');
+                $defaultResolver->setNormalizer('context', static function (Options $options, array $context): array {
+                    $contextResolver = new OptionsResolver();
+                    $contextResolver->setRequired(['key', 'value']);
+
+                    /** @var array<array<string, mixed>> $contextRows */
+                    $contextRows = $context;
+
+                    return array_map($contextResolver->resolve(...), $contextRows);
+                });
+
+                return $defaultResolver->resolve($default);
+            });
+            $uiResolver->setNormalizer('constraints', static fn (Options $options, array $values): array => (new ConstraintLoader())->buildConstraints($values));
+            $uiResolver->setAllowedValues('ui_launch_mode', ['modal', null, 'form']);
+
+            return $uiResolver->resolve($ui);
+        });
         /**
          * @var array{'ui': UiOptions, 'notification': NotificationOptions, 'logs': LogsOptions} $options
          */
         $options = $resolver->resolve($options);
 
         return $options;
-    }
-
-    /**
-     * @param array<int|string, mixed> $ui
-     *
-     * @return UiOptions
-     */
-    private static function resolveUiOptions(array $ui, string $processCode): array
-    {
-        $uiResolver = new OptionsResolver();
-        $uiResolver->setDefaults(
-            [
-                'source' => null,
-                'target' => null,
-                'entrypoint_type' => 'text',
-                'ui_launch_mode' => 'modal',
-                'constraints' => [],
-                'run' => null,
-                'default' => [],
-                'form' => [],
-            ]
-        );
-        $uiResolver->setAllowedValues('entrypoint_type', ['text', 'file']);
-        // Resolved by a normalizer rather than as nested options: nested options defined with setDefault() are
-        // deprecated since symfony/options-resolver 7.3 and removed in 8.0, setOptions() does not exist before 7.3
-        $uiResolver->setAllowedTypes('default', 'array');
-        $uiResolver->setNormalizer('default', static function (Options $options, array $default): array {
-            $defaultResolver = new OptionsResolver();
-            $defaultResolver->setDefaults(['input' => null, 'context' => []]);
-            $defaultResolver->setAllowedTypes('context', 'array[]');
-            $defaultResolver->setNormalizer('context', static function (Options $options, array $context): array {
-                $contextResolver = new OptionsResolver();
-                $contextResolver->setRequired(['key', 'value']);
-
-                /** @var array<array<string, mixed>> $contextRows */
-                $contextRows = $context;
-
-                return array_map($contextResolver->resolve(...), $contextRows);
-            });
-
-            return $defaultResolver->resolve($default);
-        });
-        $uiResolver->setNormalizer('constraints', static fn (Options $options, array $values): array => (new ConstraintLoader())->buildConstraints($values));
-        $uiResolver->setAllowedValues('ui_launch_mode', ['modal', null, 'form']);
-        $uiResolver->setAllowedTypes('form', 'array');
-        $uiResolver->setNormalizer('form', static fn (Options $options, array $form): array => self::resolveForm($form, $processCode));
-        // A Closure message: the deprecation is triggered only when the option is given, once per resolution
-        $uiResolver->setDeprecated('entrypoint_type', 'cleverage/ui-process-bundle', '3.3', static fn (Options $options, mixed $value): string => \sprintf('The "entrypoint_type" UI option of the process "%s" is deprecated, use "form.input.type" instead.', $processCode));
-        $uiResolver->setDeprecated('default', 'cleverage/ui-process-bundle', '3.3', static fn (Options $options, mixed $value): string => \sprintf('The "default" UI option of the process "%s" is deprecated, use "form.input.default" and "form.context.<key>.default" instead.', $processCode));
-        $uiResolver->setDeprecated('constraints', 'cleverage/ui-process-bundle', '3.3', static fn (Options $options, mixed $value): string => \sprintf('The "constraints" UI option of the process "%s" is deprecated, use "form.constraints" instead.', $processCode));
-
-        /** @var ResolvedUiOptions $resolved */
-        $resolved = $uiResolver->resolve($ui);
-        // The effective "form" option, the deprecated options folded into it
-        $resolved['form'] = self::foldDeprecatedOptions($ui, $resolved, $processCode);
-
-        /** @var UiOptions $uiOptions */
-        $uiOptions = $resolved;
-
-        return $uiOptions;
-    }
-
-    /**
-     * @param array<int|string, mixed> $form
-     *
-     * @return ResolvedFormOptions
-     */
-    private static function resolveForm(array $form, string $processCode): array
-    {
-        $formResolver = new OptionsResolver();
-        $formResolver->setDefaults(['input' => null, 'context' => [], 'allow_extra_context' => true, 'constraints' => []]);
-        $formResolver->setAllowedTypes('input', ['null', 'array']);
-        $formResolver->setAllowedTypes('context', 'array');
-        $formResolver->setAllowedTypes('allow_extra_context', 'bool');
-        $formResolver->setAllowedTypes('constraints', 'array');
-        $formResolver->setNormalizer(
-            'input',
-            static fn (Options $options, ?array $input): ?array => null === $input ? null : self::resolveField($input, 'form.input', $processCode, true)
-        );
-        $formResolver->setNormalizer('context', static function (Options $options, array $context) use ($processCode): array {
-            $fields = [];
-            foreach ($context as $key => $spec) {
-                if (\is_int($key)) {
-                    throw new InvalidOptionsException(\sprintf('The context key "%d" of "form.context" of the process "%s" is not supported: purely numeric context keys are cast to integers by PHP.', $key, $processCode));
-                }
-                if ('' === $key || !FormConfigBuilder::isValidName($key)) {
-                    throw new InvalidOptionsException(\sprintf('The context key "%s" of "form.context" of the process "%s" is not a valid form field name (letters, digits, "_", "-" and ":", starting with a letter, a digit or "_").', $key, $processCode));
-                }
-                // "extra" is the child of the free context pairs
-                if ('extra' === $key) {
-                    throw new InvalidOptionsException(\sprintf('The context key "%s" of "form.context" of the process "%s" is reserved.', $key, $processCode));
-                }
-                if (null !== $spec && !\is_array($spec)) {
-                    throw new InvalidOptionsException(\sprintf('The launch form field "form.context.%s" of the process "%s" must be an array or null, "%s" given.', $key, $processCode, get_debug_type($spec)));
-                }
-                $fields[$key] = self::resolveField($spec ?? [], "form.context.$key", $processCode, false);
-            }
-
-            return $fields;
-        });
-        $formResolver->setNormalizer('constraints', static fn (Options $options, array $values): array => (new ConstraintLoader())->buildConstraints($values));
-
-        /** @var ResolvedFormOptions $resolved */
-        $resolved = $formResolver->resolve($form);
-
-        return $resolved;
-    }
-
-    /**
-     * @param array<int|string, mixed> $spec
-     *
-     * @return FormFieldOptions
-     */
-    private static function resolveField(array $spec, string $path, string $processCode, bool $isInput): array
-    {
-        $fieldResolver = new OptionsResolver();
-        $fieldResolver->setDefaults(['type' => Type\TextType::class, 'options' => [], 'default' => null]);
-        $fieldResolver->setAllowedTypes('type', 'string');
-        $fieldResolver->setAllowedTypes('options', 'array');
-        $fieldResolver->setNormalizer('type', static fn (Options $options, string $type): string => self::resolveFormType($type, $path, $processCode));
-        $fieldResolver->setNormalizer('options', static function (Options $options, array $fieldOptions) use ($path, $processCode): array {
-            foreach (self::UNSUPPORTED_FIELD_OPTIONS as $option) {
-                if (\array_key_exists($option, $fieldOptions)) {
-                    throw new InvalidOptionsException(\sprintf('The "%s" form option of the launch form field "%s" of the process "%s" is not supported, use "default" for the initial value.', $option, $path, $processCode));
-                }
-            }
-            if (\array_key_exists('constraints', $fieldOptions)) {
-                if (!\is_array($fieldOptions['constraints'])) {
-                    throw new InvalidOptionsException(\sprintf('The "constraints" form option of the launch form field "%s" of the process "%s" must be an array of constraints.', $path, $processCode));
-                }
-                $fieldOptions['constraints'] = (new ConstraintLoader())->buildConstraints($fieldOptions['constraints']);
-            }
-
-            return $fieldOptions;
-        });
-
-        /** @var FormFieldOptions $resolved */
-        $resolved = $fieldResolver->resolve($spec);
-        $field = ['type' => $resolved['type'], 'options' => $resolved['options'], 'default' => $resolved['default']];
-
-        if (is_a($field['type'], Type\FileType::class, true)) {
-            // A temporary file, removed at the end of the request, would end as a string in the context
-            if (!$isInput) {
-                throw new InvalidOptionsException(\sprintf('The launch form field "%s" of the process "%s" is a file field: file fields are only supported for the input.', $path, $processCode));
-            }
-            if (null !== $field['default']) {
-                throw new InvalidOptionsException(\sprintf('The launch form field "%s" of the process "%s" is a file field, it cannot have a default value.', $path, $processCode));
-            }
-            // The launch action handles a single uploaded file
-            if (true === ($field['options']['multiple'] ?? false)) {
-                throw new InvalidOptionsException(\sprintf('The launch form field "%s" of the process "%s" cannot upload multiple files.', $path, $processCode));
-            }
-        }
-
-        return $field;
-    }
-
-    /**
-     * @return class-string<FormTypeInterface<mixed>>
-     */
-    private static function resolveFormType(string $type, string $path, string $processCode): string
-    {
-        $class = ltrim($type, '\\');
-        if (!class_exists($class)) {
-            throw new InvalidOptionsException(\sprintf('The type "%s" of the launch form field "%s" of the process "%s" must be the FQCN of a form type, the class does not exist.', $type, $path, $processCode));
-        }
-        if (!is_subclass_of($class, FormTypeInterface::class)) {
-            throw new InvalidOptionsException(\sprintf('The type "%s" of the launch form field "%s" of the process "%s" must implement "%s".', $type, $path, $processCode, FormTypeInterface::class));
-        }
-        // SubmitType implements SubmitButtonTypeInterface, which does not extend ButtonTypeInterface
-        if (is_subclass_of($class, ButtonTypeInterface::class) || is_subclass_of($class, SubmitButtonTypeInterface::class)) {
-            throw new InvalidOptionsException(\sprintf('The type "%s" of the launch form field "%s" of the process "%s" is a button type, it holds no data.', $type, $path, $processCode));
-        }
-
-        return $class;
-    }
-
-    /**
-     * Checks the conflicts between the deprecated UI options and the "form" option, and folds the deprecated options
-     * into the effective "form" option.
-     *
-     * @param array<int|string, mixed> $ui       the raw UI options, to know whether an option is given
-     * @param ResolvedUiOptions        $resolved the resolved UI options, before the folding
-     *
-     * @return FormOptions
-     */
-    private static function foldDeprecatedOptions(array $ui, array $resolved, string $processCode): array
-    {
-        /** @var array<string, mixed> $rawForm */
-        $rawForm = $ui['form'] ?? [];
-        /** @var array<string, mixed>|null $rawInput */
-        $rawInput = $rawForm['input'] ?? null;
-        /** @var array<string, array<string, mixed>|null> $rawContext */
-        $rawContext = $rawForm['context'] ?? [];
-        /** @var array<string, mixed> $rawDefault */
-        $rawDefault = $ui['default'] ?? [];
-        $form = $resolved['form'];
-
-        if (\array_key_exists('entrypoint_type', $ui) && null !== $rawInput) {
-            throw new InvalidOptionsException(\sprintf('The "entrypoint_type" and "form.input" UI options of the process "%s" cannot be used together, use "form.input" only.', $processCode));
-        }
-        if (\array_key_exists('constraints', $ui) && \array_key_exists('constraints', $rawForm)) {
-            throw new InvalidOptionsException(\sprintf('The "constraints" and "form.constraints" UI options of the process "%s" cannot be used together, use "form.constraints" only.', $processCode));
-        }
-        $hasDefaultInput = \array_key_exists('input', $rawDefault);
-        if ($hasDefaultInput && \array_key_exists('default', $rawInput ?? [])) {
-            throw new InvalidOptionsException(\sprintf('The default value of the input of the process "%s" is set both in "default.input" and in "form.input.default", use "form.input.default" only.', $processCode));
-        }
-        // The last row of a key wins
-        $defaultContext = array_column($resolved['default']['context'], 'value', 'key');
-        foreach (array_keys($defaultContext) as $key) {
-            $key = (string) $key;
-            if (\array_key_exists($key, $form['context'])) {
-                if (\array_key_exists('default', $rawContext[$key] ?? [])) {
-                    throw new InvalidOptionsException(\sprintf('The default value of the context key "%1$s" of the process "%2$s" is set both in "default.context" and in "form.context.%1$s.default", use "form.context.%1$s.default" only.', $key, $processCode));
-                }
-            } elseif (false === $form['allow_extra_context']) {
-                throw new InvalidOptionsException(\sprintf('The context key "%s" of "default.context" of the process "%s" is not declared in "form.context", and "form.allow_extra_context" is false.', $key, $processCode));
-            }
-        }
-
-        $input = $form['input'];
-        if (null === $input) {
-            $isFile = 'file' === $resolved['entrypoint_type'];
-            $input = ['type' => $isFile ? Type\FileType::class : Type\TextType::class, 'options' => [], 'default' => $isFile ? null : $resolved['default']['input']];
-        } elseif ($hasDefaultInput && !\array_key_exists('default', $rawInput ?? []) && !is_a($input['type'], Type\FileType::class, true)) {
-            $input['default'] = $resolved['default']['input'];
-        }
-
-        $context = $form['context'];
-        foreach ($context as $key => $field) {
-            if (\array_key_exists($key, $defaultContext)) {
-                $context[$key]['default'] = $defaultContext[$key];
-            }
-        }
-
-        return [
-            'input' => $input,
-            'context' => $context,
-            'allow_extra_context' => $form['allow_extra_context'],
-            'constraints' => \array_key_exists('constraints', $rawForm) ? $form['constraints'] : $resolved['constraints'],
-        ];
     }
 
     /** @return ProcessConfiguration[] */

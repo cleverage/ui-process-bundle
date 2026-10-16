@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace CleverAge\UiProcessBundle\Tests\Form\Type;
 
 use CleverAge\ProcessBundle\Registry\ProcessConfigurationRegistry;
+use CleverAge\UiProcessBundle\Form\LaunchFormOptionsResolver;
 use CleverAge\UiProcessBundle\Form\Type\LaunchType;
 use CleverAge\UiProcessBundle\Form\Type\ProcessContextType;
 use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
@@ -40,6 +41,7 @@ use Symfony\Component\Validator\Validation;
 
 #[CoversClass(LaunchType::class)]
 #[UsesClass(ProcessConfigurationsManager::class)]
+#[UsesClass(LaunchFormOptionsResolver::class)]
 #[UsesClass(ProcessContextType::class)]
 class LaunchTypeTest extends TypeTestCase
 {
@@ -300,21 +302,21 @@ class LaunchTypeTest extends TypeTestCase
     }
 
     /**
-     * The UI options already resolved by the caller are not resolved again.
+     * The launch form already resolved by the caller is not resolved again.
      */
-    public function testResolvedUiOptions(): void
+    public function testResolvedLaunchForm(): void
     {
         $registry = new ProcessConfigurationRegistry(['file.process' => $this->rawProcess(['ui' => ['entrypoint_type' => 'file']], 'data')], 'stop');
-        $uiOptions = null;
-        $resolutionDeprecations = $this->collectDeprecations(static function () use ($registry, &$uiOptions): void {
-            $uiOptions = (new ProcessConfigurationsManager($registry))->getUiOptions('file.process');
+        $launchForm = null;
+        $resolutionDeprecations = $this->collectDeprecations(static function () use ($registry, &$launchForm): void {
+            $launchForm = (new ProcessConfigurationsManager($registry))->getLaunchFormOptions('file.process');
         });
         self::assertSame(['Since cleverage/ui-process-bundle 3.3: The "entrypoint_type" UI option of the process "file.process" is deprecated, use "form.input.type" instead.'], $resolutionDeprecations);
-        self::assertIsArray($uiOptions);
+        self::assertIsArray($launchForm);
 
         $form = null;
-        $deprecations = $this->collectDeprecations(function () use (&$form, $uiOptions): void {
-            $form = $this->factory->create(LaunchType::class, null, ['process_code' => 'file.process', 'ui_options' => $uiOptions]);
+        $deprecations = $this->collectDeprecations(function () use (&$form, $launchForm): void {
+            $form = $this->factory->create(LaunchType::class, null, ['process_code' => 'file.process', 'launch_form' => $launchForm]);
         });
 
         self::assertSame([], $deprecations);
@@ -322,10 +324,10 @@ class LaunchTypeTest extends TypeTestCase
         self::assertInstanceOf(FileType::class, $this->getInnerType($form->get('input')));
     }
 
-    public function testUiOptionsMustBeAnArray(): void
+    public function testLaunchFormMustBeAnArray(): void
     {
         $this->expectException(InvalidOptionsException::class);
-        $this->factory->create(LaunchType::class, null, ['process_code' => 'text.process', 'ui_options' => 'form']);
+        $this->factory->create(LaunchType::class, null, ['process_code' => 'text.process', 'launch_form' => 'form']);
     }
 
     public function testProcessCodeIsRequired(): void
