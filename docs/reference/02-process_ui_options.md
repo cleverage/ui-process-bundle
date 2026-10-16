@@ -206,12 +206,8 @@ With `allow_extra_context: true`, the free key/value pairs are displayed after t
 (key/value)" label (no label when no context key is declared). With `allow_extra_context: false`, no free pair can be
 added.
 
-The key of a free pair follows the rule of the declared context keys: letters, digits, `_`, `-` and `:`, starting with
-a letter, a digit or `_`, and not only digits. Otherwise, it is reported as a validation error on its key (`The
-context key "a b" is not valid: ...`), and the process is not launched. The same applies to a free pair whose key is
-a declared field (`The context key "delimiter" is a field of the launch form, use this field instead.`).
-
-The key format rule also applies to the context pairs of the [schedules](05-scheduler.md).
+A free pair whose key is a declared field is reported as a validation error on its key (`The context key "delimiter"
+is a field of the launch form, use this field instead.`), and the process is not launched.
 
 > **Free pairs and placeholders.** A free pair gives a value to any context key, so to any `{{ key }}` placeholder of
 > the options of the process tasks, not only to the keys declared in `form.context`. As soon as a process declares its

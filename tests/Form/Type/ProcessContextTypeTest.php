@@ -54,8 +54,7 @@ class ProcessContextTypeTest extends TypeTestCase
             self::assertIsArray($constraints);
             self::assertInstanceOf(NotBlank::class, $constraints[0]);
         }
-        // The format of the key is checked
-        self::assertCount(2, (array) $form->get('key')->getConfig()->getOption('constraints'));
+        self::assertCount(1, (array) $form->get('key')->getConfig()->getOption('constraints'));
         self::assertCount(1, (array) $form->get('value')->getConfig()->getOption('constraints'));
     }
 
@@ -117,47 +116,12 @@ class ProcessContextTypeTest extends TypeTestCase
         $this->factory->create(ProcessContextType::class, null, ['reserved_keys' => 'delimiter']);
     }
 
-    #[TestWith(['foo'])]
-    #[TestWith(['Delimiter'])]
-    #[TestWith(['a-b:c'])]
-    #[TestWith(['_x'])]
-    #[TestWith(['1a'])]
-    #[TestWith(['dry_run'])]
-    public function testValidKeyFormat(string $key): void
-    {
-        $form = $this->factory->create(ProcessContextType::class);
-        $form->submit(['key' => $key, 'value' => 'bar']);
-
-        self::assertTrue($form->isValid());
-    }
-
-    #[TestWith(['zz)|x|(?:zz'])]
-    #[TestWith(['a/b'])]
-    #[TestWith(['a b'])]
-    #[TestWith(['{{x}}'])]
-    #[TestWith(['-a'])]
-    #[TestWith(['123'])]
-    public function testInvalidKeyFormat(string $key): void
-    {
-        $form = $this->factory->create(ProcessContextType::class);
-        $form->submit(['key' => $key, 'value' => 'bar']);
-
-        self::assertFalse($form->isValid());
-        $errors = $form->get('key')->getErrors();
-        self::assertCount(1, $errors);
-        self::assertSame(
-            \sprintf('The context key "%s" is not valid: use letters, digits, "_", "-" and ":", starting with a letter, a digit or "_", and not only digits.', $key),
-            $errors[0]->getMessage()
-        );
-    }
-
     public function testEmptyKey(): void
     {
         $form = $this->factory->create(ProcessContextType::class);
         $form->submit(['key' => '', 'value' => 'bar']);
 
         self::assertFalse($form->isValid());
-        // Reported by the NotBlank constraint only
         self::assertCount(1, $form->get('key')->getErrors());
     }
 }

@@ -89,19 +89,6 @@ options:
 - A process using a deprecated option triggers its deprecations each time its UI options are resolved (process list,
   launch form, executions list): expect them in the deprecation logs until the process is migrated.
 
-### Context keys of the launch form and the schedules
-
-- The key of a free context pair (launch form and schedules) must contain letters, digits, `_`, `-` and `:`, start with
-  a letter, a digit or `_`, and not be only digits, like a declared context key.
-- Existing schedules whose context contains a key that is no longer valid keep running unchanged:
-  the cron does not validate their context. But they cannot be saved from the UI until the key is renamed (or the
-  pair removed), even to change another field: rename it, and update the process accordingly (e.g. its `{{ key }}`
-  contextualized options), as renaming the key changes the context received by the process. Enabling or disabling a
-  schedule from the list is not affected (no form).
-- The same applies to the deprecated `default.context` option: a pair whose key is not valid pre-fills a row that
-  prevents the launch form from being submitted, until the user changes it; the process configuration is not
-  reported as invalid. Rename the key (or move it to `form.context`).
-
 ### Invalid notification and logs options
 
 `ProcessConfigurationsManager` now resolves only the requested option: invalid `notification` or `logs` options of a

@@ -18,22 +18,13 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\Choice;
 use Symfony\Component\Validator\Constraints\NotBlank;
-use Symfony\Component\Validator\Constraints\Regex;
 
 /** @template-extends AbstractType<null> */
 class ProcessContextType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        $keyConstraints = [
-            new NotBlank(),
-            // The rule of FormConfigBuilder::isValidName() applied to the declared context keys of the launch form, and
-            // not only digits (PHP casts such an array key to an integer)
-            new Regex(
-                pattern: '/^(?![0-9]+$)[a-zA-Z0-9_][a-zA-Z0-9_\-:]*$/D',
-                message: 'The context key {{ value }} is not valid: use letters, digits, "_", "-" and ":", starting with a letter, a digit or "_", and not only digits.'
-            ),
-        ];
+        $keyConstraints = [new NotBlank()];
         /** @var string[] $reservedKeys */
         $reservedKeys = $options['reserved_keys'];
         if ([] !== $reservedKeys) {
