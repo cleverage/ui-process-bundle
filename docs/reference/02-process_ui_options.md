@@ -44,12 +44,10 @@ Every key is optional: a process without `options.ui` is displayed and launched 
 keys, or invalid values, raise an options resolver error when the process list is displayed. The `form` option (and
 its interaction with the deprecated options) is not resolved by the process list. It is checked each time the
 container is built (`cache:clear`, `cache:warmup`, or the automatic rebuild in debug mode), with a message naming the
-process:
-- its structure when the container is compiled (types, keys, file fields, default values of the enum fields,
-  constraints, conflicts with the deprecated options);
-- then the launch form is built with the form factory of the application: the options of the form types (with the
-  type extensions of the application), the default values of the fields, and the validators of the constraints
-  (nested constraints included).
+process: the launch form is resolved (types, keys, file fields, default values of the enum fields, constraints,
+conflicts with the deprecated options), then built with the form factory of the application (the options of the form
+types with the type extensions of the application, the default values of the fields, and the validators of the
+constraints, nested constraints included).
 
 It is resolved again when the launch form of the process is displayed.
 

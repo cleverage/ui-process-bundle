@@ -25,15 +25,16 @@ use Symfony\Component\Validator\Constraints\Existence;
 use Symfony\Component\Validator\ConstraintValidatorFactoryInterface;
 
 /**
- * Builds the launch form of the processes declaring the "form" UI option with the form factory of the application,
- * each time the container is built (not optional: also run when the container is rebuilt in debug mode), so that an
- * invalid launch form fails there instead of on the launch page:
+ * Resolves the launch form of the processes declaring the "form" UI option, and builds it with the form factory of the
+ * application, each time the container is built (not optional: also run when the container is rebuilt in debug mode),
+ * so that an invalid launch form fails there instead of on the launch page:
+ * - its structure (types, keys, file fields, default values of the enum fields, constraints, conflicts with the
+ *   deprecated options), checked by LaunchFormOptionsResolver;
  * - the options of the form types (with the type extensions of the application), including the "constraints" option;
  * - the default values, transformed by the fields;
  * - the validators of the constraints (of the fields and of the whole form, nested constraints included).
  *
- * CheckLaunchFormsPass checks the structure of the launch forms when the container is compiled, before the services
- * exist. The values submitted by the user are converted after the submission.
+ * The values submitted by the user are converted after the submission.
  *
  * @internal
  */
