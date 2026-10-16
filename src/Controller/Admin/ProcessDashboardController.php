@@ -20,6 +20,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Config\Dashboard;
 use EasyCorp\Bundle\EasyAdminBundle\Config\MenuItem;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractDashboardController;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
+use Symfony\Component\Asset\Packages;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Translation\LocaleSwitcher;
@@ -30,6 +31,7 @@ class ProcessDashboardController extends AbstractDashboardController
 {
     public function __construct(
         private readonly LocaleSwitcher $localeSwitcher,
+        private readonly Packages $packages,
         private readonly string $logoPath = '',
     ) {
     }
@@ -48,7 +50,8 @@ class ProcessDashboardController extends AbstractDashboardController
     {
         return Dashboard::new()
             ->renderContentMaximized()
-            ->setTitle('<img src="/'.$this->logoPath.'" />');
+            // Asset URL: base path of the application, assets base URLs and version strategy; absolute URLs kept as is
+            ->setTitle(\sprintf('<img src="%s" />', htmlspecialchars($this->packages->getUrl($this->logoPath))));
     }
 
     #[\Override]

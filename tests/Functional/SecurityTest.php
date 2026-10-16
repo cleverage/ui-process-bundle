@@ -118,6 +118,17 @@ class SecurityTest extends FunctionalTestCase
         self::assertResponseIsSuccessful();
     }
 
+    /**
+     * Application served from a sub-directory: the page displayed after the login is the dashboard of this application.
+     */
+    public function testLoginTargetPathFromASubDirectory(): void
+    {
+        $crawler = $this->client->request('GET', '/app/process/login', server: ['SCRIPT_NAME' => '/app/index.php', 'SCRIPT_FILENAME' => '/var/www/public/index.php']);
+
+        self::assertResponseIsSuccessful();
+        self::assertSame('/app/process', $crawler->filter('input[name="_target_path"]')->attr('value'));
+    }
+
     public function testLoginWithAnInvalidPassword(): void
     {
         $this->createUser('admin@example.com', ['ROLE_ADMIN'], 'secret');
