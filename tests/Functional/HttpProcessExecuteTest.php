@@ -22,11 +22,13 @@ use CleverAge\UiProcessBundle\Controller\Admin\UserCrudController;
 use CleverAge\UiProcessBundle\Controller\ProcessExecuteController;
 use CleverAge\UiProcessBundle\DependencyInjection\CleverAgeUiProcessExtension;
 use CleverAge\UiProcessBundle\DependencyInjection\Compiler\CheckDoctrineLazyGhostObjectsPass;
+use CleverAge\UiProcessBundle\DependencyInjection\Compiler\CheckLaunchFormsPass;
 use CleverAge\UiProcessBundle\DependencyInjection\Configuration;
 use CleverAge\UiProcessBundle\Entity\ProcessExecution;
 use CleverAge\UiProcessBundle\Entity\User;
 use CleverAge\UiProcessBundle\Event\ProcessExecutionEndedEvent;
 use CleverAge\UiProcessBundle\EventSubscriber\ProcessEventSubscriber;
+use CleverAge\UiProcessBundle\Form\LaunchFormOptionsResolver;
 use CleverAge\UiProcessBundle\Http\Model\HttpProcessExecution;
 use CleverAge\UiProcessBundle\Http\ValueResolver\HttpProcessExecuteValueResolver;
 use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
@@ -57,6 +59,8 @@ use Symfony\Component\PasswordHasher\Hasher\Pbkdf2PasswordHasher;
 #[CoversClass(HttpProcessExecutionAuthenticator::class)]
 #[UsesClass(CleverAgeUiProcessBundle::class)]
 #[UsesClass(CheckDoctrineLazyGhostObjectsPass::class)]
+#[UsesClass(LaunchFormOptionsResolver::class)]
+#[UsesClass(CheckLaunchFormsPass::class)]
 #[UsesClass(LogRecordCrudController::class)]
 #[UsesClass(ProcessDashboardController::class)]
 #[UsesClass(ProcessExecutionCrudController::class)]

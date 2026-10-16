@@ -18,10 +18,12 @@ use CleverAge\UiProcessBundle\CleverAgeUiProcessBundle;
 use CleverAge\UiProcessBundle\Command\PurgeLogsCommand;
 use CleverAge\UiProcessBundle\DependencyInjection\CleverAgeUiProcessExtension;
 use CleverAge\UiProcessBundle\DependencyInjection\Compiler\CheckDoctrineLazyGhostObjectsPass;
+use CleverAge\UiProcessBundle\DependencyInjection\Compiler\CheckLaunchFormsPass;
 use CleverAge\UiProcessBundle\DependencyInjection\Configuration;
 use CleverAge\UiProcessBundle\Entity\LogRecord;
 use CleverAge\UiProcessBundle\Entity\ProcessExecution;
 use CleverAge\UiProcessBundle\Entity\User;
+use CleverAge\UiProcessBundle\Form\LaunchFormOptionsResolver;
 use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
 use CleverAge\UiProcessBundle\Notifier\NotificationTrigger;
 use CleverAge\UiProcessBundle\Routing\DeprecatedEasyAdminRouteAliasLoader;
@@ -35,6 +37,8 @@ use Symfony\Component\Uid\Uuid;
 #[CoversClass(PurgeLogsCommand::class)]
 #[UsesClass(CleverAgeUiProcessBundle::class)]
 #[UsesClass(CheckDoctrineLazyGhostObjectsPass::class)]
+#[UsesClass(LaunchFormOptionsResolver::class)]
+#[UsesClass(CheckLaunchFormsPass::class)]
 #[UsesClass(CleverAgeUiProcessExtension::class)]
 #[UsesClass(DeprecatedEasyAdminRouteAliasLoader::class)]
 #[UsesClass(Configuration::class)]

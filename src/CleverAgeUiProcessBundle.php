@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace CleverAge\UiProcessBundle;
 
 use CleverAge\UiProcessBundle\DependencyInjection\Compiler\CheckDoctrineLazyGhostObjectsPass;
+use CleverAge\UiProcessBundle\DependencyInjection\Compiler\CheckLaunchFormsPass;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 
@@ -31,5 +32,6 @@ class CleverAgeUiProcessBundle extends Bundle
         parent::build($container);
 
         $container->addCompilerPass(new CheckDoctrineLazyGhostObjectsPass());
+        $container->addCompilerPass(new CheckLaunchFormsPass());
     }
 }

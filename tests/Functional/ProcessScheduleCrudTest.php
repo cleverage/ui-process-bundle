@@ -22,11 +22,13 @@ use CleverAge\UiProcessBundle\Controller\Admin\ProcessScheduleCrudController;
 use CleverAge\UiProcessBundle\Controller\Admin\UserCrudController;
 use CleverAge\UiProcessBundle\DependencyInjection\CleverAgeUiProcessExtension;
 use CleverAge\UiProcessBundle\DependencyInjection\Compiler\CheckDoctrineLazyGhostObjectsPass;
+use CleverAge\UiProcessBundle\DependencyInjection\Compiler\CheckLaunchFormsPass;
 use CleverAge\UiProcessBundle\DependencyInjection\Configuration;
 use CleverAge\UiProcessBundle\Entity\Enum\ProcessScheduleType;
 use CleverAge\UiProcessBundle\Entity\ProcessSchedule;
 use CleverAge\UiProcessBundle\Entity\User;
 use CleverAge\UiProcessBundle\EventSubscriber\ProcessEventSubscriber;
+use CleverAge\UiProcessBundle\Form\LaunchFormOptionsResolver;
 use CleverAge\UiProcessBundle\Form\Type\ProcessContextType;
 use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
 use CleverAge\UiProcessBundle\Monolog\Handler\DoctrineProcessHandler;
@@ -64,6 +66,8 @@ use PHPUnit\Framework\Attributes\UsesClass;
 #[UsesClass(IsValidProcessCodeValidator::class)]
 #[UsesClass(CleverAgeUiProcessBundle::class)]
 #[UsesClass(CheckDoctrineLazyGhostObjectsPass::class)]
+#[UsesClass(LaunchFormOptionsResolver::class)]
+#[UsesClass(CheckLaunchFormsPass::class)]
 #[UsesClass(LogRecordCrudController::class)]
 #[UsesClass(ProcessExecutionCrudController::class)]
 #[UsesClass(UserCrudController::class)]
