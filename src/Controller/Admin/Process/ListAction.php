@@ -22,6 +22,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
+/**
+ * @internal
+ */
 #[Route('/process/list', name: 'cleverage_ui_process_list')]
 #[IsGranted('ROLE_USER')]
 class ListAction extends AbstractController

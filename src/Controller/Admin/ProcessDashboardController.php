@@ -25,6 +25,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Translation\LocaleSwitcher;
 
+/**
+ * @internal
+ */
 #[IsGranted('ROLE_USER')]
 #[AdminDashboard(routePath: '/process', routeName: 'cleverage_ui_process')]
 class ProcessDashboardController extends AbstractDashboardController

@@ -25,6 +25,9 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Uid\Uuid;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
+/**
+ * @internal
+ */
 final readonly class ProcessEventSubscriber implements EventSubscriberInterface
 {
     public function __construct(

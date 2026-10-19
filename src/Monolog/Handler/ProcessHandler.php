@@ -18,6 +18,9 @@ use Monolog\Handler\StreamHandler;
 use Monolog\Level;
 use Monolog\LogRecord;
 
+/**
+ * @internal
+ */
 class ProcessHandler extends StreamHandler
 {
     private Level $reportIncrementLevel = Level::Warning;

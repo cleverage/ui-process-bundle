@@ -18,6 +18,8 @@ use Symfony\Component\Notifier\Notification\Notification;
 
 /**
  * Notification sent at the end of a process execution.
+ *
+ * @final since 3.3
  */
 class ProcessExecutionNotification extends Notification
 {

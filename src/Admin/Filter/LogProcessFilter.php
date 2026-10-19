@@ -23,6 +23,9 @@ use EasyCorp\Bundle\EasyAdminBundle\Form\Filter\Type\ChoiceFilterType;
 use EasyCorp\Bundle\EasyAdminBundle\Form\Type\ComparisonType;
 use Symfony\Contracts\Translation\TranslatableInterface;
 
+/**
+ * @internal
+ */
 class LogProcessFilter implements FilterInterface
 {
     use FilterTrait;

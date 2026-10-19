@@ -17,6 +17,9 @@ use CleverAge\ProcessBundle\Manager\ProcessManager;
 use CleverAge\UiProcessBundle\Monolog\Handler\ProcessHandler;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
+/**
+ * @internal
+ */
 #[AsMessageHandler]
 readonly class ProcessExecuteHandler
 {

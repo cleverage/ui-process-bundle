@@ -34,6 +34,8 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 /**
  * @extends AbstractCrudController<LogRecord>
+ *
+ * @internal
  */
 #[IsGranted('ROLE_USER')]
 class LogRecordCrudController extends AbstractCrudController

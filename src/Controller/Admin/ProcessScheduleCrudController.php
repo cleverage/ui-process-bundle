@@ -40,6 +40,8 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 /**
  * @extends AbstractCrudController<ProcessSchedule>
+ *
+ * @internal
  */
 #[IsGranted('ROLE_USER')]
 class ProcessScheduleCrudController extends AbstractCrudController

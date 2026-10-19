@@ -26,6 +26,8 @@ use Doctrine\Persistence\ManagerRegistry;
  * @method ProcessExecution|null findOneBy(mixed[] $criteria, string[] $orderBy = null)
  * @method ProcessExecution[]    findAll()
  * @method ProcessExecution[]    findBy(mixed[] $criteria, string[] $orderBy = null, $limit = null, $offset = null)
+ *
+ * @final since 3.3
  */
 class ProcessExecutionRepository extends EntityRepository
 {

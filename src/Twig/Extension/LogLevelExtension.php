@@ -17,6 +17,9 @@ use CleverAge\UiProcessBundle\Twig\Runtime\LogLevelExtensionRuntime;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFunction;
 
+/**
+ * @internal
+ */
 class LogLevelExtension extends AbstractExtension
 {
     #[\Override]

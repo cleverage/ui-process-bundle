@@ -19,6 +19,9 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Messenger\MessageBusInterface;
 
+/**
+ * @internal
+ */
 #[AsMessageHandler]
 final readonly class CronProcessMessageHandler
 {

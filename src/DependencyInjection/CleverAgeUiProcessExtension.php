@@ -29,6 +29,9 @@ use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Notifier\NotifierInterface;
 
+/**
+ * @internal
+ */
 final class CleverAgeUiProcessExtension extends Extension implements PrependExtensionInterface
 {
     public function load(array $configs, ContainerBuilder $container): void

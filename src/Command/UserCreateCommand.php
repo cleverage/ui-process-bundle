@@ -30,6 +30,9 @@ use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
+/**
+ * @internal
+ */
 #[AsCommand(
     name: 'cleverage:ui-process:user-create',
     description: 'Command to create a new admin into database for ui process.'

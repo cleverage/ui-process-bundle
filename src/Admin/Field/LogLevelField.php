@@ -17,6 +17,9 @@ use EasyCorp\Bundle\EasyAdminBundle\Contracts\Field\FieldInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Field\FieldTrait;
 use Symfony\Contracts\Translation\TranslatableInterface;
 
+/**
+ * @internal
+ */
 class LogLevelField implements FieldInterface
 {
     use FieldTrait;
