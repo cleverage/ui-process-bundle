@@ -31,12 +31,46 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\DependencyInjection\ParameterBag\EnvPlaceholderParameterBag;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
+use Symfony\Component\Yaml\Yaml;
 
 #[CoversClass(CleverAgeUiProcessExtension::class)]
 #[UsesClass(Configuration::class)]
 #[UsesClass(NotificationTrigger::class)]
 class CleverAgeUiProcessExtensionTest extends TestCase
 {
+    public function testEveryServiceDefinitionFileIsLoaded(): void
+    {
+        $container = $this->createContainer('prod');
+        (new CleverAgeUiProcessExtension())->load([], $container);
+
+        $files = glob(\dirname(__DIR__, 2).'/config/services/*.yaml');
+        self::assertIsArray($files);
+        self::assertNotEmpty($files);
+        foreach ($files as $file) {
+            $config = Yaml::parseFile($file, Yaml::PARSE_CUSTOM_TAGS);
+            self::assertIsArray($config);
+            if (!isset($config['services'])) {
+                continue;
+            }
+            self::assertIsArray($config['services']);
+            foreach (array_keys($config['services']) as $id) {
+                if ('_defaults' === $id) {
+                    continue;
+                }
+                if (str_ends_with((string) $id, '\\')) {
+                    // Resource: at least one service registered under the namespace prefix
+                    $registered = array_filter(
+                        array_keys($container->getDefinitions()),
+                        static fn (string $definitionId): bool => str_starts_with($definitionId, (string) $id)
+                    );
+                    self::assertNotEmpty($registered, \sprintf('No service registered for the "%s" resource of %s', $id, basename($file)));
+                    continue;
+                }
+                self::assertTrue($container->has((string) $id), \sprintf('Service "%s" of %s is not registered', $id, basename($file)));
+            }
+        }
+    }
+
     public function testLoadWithDefaultConfiguration(): void
     {
         $container = $this->createContainer('prod');
