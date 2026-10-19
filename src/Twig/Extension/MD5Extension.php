@@ -17,6 +17,9 @@ use CleverAge\UiProcessBundle\Twig\Runtime\MD5ExtensionRuntime;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFilter;
 
+/**
+ * @internal
+ */
 class MD5Extension extends AbstractExtension
 {
     #[\Override]

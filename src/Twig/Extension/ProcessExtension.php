@@ -17,6 +17,9 @@ use CleverAge\UiProcessBundle\Twig\Runtime\ProcessExtensionRuntime;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFunction;
 
+/**
+ * @internal
+ */
 class ProcessExtension extends AbstractExtension
 {
     #[\Override]

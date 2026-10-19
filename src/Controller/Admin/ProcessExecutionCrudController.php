@@ -38,6 +38,8 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * @extends AbstractCrudController<ProcessExecution>
+ *
+ * @internal
  */
 #[IsGranted('ROLE_USER')]
 class ProcessExecutionCrudController extends AbstractCrudController

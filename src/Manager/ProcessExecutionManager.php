@@ -17,6 +17,9 @@ use CleverAge\UiProcessBundle\Entity\ProcessExecution;
 use CleverAge\UiProcessBundle\Repository\ProcessExecutionRepository;
 use Symfony\Contracts\Service\ResetInterface;
 
+/**
+ * @final since 3.3
+ */
 class ProcessExecutionManager implements ResetInterface
 {
     private ?ProcessExecution $currentProcessExecution = null;

@@ -17,6 +17,9 @@ use CleverAge\UiProcessBundle\DependencyInjection\Compiler\CheckDoctrineLazyGhos
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 
+/**
+ * @final since 3.3
+ */
 class CleverAgeUiProcessBundle extends Bundle
 {
     #[\Override]

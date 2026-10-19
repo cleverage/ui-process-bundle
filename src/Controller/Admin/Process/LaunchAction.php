@@ -32,6 +32,9 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Uid\Uuid;
 
+/**
+ * @internal
+ */
 #[Route(
     '/process/launch',
     name: 'cleverage_ui_process_launch',

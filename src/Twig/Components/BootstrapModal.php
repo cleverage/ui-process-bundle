@@ -13,6 +13,9 @@ declare(strict_types=1);
 
 namespace CleverAge\UiProcessBundle\Twig\Components;
 
+/**
+ * @internal
+ */
 class BootstrapModal
 {
     public ?string $id = null;

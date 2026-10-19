@@ -17,6 +17,9 @@ use Monolog\Level;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Twig\Extension\RuntimeExtensionInterface;
 
+/**
+ * @internal
+ */
 class LogLevelExtensionRuntime implements RuntimeExtensionInterface
 {
     private TranslatorInterface $translator;

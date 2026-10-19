@@ -22,6 +22,9 @@ use Symfony\Component\HttpKernel\Controller\ValueResolverInterface;
 use Symfony\Component\HttpKernel\ControllerMetadata\ArgumentMetadata;
 use Symfony\Component\Serializer\SerializerInterface;
 
+/**
+ * @internal
+ */
 #[AsTargetedValueResolver('http_process_execution')]
 readonly class HttpProcessExecuteValueResolver implements ValueResolverInterface
 {

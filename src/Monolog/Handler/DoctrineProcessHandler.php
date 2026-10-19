@@ -21,6 +21,9 @@ use Monolog\Handler\AbstractProcessingHandler;
 use Monolog\Level;
 use Monolog\LogRecord;
 
+/**
+ * @internal
+ */
 class DoctrineProcessHandler extends AbstractProcessingHandler
 {
     /** @var ArrayCollection<int, LogRecord> */

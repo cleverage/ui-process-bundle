@@ -18,6 +18,9 @@ use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
 use CleverAge\UiProcessBundle\Repository\ProcessExecutionRepository;
 use Twig\Extension\RuntimeExtensionInterface;
 
+/**
+ * @internal
+ */
 readonly class ProcessExecutionExtensionRuntime implements RuntimeExtensionInterface
 {
     public function __construct(

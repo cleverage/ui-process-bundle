@@ -25,6 +25,8 @@ use Doctrine\ORM\Query;
  * @method ProcessSchedule|null findOneBy(mixed[] $criteria, string[] $orderBy = null)
  * @method ProcessSchedule[]    findAll()
  * @method ProcessSchedule[]    findBy(mixed[] $criteria, string[] $orderBy = null, $limit = null, $offset = null)
+ *
+ * @final since 3.3
  */
 class ProcessScheduleRepository extends EntityRepository
 {

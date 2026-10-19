@@ -18,6 +18,8 @@ use Twig\Extension\RuntimeExtensionInterface;
 
 /**
  * @phpstan-import-type UiOptions from ProcessConfigurationsManager
+ *
+ * @internal
  */
 class ProcessExtensionRuntime implements RuntimeExtensionInterface
 {

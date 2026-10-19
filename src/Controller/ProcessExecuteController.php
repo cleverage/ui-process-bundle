@@ -28,6 +28,9 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
+/**
+ * @internal
+ */
 #[IsGranted('ROLE_USER')]
 #[Route(path: '/http/process/execute', name: 'cleverage_ui_process_http_execute', methods: ['POST'])]
 class ProcessExecuteController extends AbstractController
