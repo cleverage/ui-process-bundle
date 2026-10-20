@@ -58,7 +58,13 @@ class UserTest extends TestCase
         self::assertSame('token', $user->getToken());
         self::assertSame(['ROLE_USER', 'ROLE_ADMIN'], $user->getRoles());
 
-        $user->eraseCredentials();
+        // Marked #[\Deprecated] (Symfony 7.3): calling it triggers a deprecation with PHP 8.4 or later
+        set_error_handler(static fn (): bool => true, \E_USER_DEPRECATED);
+        try {
+            $user->eraseCredentials();
+        } finally {
+            restore_error_handler();
+        }
         self::assertSame('hashed', $user->getPassword());
 
         $user->setFirstname(null)->setLastname(null)->setTimezone(null)->setLocale(null)->setToken(null);

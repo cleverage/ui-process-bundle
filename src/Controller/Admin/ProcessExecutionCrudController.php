@@ -29,6 +29,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ArrayField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
+use EasyCorp\Bundle\EasyAdminBundle\Filter\DateTimeFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -252,7 +253,9 @@ class ProcessExecutionCrudController extends AbstractCrudController
     {
         return $filters
             ->add('code')
-            ->add('startDate')
+            // The value_type_options set by EasyAdmin replace the widget of its date filter type, whose default is
+            // deprecated with Symfony 6.4 (single_text since Symfony 7.0)
+            ->add(DateTimeFilter::new('startDate')->setFormTypeOption('value_type_options.widget', 'single_text'))
             ->add(
                 ProcessExecutionDurationFilter::new('duration', 'Duration (in seconds)')
                     ->setFormTypeOption('mapped', false)

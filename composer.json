@@ -90,6 +90,7 @@
   "require-dev": {
     "doctrine/doctrine-fixtures-bundle": "^3 || ^4",
     "friendsofphp/php-cs-fixer": "*",
+    "masterminds/html5": "^2.7.5",
     "phpstan/extension-installer": "*",
     "phpstan/phpstan": "*",
     "phpstan/phpstan-doctrine": "*",

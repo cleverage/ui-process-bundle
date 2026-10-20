@@ -14,6 +14,9 @@ declare(strict_types=1);
 namespace CleverAge\UiProcessBundle\Tests\App;
 
 use CleverAge\ProcessBundle\CleverAgeProcessBundle;
+use CleverAge\ProcessBundle\Registry\TaskRegistry;
+use CleverAge\ProcessBundle\Task\DummyTask;
+use CleverAge\ProcessBundle\Task\File\FileReaderTask;
 use CleverAge\UiProcessBundle\CleverAgeUiProcessBundle;
 use Doctrine\Bundle\DoctrineBundle\DoctrineBundle;
 use Doctrine\Bundle\MigrationsBundle\DoctrineMigrationsBundle;
@@ -25,6 +28,7 @@ use Symfony\Bundle\MonologBundle\MonologBundle;
 use Symfony\Bundle\SecurityBundle\SecurityBundle;
 use Symfony\Bundle\TwigBundle\TwigBundle;
 use Symfony\Component\HttpKernel\Kernel;
+use Symfony\Component\Yaml\Yaml;
 use Symfony\UX\TwigComponent\TwigComponentBundle;
 use Twig\Extra\TwigExtraBundle\TwigExtraBundle;
 
@@ -35,6 +39,14 @@ use Twig\Extra\TwigExtraBundle\TwigExtraBundle;
 class TestKernel extends Kernel
 {
     use MicroKernelTrait;
+
+    /**
+     * Service of the tasks used by config/processes.yaml, by code.
+     */
+    private const TASK_SERVICES = [
+        'dummy' => DummyTask::class,
+        'file_reader' => FileReaderTask::class,
+    ];
 
     private static ?string $runDir = null;
 
@@ -71,6 +83,14 @@ class TestKernel extends Kernel
     protected function configureContainer(\Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator $container): void
     {
         $container->import(__DIR__.'/config/packages.yaml');
+        $container->extension('clever_age_process', $this->getProcessConfigurations());
+        if (Kernel::VERSION_ID >= 70300) {
+            // Not setting it is deprecated since Symfony 7.3: its default value changes in 8.0
+            $container->extension('framework', ['property_info' => ['with_constructor_extractor' => true]]);
+        } else {
+            // Symfony 6.4 calls User::eraseCredentials(), marked #[\Deprecated] for Symfony 7.3 (deprecation since PHP 8.4)
+            $container->extension('security', ['erase_credentials' => false]);
+        }
         // Doctrine ORM 2 (lowest dependencies): lazy ghost proxies, as configured by the Symfony recipe, the legacy
         // proxies cannot unset the readonly properties of the entities (ProcessExecution::$code...), see
         // CheckDoctrineLazyGhostObjectsPass
@@ -82,6 +102,31 @@ class TestKernel extends Kernel
     protected function configureRoutes(\Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator $routes): void
     {
         $routes->import(__DIR__.'/config/routes.yaml');
+    }
+
+    /**
+     * The processes of config/processes.yaml, whose tasks are referenced by code (task: <code>): by their service with
+     * cleverage/process-bundle < 5.4.
+     *
+     * @return array<string, mixed>
+     */
+    private function getProcessConfigurations(): array
+    {
+        /** @var array{configurations: array<string, array{tasks: array<string, array<string, mixed>>}>} $configurations */
+        $configurations = Yaml::parseFile(__DIR__.'/config/processes.yaml');
+        if (class_exists(TaskRegistry::class)) {
+            return $configurations;
+        }
+        foreach ($configurations['configurations'] as $processCode => $process) {
+            foreach ($process['tasks'] as $taskCode => $task) {
+                \assert(\is_string($task['task']) && isset(self::TASK_SERVICES[$task['task']]));
+                $task['service'] = '@'.self::TASK_SERVICES[$task['task']];
+                unset($task['task']);
+                $configurations['configurations'][$processCode]['tasks'][$taskCode] = $task;
+            }
+        }
+
+        return $configurations;
     }
 
     public static function getRunDir(): string
