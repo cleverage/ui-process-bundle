@@ -138,7 +138,7 @@ class HttpProcessExecuteTest extends FunctionalTestCase
         self::assertResponseStatusCodeSame(500);
         $content = json_decode((string) $this->client->getResponse()->getContent(), true);
         self::assertIsString($content);
-        self::assertStringContainsString('output', $content);
+        self::assertStringContainsString('File does not exists', $content);
         // The id of the failed process execution, to find its logs in the UI
         $execution = $this->getEntityManager()->getRepository(ProcessExecution::class)->findOneBy(['code' => 'test.failing']);
         self::assertInstanceOf(ProcessExecution::class, $execution);

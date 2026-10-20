@@ -1,0 +1,91 @@
+# Processes of the functional tests, loaded by TestKernel: the tasks are referenced by code (task: <code>), replaced
+# by their service with cleverage/process-bundle < 5.4
+configurations:
+    test.process:
+        description: 'Process used by the functional tests'
+        tasks:
+            data:
+                task: dummy
+    test.form:
+        description: 'Process launched with the UI form, text input'
+        entry_point: data
+        options:
+            ui:
+                ui_launch_mode: form
+                entrypoint_type: text
+                default:
+                    input: 'default input'
+                    context:
+                        - key: 'key1'
+                          value: 'value1'
+        tasks:
+            data:
+                task: dummy
+    test.form_constraints:
+        description: 'Process launched with the UI form, with constraints on the context'
+        entry_point: data
+        options:
+            ui:
+                ui_launch_mode: form
+                constraints:
+                    - Collection:
+                          fields:
+                              input: ~
+                              context:
+                                  - Collection:
+                                        fields:
+                                            key1:
+                                                - NotBlank: ~
+        tasks:
+            data:
+                task: dummy
+    test.upload:
+        description: 'Process launched with the UI form, file input'
+        entry_point: data
+        options:
+            ui:
+                ui_launch_mode: form
+                entrypoint_type: file
+        tasks:
+            data:
+                task: dummy
+    test.private:
+        public: false
+        tasks:
+            data:
+                task: dummy
+    test.failing:
+        description: 'Process failing on execution (missing file)'
+        tasks:
+            data:
+                task: file_reader
+                options:
+                    filename: '/nonexistent/file.txt'
+    test.notification:
+        public: false
+        options:
+            notification:
+                enabled: true
+                statuses: [finish]
+        tasks:
+            data:
+                task: dummy
+    test.notification_failing:
+        public: false
+        options:
+            notification:
+                enabled: true
+        tasks:
+            data:
+                task: file_reader
+                options:
+                    filename: '/nonexistent/file.txt'
+    test.logs_retention:
+        public: false
+        options:
+            logs:
+                database_max_days: 90
+                file_max_days: 365
+        tasks:
+            data:
+                task: dummy

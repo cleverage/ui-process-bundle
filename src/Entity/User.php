@@ -173,6 +173,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    /**
+     * Required by UserInterface before Symfony 8.0: no temporary sensitive data is stored on the user.
+     */
+    #[\Deprecated]
     public function eraseCredentials(): void
     {
         // If you store any temporary, sensitive data on the user, clear it here

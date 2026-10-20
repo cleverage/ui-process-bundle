@@ -96,10 +96,24 @@ class ProcessListTest extends FunctionalTestCase
     {
         $this->login();
 
-        $crawler = $this->client->request('GET', '/process?routeName=process_list');
+        $deprecations = [];
+        set_error_handler(static function (int $errno, string $errstr) use (&$deprecations): bool {
+            $deprecations[] = $errstr;
+
+            return true;
+        }, \E_USER_DEPRECATED);
+        try {
+            $crawler = $this->client->request('GET', '/process?routeName=process_list');
+        } finally {
+            restore_error_handler();
+        }
 
         self::assertResponseIsSuccessful();
         self::assertStringContainsString('test.process', $crawler->filter('table')->text());
+        self::assertContains(
+            'Since cleverage/ui-process-bundle 3.3: The "process_list" route alias is deprecated, use the "cleverage_ui_process_list" route instead. It will be removed in 4.0.',
+            $deprecations
+        );
     }
 
     public function testUsersMenuIsReservedToAdmins(): void
