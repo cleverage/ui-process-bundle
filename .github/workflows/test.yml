@@ -111,7 +111,7 @@ jobs:
       #    files: build/logs/clover.xml
 
   migrations:
-    name: Migrations ${{ matrix.database }} + DBAL ${{ matrix.dbal }}
+    name: Migrations ${{ matrix.database }} + DBAL ${{ matrix.dbal }}${{ matrix.sql-mode == 'non-strict' && ' (non-strict SQL mode)' || '' }}
     runs-on: ubuntu-latest
     env:
       SYMFONY_REQUIRE: ${{ matrix.symfony-require }}
@@ -122,6 +122,7 @@ jobs:
       matrix:
         database: [mysql, mariadb, postgresql]
         dbal: ['3', '4']
+        sql-mode: [strict]
         include:
           - database: mysql
             image: mysql:8.4
@@ -142,6 +143,17 @@ jobs:
             php-version: '8.4'
             symfony-require: 7.4.*
           - dbal: '4'
+            php-version: '8.5'
+            symfony-require: ''
+          # Without a strict SQL mode, MySQL changes some columns with ALGORITHM=COPY (#185). A new combination, as
+          # sql-mode is a matrix value: every value is repeated
+          - database: mysql
+            dbal: '4'
+            sql-mode: non-strict
+            image: mysql:8.4
+            port: 3306
+            health-cmd: mysqladmin ping -h 127.0.0.1
+            database-url: mysql://app:app@127.0.0.1:3306/app?serverVersion=8.4.0
             php-version: '8.5'
             symfony-require: ''
 
@@ -185,6 +197,9 @@ jobs:
         uses: ramsey/composer-install@v4
         with:
           dependency-versions: highest
+      - name: Non-strict SQL mode
+        if: matrix.sql-mode == 'non-strict'
+        run: mysql -h127.0.0.1 -uroot -proot -e "SET GLOBAL sql_mode = ''"
       - name: Run the migrations
         run: tests/App/bin/console doctrine:migrations:migrate --no-interaction
       # DBAL 3 does not read the PostgreSQL identity columns created by the migrations (it expects sequences): the
