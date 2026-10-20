@@ -41,9 +41,15 @@ final class Version20261005120000 extends AbstractMigration
 
         // Log records without process execution are never displayed (the UI lists the logs of an execution)
         $this->addSql('DELETE FROM log_record WHERE process_execution_id IS NULL');
-        $this->addSql($mySql
-            ? 'ALTER TABLE log_record MODIFY process_execution_id INT NOT NULL'
-            : 'ALTER TABLE log_record ALTER process_execution_id SET NOT NULL');
+        if ($mySql) {
+            // Without a strict SQL mode, MySQL makes the column NOT NULL with ALGORITHM=COPY, which is refused on a
+            // foreign key column (error 1832): the foreign key is dropped and created again around the change
+            $this->addSql('ALTER TABLE log_record DROP FOREIGN KEY FK_8ECECC333DAC0075');
+            $this->addSql('ALTER TABLE log_record MODIFY process_execution_id INT NOT NULL');
+            $this->addSql('ALTER TABLE log_record ADD CONSTRAINT FK_8ECECC333DAC0075 FOREIGN KEY (process_execution_id) REFERENCES process_execution (id) ON DELETE CASCADE');
+        } else {
+            $this->addSql('ALTER TABLE log_record ALTER process_execution_id SET NOT NULL');
+        }
         $this->addSql($mySql
             ? 'ALTER TABLE process_execution MODIFY context JSON DEFAULT NULL'
             : 'ALTER TABLE process_execution ALTER context DROP NOT NULL');
