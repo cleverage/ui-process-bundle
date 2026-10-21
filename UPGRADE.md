@@ -53,6 +53,38 @@ removed in 4.0: update your templates (e.g. overridden templates of the bundle).
 | `resolve_ui_options()`           | `cleverage_ui_process_resolve_ui_options()`           |
 | `md5` (filter)                   | `cleverage_ui_process_md5` (filter)                   |
 
+### Process bundle 5.4
+
+`cleverage/process-bundle` `^5.4` is required: follow its
+[upgrade guide](https://github.com/cleverage/process-bundle/blob/main/UPGRADE.md#v54).
+
+### Doctrine ORM 2
+
+With Doctrine ORM 2, the container compilation fails unless lazy ghost objects are enabled (the legacy proxies cannot
+handle the readonly properties of the entities). Nothing changes with ORM 3.
+
+```yaml
+# config/packages/doctrine.yaml
+doctrine:
+    orm:
+        enable_lazy_ghost_objects: true
+```
+
+### Final classes
+
+`ProcessExecutionManager`, `ProcessExecutionRepository`, `ProcessScheduleRepository`, `ProcessExecuteMessage`,
+`ProcessExecutionNotification` and `CleverAgeUiProcessBundle` are marked `@final`, they will be `final` in 4.0
+(extending them triggers a deprecation with the Symfony `DebugClassLoader`). The entities stay open. The infrastructure
+classes (extension, configuration, commands, controllers, EasyAdmin fields and filters, form types, Messenger and
+Monolog handlers, Twig extensions...) are `@internal`.
+
+## v3.1
+
+### Log record context
+
+`LogRecord::contextIsEmpty()` is deprecated (misnamed: it returns `true` when the context is not empty), use
+`hasContextInfo()`. The notice is triggered since 3.3.
+
 ## v3.0
 
 ### Import routes

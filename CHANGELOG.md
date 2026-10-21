@@ -1,7 +1,12 @@
 Latest
 ------
 
+v3.3
+------
+
 ## Changes
+* Require `cleverage/process-bundle` `^5.4`.
+* Please follow [UPGRADE.md v3.3](UPGRADE.md#v33)
 * [#196](https://github.com/cleverage/ui-process-bundle/issues/196) Prefix the global names of the bundle, as required by the Symfony best practices for bundles: new `cleverage_ui_process.upload_directory` parameter, the `upload_directory` parameter is deprecated (when the application still sets it, its value is used with a deprecation, unless the new parameter is also set; new internal `UploadDirectoryParameterPass`); the Twig functions `log_label`, `log_translation`, `log_css_class`, `get_last_execution_date`, `get_process_source`, `get_process_target`, `resolve_ui_options` and the Twig filter `md5` are prefixed with `cleverage_ui_process_`, the former names are deprecated. The former names will be removed in 4.0. Update documentation and UPGRADE.md, add tests.
 * [#194](https://github.com/cleverage/ui-process-bundle/issues/194) The tables and columns of the entities have explicit names, those created by the migrations of the bundle: the schema no longer depends on the Doctrine naming strategy of the application (the `underscore_number_aware` strategy is no longer a prerequisite; with the Doctrine default one, the indexes referenced missing columns). Same names with the `underscore` / `underscore_number_aware` strategies, no new migration. Update documentation, add tests.
 * [#190](https://github.com/cleverage/ui-process-bundle/issues/190) Add aliases named after their class to `ProcessExecutionManager`, `ProcessConfigurationsManager`, `ProcessExecutionRepository` and `ProcessScheduleRepository` (as the Monolog handlers): they can be autowired. Update documentation, add tests.
