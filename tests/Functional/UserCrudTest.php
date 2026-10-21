@@ -149,4 +149,30 @@ class UserCrudTest extends FunctionalTestCase
         // Only the hash of the token is stored
         self::assertSame((new Pbkdf2PasswordHasher())->hash($token), $this->getEntityManager()->find(User::class, $admin->getId())?->getToken());
     }
+
+    /**
+     * The users are reserved to the admins: the custom action too (it was only protected because EasyAdmin does not
+     * load the entity, a 500).
+     */
+    public function testGenerateTokenIsReservedToAdmins(): void
+    {
+        $user = $this->login();
+        $other = $this->createUser('other@example.com');
+
+        $this->client->request('GET', '/process/user/'.$other->getId().'/generate-token');
+        self::assertResponseStatusCodeSame(403);
+        $this->client->request('GET', '/process/user/'.$user->getId().'/generate-token');
+        self::assertResponseStatusCodeSame(403);
+
+        $this->getEntityManager()->clear();
+        self::assertNull($this->getEntityManager()->find(User::class, $other->getId())?->getToken());
+    }
+
+    public function testGenerateTokenOfAnUnknownUser(): void
+    {
+        $this->login(['ROLE_ADMIN']);
+
+        $this->client->request('GET', '/process/user/999999/generate-token');
+        self::assertResponseStatusCodeSame(404);
+    }
 }
