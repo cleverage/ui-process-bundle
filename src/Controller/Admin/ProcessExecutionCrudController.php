@@ -164,7 +164,9 @@ class ProcessExecutionCrudController extends AbstractCrudController
                     ->renderAsForm()
                     ->askConfirmation('Do you really want to mark this process execution as failed? Do it only if its process is no longer running.')
                     ->displayIf(fn (ProcessExecution $entity) => $entity->isStale($this->staleAfter))
-            );
+            )
+            // Read-only: Actions::new() only hides the built-in actions, their routes must be disabled too
+            ->disable(Action::NEW, Action::EDIT, Action::DELETE, Action::BATCH_DELETE);
     }
 
     /**

@@ -4,6 +4,9 @@ Latest
 ## Changes
 * [#138](https://github.com/cleverage/ui-process-bundle/issues/138) Installation documentation: describe the Symfony Flex recipe, which registers the bundle, imports the bundle controllers routes (`config/routes/clever_age_ui_process.yaml`, the EasyAdmin routes being imported by the EasyAdmin recipe) and creates `config/packages/clever_age_ui_process.yaml`, and the manual setup without Flex.
 
+## Fixes
+* [GHSA-m5c8-mc3j-px8f](https://github.com/cleverage/ui-process-bundle/security/advisories/GHSA-m5c8-mc3j-px8f) ProcessExecutionCrudController, LogRecordCrudController: disable the new, edit, delete and batch delete actions (`403`), only hidden until now: any user could delete the process executions and their logs.
+
 v3.3
 ------
 

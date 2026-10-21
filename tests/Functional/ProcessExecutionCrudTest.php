@@ -95,6 +95,35 @@ class ProcessExecutionCrudTest extends FunctionalTestCase
         self::assertStringContainsString('test.form', $crawler->filter('table')->text());
     }
 
+    /**
+     * The executions are read-only: the built-in actions are not displayed, their routes must not be usable either
+     * (deleting the executions would erase the history of the process runs).
+     */
+    public function testWriteActionsAreDisabled(): void
+    {
+        $this->login();
+        $execution = $this->createExecution('test.process', ProcessExecutionStatus::Finish);
+        $id = $execution->getId();
+
+        $crawler = $this->client->request('GET', '/process/process-execution');
+        self::assertResponseIsSuccessful();
+        // CSRF token of the EasyAdmin delete action, rendered in the layout (the batch delete, which needs a token
+        // only rendered with its button, checks the delete action of each entity)
+        $token = $crawler->filter('input[name="token"]')->count() > 0 ? (string) $crawler->filter('input[name="token"]')->attr('value') : '';
+
+        $statusCodes = [];
+        $this->client->request('GET', '/process/process-execution/new');
+        $statusCodes['new'] = $this->client->getResponse()->getStatusCode();
+        $this->client->request('GET', '/process/process-execution/'.$id.'/edit');
+        $statusCodes['edit'] = $this->client->getResponse()->getStatusCode();
+        $this->client->request('POST', '/process/process-execution/'.$id.'/delete', ['token' => $token]);
+        $statusCodes['delete'] = $this->client->getResponse()->getStatusCode();
+        self::assertSame(['new' => 403, 'edit' => 403, 'delete' => 403], $statusCodes);
+
+        $this->getEntityManager()->clear();
+        self::assertNotNull($this->getEntityManager()->find(ProcessExecution::class, $id));
+    }
+
     public function testDuration(): void
     {
         $this->login();
