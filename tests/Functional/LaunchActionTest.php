@@ -23,6 +23,7 @@ use CleverAge\UiProcessBundle\Controller\Admin\ProcessScheduleCrudController;
 use CleverAge\UiProcessBundle\Controller\Admin\UserCrudController;
 use CleverAge\UiProcessBundle\DependencyInjection\CleverAgeUiProcessExtension;
 use CleverAge\UiProcessBundle\DependencyInjection\Compiler\CheckDoctrineLazyGhostObjectsPass;
+use CleverAge\UiProcessBundle\DependencyInjection\Compiler\UploadDirectoryParameterPass;
 use CleverAge\UiProcessBundle\DependencyInjection\Configuration;
 use CleverAge\UiProcessBundle\Entity\User;
 use CleverAge\UiProcessBundle\EventSubscriber\ProcessEventSubscriber;
@@ -63,6 +64,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 #[UsesClass(ProcessExtensionRuntime::class)]
 #[UsesClass(CleverAgeUiProcessBundle::class)]
 #[UsesClass(CheckDoctrineLazyGhostObjectsPass::class)]
+#[UsesClass(UploadDirectoryParameterPass::class)]
 #[UsesClass(LogRecordCrudController::class)]
 #[UsesClass(ProcessExecutionCrudController::class)]
 #[UsesClass(ProcessScheduleCrudController::class)]
@@ -146,7 +148,7 @@ class LaunchActionTest extends FunctionalTestCase
         // The file is saved in the upload directory, its path is the process input
         self::assertIsString($messages[0]->input);
         self::assertStringEndsWith('.csv', $messages[0]->input);
-        $uploadDirectory = static::getContainer()->getParameter('upload_directory');
+        $uploadDirectory = static::getContainer()->getParameter('cleverage_ui_process.upload_directory');
         self::assertIsString($uploadDirectory);
         self::assertStringStartsWith($uploadDirectory.'/', $messages[0]->input);
         self::assertSame('line1', file_get_contents($messages[0]->input));

@@ -25,10 +25,37 @@ class MD5ExtensionTest extends TestCase
     public function testGetFilters(): void
     {
         $filters = array_map(
-            static fn (TwigFilter $filter): array => [$filter->getName(), $filter->getCallable()],
+            static fn (TwigFilter $filter): array => [$filter->getName(), $filter->getCallable(), $filter->isDeprecated()],
             (new MD5Extension())->getFilters()
         );
 
-        self::assertSame([['md5', [MD5ExtensionRuntime::class, 'md5']]], $filters);
+        // Prefixed names, and the former ones, deprecated
+        self::assertSame([
+            ['cleverage_ui_process_md5', [MD5ExtensionRuntime::class, 'md5'], false],
+            ['md5', [MD5ExtensionRuntime::class, 'md5'], true],
+        ], $filters);
+    }
+
+    public function testFormerNamesAreDeprecated(): void
+    {
+        $deprecations = [];
+        set_error_handler(static function (int $errno, string $errstr) use (&$deprecations): bool {
+            $deprecations[] = $errstr;
+
+            return true;
+        }, \E_USER_DEPRECATED);
+        try {
+            foreach ((new MD5Extension())->getFilters() as $filter) {
+                if ($filter->isDeprecated()) {
+                    $filter->triggerDeprecation();
+                }
+            }
+        } finally {
+            restore_error_handler();
+        }
+
+        self::assertSame([
+            'Since cleverage/ui-process-bundle 3.3: Twig Filter "md5" is deprecated; use "cleverage_ui_process_md5" instead.',
+        ], $deprecations);
     }
 }

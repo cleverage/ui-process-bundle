@@ -129,7 +129,9 @@ class CleverAgeUiProcessExtensionTest extends TestCase
         // Stateful services, reset between two messages of a worker
         self::assertSame([['method' => 'reset']], $container->getDefinition('cleverage_ui_process.manager.process_execution')->getTag('kernel.reset'));
         self::assertSame([['method' => 'reset']], $container->getDefinition('cleverage_ui_process.monolog_handler.doctrine_process')->getTag('kernel.reset'));
-        self::assertTrue($container->hasParameter('upload_directory'));
+        self::assertSame('%kernel.project_dir%/var/storage/uploads', $container->getParameter('cleverage_ui_process.upload_directory'));
+        // Deprecated, see UploadDirectoryParameterPass
+        self::assertSame('%cleverage_ui_process.upload_directory%', $container->getParameterBag()->all()['upload_directory']);
 
         self::assertSame(
             ['ROLE_ADMIN' => 'ROLE_ADMIN'],

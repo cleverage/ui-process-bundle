@@ -22,8 +22,8 @@
         {% block table_body %}
             {# @var process \CleverAge\ProcessBundle\Configuration\ProcessConfiguration #}
             {% for process in processes %}
-                {% set lastExecution = get_last_execution_date(process.code) %}
-                {% set uiOptions = resolve_ui_options(process.code) %}
+                {% set lastExecution = cleverage_ui_process_get_last_execution_date(process.code) %}
+                {% set uiOptions = cleverage_ui_process_resolve_ui_options(process.code) %}
                 {% set statusClass = '' %}
                 {% if lastExecution is not null %}
                     {% set statusClass = {failed: 'danger', stopped: 'warning'}[lastExecution.status.value] ?? 'success' %}

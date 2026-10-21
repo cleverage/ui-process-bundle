@@ -94,16 +94,17 @@ See [stopping a process execution](04-process_executions_and_logs.md#stopping-a-
 Container parameters
 --------------------
 
-| Parameter          | Default                                        | Description                                                                                                                       |
-|--------------------|------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------|
-| `upload_directory` | `%kernel.project_dir%/var/storage/uploads`     | Directory where files uploaded from the launch form or the [HTTP API](06-http_api.md) are stored before being passed as process input. |
+| Parameter                               | Default                                   | Description |
+|-----------------------------------------|-------------------------------------------|-------------|
+| `cleverage_ui_process.upload_directory` | `%kernel.project_dir%/var/storage/uploads` | Directory where files uploaded from the launch form or the [HTTP API](06-http_api.md) are stored before being passed as process input. |
+| `upload_directory`                      | `%cleverage_ui_process.upload_directory%` | Deprecated since 3.3, removed in 4.0: use `cleverage_ui_process.upload_directory`. When your application still sets it, its value is used (unless `cleverage_ui_process.upload_directory` is also set), with a deprecation. |
 
 It can be overridden in your application:
 
 ```yaml
 # config/services.yaml
 parameters:
-    upload_directory: '%kernel.project_dir%/var/imports'
+    cleverage_ui_process.upload_directory: '%kernel.project_dir%/var/imports'
 ```
 
 Configuration added to other bundles
