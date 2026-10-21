@@ -99,6 +99,12 @@ Roles
 | `ROLE_USER`  | Every user (always added by `User::getRoles()`)                     | Dashboard, process list and launch, executions, logs, scheduler.                                               |
 | `ROLE_ADMIN` | Users created with the console command, or selected in the UI form  | Everything above, plus the "Users" menu (users list, creation, edition, deletion and API token generation).    |
 
+Every user sees all the executions and logs, with their context: the context of a process (given in the launch form,
+the HTTP API, a schedule or the console) is stored in its execution and added to each of its log records. Do not pass
+secrets (passwords, tokens) in the context, and keep in mind that its values come from the UI users: see
+[contextual values](https://github.com/cleverage/process-bundle/blob/main/docs/01-quick_start.md#contextual-values)
+for the options in which they must not be used (e.g. a shell `commandline`).
+
 The roles selectable in the user edit form are configured with `clever_age_ui_process.security.roles` (default
 `['ROLE_ADMIN']`, see [bundle configuration](01-bundle_configuration.md#security)). Add your own roles there if your
 application uses them, e.g. with a `role_hierarchy`.
