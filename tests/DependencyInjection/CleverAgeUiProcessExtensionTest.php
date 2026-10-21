@@ -71,6 +71,48 @@ class CleverAgeUiProcessExtensionTest extends TestCase
         }
     }
 
+    public function testServicesAreDefinedExplicitly(): void
+    {
+        $container = $this->createContainer('prod');
+        (new CleverAgeUiProcessExtension())->load([], $container);
+
+        // Neither autowiring nor autoconfiguration (Symfony best practices for bundles)
+        foreach ($container->getDefinitions() as $id => $definition) {
+            if (!str_starts_with((string) $definition->getClass(), 'CleverAge\\UiProcessBundle\\')) {
+                continue;
+            }
+            self::assertFalse($definition->isAutowired(), \sprintf('Service "%s" is autowired', $id));
+            self::assertFalse($definition->isAutoconfigured(), \sprintf('Service "%s" is autoconfigured', $id));
+        }
+
+        // The targeted value resolver of the HTTP API (#[AsTargetedValueResolver])
+        $resolver = $container->getDefinition('cleverage_ui_process.http_value_resolver.http_process_execute');
+        self::assertSame([['name' => 'http_process_execution']], $resolver->getTag('controller.targeted_value_resolver'));
+        self::assertTrue($resolver->hasTag('controller.argument_value_resolver'));
+    }
+
+    public function testEveryControllerIsRegistered(): void
+    {
+        $container = $this->createContainer('prod');
+        (new CleverAgeUiProcessExtension())->load([], $container);
+
+        $files = array_merge(...array_map(
+            static fn (string $pattern): array => glob($pattern) ?: [],
+            [\dirname(__DIR__, 2).'/src/Controller/*.php', \dirname(__DIR__, 2).'/src/Controller/*/*.php', \dirname(__DIR__, 2).'/src/Controller/*/*/*.php']
+        ));
+        self::assertNotEmpty($files);
+        foreach ($files as $file) {
+            $class = 'CleverAge\\UiProcessBundle\\Controller\\'.str_replace('/', '\\', substr($file, \strlen(\dirname(__DIR__, 2).'/src/Controller/'), -4));
+            self::assertTrue($container->hasDefinition($class), \sprintf('Controller "%s" is not registered', $class));
+            $definition = $container->getDefinition($class);
+            self::assertTrue($definition->isPublic());
+            self::assertTrue($definition->hasTag('controller.service_arguments'));
+            // Services of AbstractController
+            self::assertTrue($definition->hasTag('container.service_subscriber'));
+            self::assertTrue($definition->hasMethodCall('setContainer'));
+        }
+    }
+
     public function testLoadWithDefaultConfiguration(): void
     {
         $container = $this->createContainer('prod');
