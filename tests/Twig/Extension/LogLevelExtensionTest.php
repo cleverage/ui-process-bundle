@@ -25,14 +25,43 @@ class LogLevelExtensionTest extends TestCase
     public function testGetFunctions(): void
     {
         $functions = array_map(
-            static fn (TwigFunction $function): array => [$function->getName(), $function->getCallable()],
+            static fn (TwigFunction $function): array => [$function->getName(), $function->getCallable(), $function->isDeprecated()],
             (new LogLevelExtension())->getFunctions()
         );
 
+        // Prefixed names, and the former ones, deprecated
         self::assertSame([
-            ['log_label', [LogLevelExtensionRuntime::class, 'getLabel']],
-            ['log_translation', [LogLevelExtensionRuntime::class, 'getTranslation']],
-            ['log_css_class', [LogLevelExtensionRuntime::class, 'getCssClass']],
+            ['cleverage_ui_process_log_label', [LogLevelExtensionRuntime::class, 'getLabel'], false],
+            ['cleverage_ui_process_log_translation', [LogLevelExtensionRuntime::class, 'getTranslation'], false],
+            ['cleverage_ui_process_log_css_class', [LogLevelExtensionRuntime::class, 'getCssClass'], false],
+            ['log_label', [LogLevelExtensionRuntime::class, 'getLabel'], true],
+            ['log_translation', [LogLevelExtensionRuntime::class, 'getTranslation'], true],
+            ['log_css_class', [LogLevelExtensionRuntime::class, 'getCssClass'], true],
         ], $functions);
+    }
+
+    public function testFormerNamesAreDeprecated(): void
+    {
+        $deprecations = [];
+        set_error_handler(static function (int $errno, string $errstr) use (&$deprecations): bool {
+            $deprecations[] = $errstr;
+
+            return true;
+        }, \E_USER_DEPRECATED);
+        try {
+            foreach ((new LogLevelExtension())->getFunctions() as $function) {
+                if ($function->isDeprecated()) {
+                    $function->triggerDeprecation();
+                }
+            }
+        } finally {
+            restore_error_handler();
+        }
+
+        self::assertSame([
+            'Since cleverage/ui-process-bundle 3.3: Twig Function "log_label" is deprecated; use "cleverage_ui_process_log_label" instead.',
+            'Since cleverage/ui-process-bundle 3.3: Twig Function "log_translation" is deprecated; use "cleverage_ui_process_log_translation" instead.',
+            'Since cleverage/ui-process-bundle 3.3: Twig Function "log_css_class" is deprecated; use "cleverage_ui_process_log_css_class" instead.',
+        ], $deprecations);
     }
 }

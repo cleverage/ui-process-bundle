@@ -23,7 +23,7 @@ services:
             $adminContextProvider: '@EasyCorp\Bundle\EasyAdminBundle\Provider\AdminContextProvider'
         bind:
             # Argument of the action
-            $uploadDirectory: '%upload_directory%'
+            $uploadDirectory: '%cleverage_ui_process.upload_directory%'
         calls:
             - [setContainer, ['@Psr\Container\ContainerInterface']]
         tags:

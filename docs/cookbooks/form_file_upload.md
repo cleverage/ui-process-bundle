@@ -63,7 +63,7 @@ How it works:
 - `ui_launch_mode: form` makes the "Launch" action of the process list open a form instead of a confirmation modal
   (see [launch modes](../reference/02-process_ui_options.md#launch-modes)).
 - `entrypoint_type: file` turns the `input` field into a file upload. As the process has an `entry_point`, the field
-  is required. The uploaded file is saved in the `upload_directory` directory and its path is sent to the
+  is required. The uploaded file is saved in the `cleverage_ui_process.upload_directory` directory and its path is sent to the
   `log_file` task (see [launch form](../reference/02-process_ui_options.md#launch-form)).
 - `default.context` pre-fills a `delimiter` line in the context collection
   (see [default values](../reference/02-process_ui_options.md#default-values)). It is injected into the
@@ -80,7 +80,7 @@ How it works:
   (see [process executions & logs](../reference/04-process_executions_and_logs.md)).
 
 Uploaded files are not removed after the execution: add a cleaning step at the end of the process (e.g. a
-[FileRemoverTask](https://github.com/cleverage/process-bundle/blob/main/docs/reference/tasks/file_remover_task.md)) or purge the `upload_directory` directory periodically.
+[FileRemoverTask](https://github.com/cleverage/process-bundle/blob/main/docs/reference/tasks/file_remover_task.md)) or purge the `cleverage_ui_process.upload_directory` directory periodically.
 
 The same process can also be launched through the [HTTP API](../reference/06-http_api.md), with a file upload:
 

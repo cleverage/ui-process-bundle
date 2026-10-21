@@ -79,7 +79,7 @@ The launch form (`/process/launch?process=<process_code>`) contains:
 - a `context` collection of key/value pairs (both are required when a line is added). Each pair becomes a process
   context value, like `-c key:value` on the `cleverage:process:execute` console command.
 
-When `entrypoint_type` is `file`, the uploaded file is saved to the `upload_directory` directory (see
+When `entrypoint_type` is `file`, the uploaded file is saved to the `cleverage_ui_process.upload_directory` directory (see
 [bundle configuration](01-bundle_configuration.md#container-parameters)) with a random name keeping the original
 extension, and its absolute path is passed as process input. The file is not removed after the execution.
 

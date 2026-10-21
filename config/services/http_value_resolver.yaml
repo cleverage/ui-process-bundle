@@ -3,7 +3,7 @@ services:
         class: CleverAge\UiProcessBundle\Http\ValueResolver\HttpProcessExecuteValueResolver
         public: false
         arguments:
-            - '%upload_directory%'
+            - '%cleverage_ui_process.upload_directory%'
             - '@serializer'
         tags:
             # Targeted value resolver: #[ValueResolver('http_process_execution')], as #[AsTargetedValueResolver]

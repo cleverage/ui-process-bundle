@@ -1,5 +1,5 @@
 parameters:
-    upload_directory: '%kernel.cache_dir%/uploads'
+    cleverage_ui_process.upload_directory: '%kernel.cache_dir%/uploads'
     # SQLite by default; the CI runs the migrations on MySQL / MariaDB / PostgreSQL with DATABASE_URL
     env(DATABASE_URL): 'sqlite:///%kernel.cache_dir%/test.db'
 
