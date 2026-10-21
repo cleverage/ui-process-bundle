@@ -48,8 +48,8 @@ doctrine:
         url: '%env(resolve:DATABASE_URL)%'
     orm:
         auto_mapping: true
-        # As the Symfony recipe: the indexes of the bundle entities use snake_case column names
-        naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
+        # No naming_strategy: the Doctrine default one, the names of the bundle entities are explicit (the CI validates
+        # the schema created by the migrations with it)
         mappings:
             CleverAgeUiProcessBundle:
                 type: attribute
