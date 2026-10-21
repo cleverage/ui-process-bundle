@@ -5,9 +5,13 @@ services:
         arguments:
             - '@doctrine.orm.entity_manager'
             - '@doctrine'
+    CleverAge\UiProcessBundle\Repository\ProcessExecutionRepository:
+        alias: cleverage_ui_process.repository.process_execution
 
     cleverage_ui_process.repository.process_schedule:
         class: CleverAge\UiProcessBundle\Repository\ProcessScheduleRepository
         public: false
         arguments:
             - '@doctrine.orm.entity_manager'
+    CleverAge\UiProcessBundle\Repository\ProcessScheduleRepository:
+        alias: cleverage_ui_process.repository.process_schedule

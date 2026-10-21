@@ -19,8 +19,14 @@ use CleverAge\UiProcessBundle\Controller\Admin\UserCrudController;
 use CleverAge\UiProcessBundle\DependencyInjection\CleverAgeUiProcessExtension;
 use CleverAge\UiProcessBundle\DependencyInjection\Configuration;
 use CleverAge\UiProcessBundle\Entity\User;
+use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
+use CleverAge\UiProcessBundle\Manager\ProcessExecutionManager;
 use CleverAge\UiProcessBundle\Message\ProcessExecuteMessage;
+use CleverAge\UiProcessBundle\Monolog\Handler\DoctrineProcessHandler;
+use CleverAge\UiProcessBundle\Monolog\Handler\ProcessHandler;
 use CleverAge\UiProcessBundle\Notifier\NotificationTrigger;
+use CleverAge\UiProcessBundle\Repository\ProcessExecutionRepository;
+use CleverAge\UiProcessBundle\Repository\ProcessScheduleRepository;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\UsesClass;
@@ -157,6 +163,35 @@ class CleverAgeUiProcessExtensionTest extends TestCase
             ['enabled' => false, 'statuses' => ['failed', 'finish_with_report'], 'channels' => [], 'recipients' => []],
             $container->getDefinition('cleverage_ui_process.notifier.process_execution')->getArgument('$defaultOptions')
         );
+    }
+
+    /**
+     * @return iterable<string, array{class-string, string}>
+     */
+    public static function provideAutowiringAliases(): iterable
+    {
+        yield 'process execution manager' => [ProcessExecutionManager::class, 'cleverage_ui_process.manager.process_execution'];
+        yield 'process configurations manager' => [ProcessConfigurationsManager::class, 'cleverage_ui_process.manager.process_configuration'];
+        yield 'process execution repository' => [ProcessExecutionRepository::class, 'cleverage_ui_process.repository.process_execution'];
+        yield 'process schedule repository' => [ProcessScheduleRepository::class, 'cleverage_ui_process.repository.process_schedule'];
+        yield 'process handler' => [ProcessHandler::class, 'cleverage_ui_process.monolog_handler.process'];
+        yield 'doctrine process handler' => [DoctrineProcessHandler::class, 'cleverage_ui_process.monolog_handler.doctrine_process'];
+    }
+
+    /**
+     * @param class-string $class
+     */
+    #[DataProvider('provideAutowiringAliases')]
+    public function testServiceCanBeAutowired(string $class, string $id): void
+    {
+        $container = $this->createContainer('prod');
+        (new CleverAgeUiProcessExtension())->load([], $container);
+
+        // Private alias named after the class of the service
+        $alias = $container->getAlias($class);
+        self::assertSame($id, (string) $alias);
+        self::assertFalse($alias->isPublic());
+        self::assertSame($class, $container->getDefinition($id)->getClass());
     }
 
     /**
