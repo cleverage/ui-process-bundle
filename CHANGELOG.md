@@ -4,6 +4,9 @@ Latest
 ## Changes
 * [#138](https://github.com/cleverage/ui-process-bundle/issues/138) Installation documentation: describe the Symfony Flex recipe, which registers the bundle, imports the bundle controllers routes (`config/routes/clever_age_ui_process.yaml`, the EasyAdmin routes being imported by the EasyAdmin recipe) and creates `config/packages/clever_age_ui_process.yaml`, and the manual setup without Flex.
 
+## Fixes
+* [GHSA-jwvw-9x95-x352](https://github.com/cleverage/ui-process-bundle/security/advisories/GHSA-jwvw-9x95-x352) LaunchAction: a process without form (`ui_launch_mode: modal` or `~`) is launched by a POST request with a CSRF token only (a GET request answers `405`, an invalid token `403`), and the launch URL of an unknown or private process answers `404`, as with the HTTP API and the scheduler: a link on another site made a logged-in user launch a process, and any user could launch a private process. The confirmation of the modal and the "Launch" action of `ui_launch_mode: ~` are POST forms.
+
 v3.3
 ------
 

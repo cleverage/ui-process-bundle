@@ -22,4 +22,5 @@ class BootstrapModal
     public ?string $title = null;
     public ?string $message = null;
     public ?string $confirmUrl = null;
+    public ?string $csrfToken = null;
 }
