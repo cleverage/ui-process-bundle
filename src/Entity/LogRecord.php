@@ -18,29 +18,30 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\String\UnicodeString;
 
 #[ORM\Entity]
+#[ORM\Table(name: 'log_record')]
 #[ORM\Index(name: 'idx_log_record_level', columns: ['level'])]
 #[ORM\Index(name: 'idx_log_record_created_at', columns: ['created_at'])]
 class LogRecord
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column]
+    #[ORM\Column(name: 'id')]
     private ?int $id = null;
 
-    #[ORM\Column(type: Types::STRING, length: 64)]
+    #[ORM\Column(name: 'channel', type: Types::STRING, length: 64)]
     public readonly string $channel;
 
-    #[ORM\Column(type: Types::INTEGER)]
+    #[ORM\Column(name: 'level', type: Types::INTEGER)]
     public readonly int $level;
 
-    #[ORM\Column(type: Types::STRING, length: 512)]
+    #[ORM\Column(name: 'message', type: Types::STRING, length: 512)]
     public readonly string $message;
 
     /** @var array<mixed> $context */
-    #[ORM\Column(type: Types::JSON)]
+    #[ORM\Column(name: 'context', type: Types::JSON)]
     public readonly array $context;
 
-    #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
+    #[ORM\Column(name: 'created_at', type: Types::DATETIME_IMMUTABLE)]
     public readonly \DateTimeImmutable $createdAt;
 
     public function getId(): ?int

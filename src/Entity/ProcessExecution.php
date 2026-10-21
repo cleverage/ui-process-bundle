@@ -19,49 +19,50 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\String\UnicodeString;
 
 #[ORM\Entity]
+#[ORM\Table(name: 'process_execution')]
 #[ORM\Index(name: 'idx_process_execution_code', columns: ['code'])]
 #[ORM\Index(name: 'idx_process_execution_start_date', columns: ['start_date'])]
 class ProcessExecution implements \Stringable
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column]
+    #[ORM\Column(name: 'id')]
     private ?int $id = null;
 
-    #[ORM\Column(type: Types::STRING, length: 255)]
+    #[ORM\Column(name: 'code', type: Types::STRING, length: 255)]
     public readonly string $code;
 
-    #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
+    #[ORM\Column(name: 'start_date', type: Types::DATETIME_IMMUTABLE)]
     public readonly \DateTimeImmutable $startDate;
 
-    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    #[ORM\Column(name: 'end_date', type: Types::DATETIME_IMMUTABLE, nullable: true)]
     public ?\DateTimeImmutable $endDate = null;
 
-    #[ORM\Column(type: Types::STRING, enumType: ProcessExecutionStatus::class)]
+    #[ORM\Column(name: 'status', type: Types::STRING, enumType: ProcessExecutionStatus::class)]
     public ProcessExecutionStatus $status = ProcessExecutionStatus::Started;
 
     /**
      * Requested from the UI: the process is stopped before its next task execution.
      */
-    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    #[ORM\Column(name: 'stop_requested_at', type: Types::DATETIME_IMMUTABLE, nullable: true)]
     public ?\DateTimeImmutable $stopRequestedAt = null;
 
     /**
      * Updated while the process runs (see ProcessExecutionStopChecker), written with DBAL by the running process.
      */
-    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    #[ORM\Column(name: 'heartbeat_at', type: Types::DATETIME_IMMUTABLE, nullable: true)]
     public ?\DateTimeImmutable $heartbeatAt = null;
 
     /**
      * @var array<string, mixed>
      */
-    #[ORM\Column(type: Types::JSON)]
+    #[ORM\Column(name: 'report', type: Types::JSON)]
     private array $report = [];
 
     /**
      * @var array<string|int, mixed>
      */
-    #[ORM\Column(type: Types::JSON, nullable: true)]
+    #[ORM\Column(name: 'context', type: Types::JSON, nullable: true)]
     private ?array $context;
 
     public function getId(): ?int
@@ -74,7 +75,7 @@ class ProcessExecution implements \Stringable
      */
     public function __construct(
         string $code,
-        #[ORM\Column(type: Types::STRING, length: 255)] public readonly string $logFilename,
+        #[ORM\Column(name: 'log_filename', type: Types::STRING, length: 255)] public readonly string $logFilename,
         ?array $context = [],
     ) {
         $this->code = (string) (new UnicodeString($code))->truncate(255);

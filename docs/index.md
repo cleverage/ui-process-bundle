@@ -89,15 +89,8 @@ To configure the security in your application instead (e.g. on a dedicated firew
 
 Supported databases: **MySQL / MariaDB** and **PostgreSQL** (maintained versions).
 
-The entities of the bundle expect the `underscore_number_aware` Doctrine naming strategy (that of the Symfony recipe):
-their indexes reference `snake_case` column names (e.g. `start_date`).
-
-```yaml
-# config/packages/doctrine.yaml
-doctrine:
-    orm:
-        naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
-```
+The tables and columns of the entities have explicit names, those created by the migrations of the bundle: they do
+not depend on the Doctrine naming strategy of the application.
 
 With Doctrine ORM 2, the lazy ghost objects must be enabled (also set by the Symfony recipe of the DoctrineBundle): the
 entities of the bundle have readonly properties, which the legacy proxies of ORM 2 cannot handle. Without it, the
