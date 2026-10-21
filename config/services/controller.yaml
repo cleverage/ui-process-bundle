@@ -1,20 +1,132 @@
 services:
-    CleverAge\UiProcessBundle\Controller\:
-        resource: '../../src/Controller/'
-        autowire: true
-        autoconfigure: true
-        bind:
+    # The controllers extend AbstractController: its services are injected by setContainer(), with the service locator
+    # of the "container.service_subscriber" tag. The "routing.controller" tag (#[Route] attribute, Symfony 7.3 or
+    # later) and the "ea.admin_route_controller" tag (#[AdminRoute] attribute) are the ones of the autoconfiguration.
+    CleverAge\UiProcessBundle\Controller\Admin\LogRecordCrudController:
+        public: true
+        arguments:
             $processConfigurationsManager: '@cleverage_ui_process.manager.process_configuration'
-            $localeSwitcher: '@translation.locale_switcher'
             $requestStack: '@request_stack'
+        calls:
+            - [setContainer, ['@Psr\Container\ContainerInterface']]
+        tags:
+            - controller.service_arguments
+            - ea.crud_controller
+            - container.service_subscriber
+
+    CleverAge\UiProcessBundle\Controller\Admin\Process\LaunchAction:
+        public: true
+        arguments:
             $messageBus: '@messenger.default_bus'
+            $requestStack: '@request_stack'
+            $processConfigurationsManager: '@cleverage_ui_process.manager.process_configuration'
+            $adminContextProvider: '@EasyCorp\Bundle\EasyAdminBundle\Provider\AdminContextProvider'
+        bind:
+            # Argument of the action
             $uploadDirectory: '%upload_directory%'
-            $context: '@EasyCorp\Bundle\EasyAdminBundle\Factory\AdminContextFactory'
-            $logDirectory: '%kernel.logs_dir%'
-            $processExecutionRepository: '@cleverage_ui_process.repository.process_execution'
+        calls:
+            - [setContainer, ['@Psr\Container\ContainerInterface']]
+        tags:
+            - controller.service_arguments
+            - routing.controller
+            - container.service_subscriber
+
+    CleverAge\UiProcessBundle\Controller\Admin\Process\ListAction:
+        public: true
+        arguments:
             $intlFormatter: '@EasyCorp\Bundle\EasyAdminBundle\Intl\IntlFormatter'
+            $processConfigurationsManager: '@cleverage_ui_process.manager.process_configuration'
+            $adminContextProvider: '@EasyCorp\Bundle\EasyAdminBundle\Provider\AdminContextProvider'
+        calls:
+            - [setContainer, ['@Psr\Container\ContainerInterface']]
+        tags:
+            - controller.service_arguments
+            - routing.controller
+            - container.service_subscriber
+
+    CleverAge\UiProcessBundle\Controller\Admin\ProcessDashboardController:
+        public: true
+        arguments:
+            $localeSwitcher: '@translation.locale_switcher'
+            $packages: '@assets.packages'
+            # $logoPath: set by the extension (design.logo_path)
+        calls:
+            - [setContainer, ['@Psr\Container\ContainerInterface']]
+        tags:
+            - controller.service_arguments
+            - ea.dashboard_controller
+            - container.service_subscriber
+
+    CleverAge\UiProcessBundle\Controller\Admin\ProcessExecutionCrudController:
+        public: true
+        arguments:
+            $processExecutionRepository: '@cleverage_ui_process.repository.process_execution'
+            $logDirectory: '%kernel.logs_dir%'
             $translator: '@translator'
+            # $staleAfter: set by the extension (process_execution.stale_after)
+        calls:
+            - [setContainer, ['@Psr\Container\ContainerInterface']]
+        tags:
+            - controller.service_arguments
+            - ea.admin_route_controller
+            - ea.crud_controller
+            - container.service_subscriber
+
+    CleverAge\UiProcessBundle\Controller\Admin\ProcessScheduleCrudController:
+        public: true
+        arguments:
+            $processConfigurationsManager: '@cleverage_ui_process.manager.process_configuration'
+        calls:
+            - [setContainer, ['@Psr\Container\ContainerInterface']]
+        tags:
+            - controller.service_arguments
+            - ea.crud_controller
+            - container.service_subscriber
+
+    CleverAge\UiProcessBundle\Controller\Admin\Security\LoginController:
+        public: true
+        calls:
+            - [setContainer, ['@Psr\Container\ContainerInterface']]
+        tags:
+            # With the service of the argument of the action
+            - { name: controller.service_arguments, action: __invoke, argument: authenticationUtils, id: security.authentication_utils }
+            - routing.controller
+            - container.service_subscriber
+
+    CleverAge\UiProcessBundle\Controller\Admin\Security\LogoutController:
+        public: true
+        arguments:
+            $security: '@security.helper'
+        calls:
+            - [setContainer, ['@Psr\Container\ContainerInterface']]
+        tags:
+            - controller.service_arguments
+            - routing.controller
+            - container.service_subscriber
+
+    CleverAge\UiProcessBundle\Controller\Admin\UserCrudController:
+        public: true
+        arguments:
+            # $roles: set by the extension (security.roles)
+            $adminUrlGenerator: '@EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator'
+        calls:
+            - [setContainer, ['@Psr\Container\ContainerInterface']]
+        tags:
+            - controller.service_arguments
+            - ea.admin_route_controller
+            - ea.crud_controller
+            - container.service_subscriber
+
+    CleverAge\UiProcessBundle\Controller\ProcessExecuteController:
+        public: true
+        arguments:
+            $validator: '@validator'
+            $bus: '@messenger.default_bus'
             $processManager: '@cleverage_process.manager.process'
             $processExecutionManager: '@cleverage_ui_process.manager.process_execution'
+        calls:
+            - [setContainer, ['@Psr\Container\ContainerInterface']]
         tags:
-            - { name: 'controller.service_arguments' }
+            - controller.service_arguments
+            - routing.controller
+            - container.service_subscriber
