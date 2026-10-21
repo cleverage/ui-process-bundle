@@ -6,12 +6,16 @@ services:
             - '@cleverage_ui_process.repository.process_execution'
         tags:
             - { name: kernel.reset, method: reset }
+    CleverAge\UiProcessBundle\Manager\ProcessExecutionManager:
+        alias: cleverage_ui_process.manager.process_execution
 
     cleverage_ui_process.manager.process_configuration:
         class: CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager
         public: false
         arguments:
             - '@cleverage_process.registry.process_configuration'
+    CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager:
+        alias: cleverage_ui_process.manager.process_configuration
 
     cleverage_ui_process.stop_checker.process_execution:
         class: CleverAge\UiProcessBundle\StopChecker\ProcessExecutionStopChecker
