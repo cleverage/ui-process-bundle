@@ -110,12 +110,18 @@ class UserCrudController extends AbstractCrudController
                 ->addCssClass(''))->add(Crud::PAGE_EDIT, Action::new('generateToken')->linkToCrudAction('generateToken'));
     }
 
+    /**
+     * Same permission as the users (setEntityPermission()), which EasyAdmin only applies to its built-in actions.
+     */
     #[AdminRoute(path: '{id}/generate-token', name: 'generateToken')]
+    #[IsGranted('ROLE_ADMIN')]
     public function generateToken(): Response
     {
         $adminContext = $this->getContext();
-        /** @var User $user */
         $user = $adminContext?->getEntity()->getInstance();
+        if (!$user instanceof User) {
+            throw $this->createNotFoundException('User not found.');
+        }
         $token = md5(uniqid(date('YmdHis')));
         $user->setToken((new Pbkdf2PasswordHasher())->hash($token));
         /** @var ManagerRegistry $doctrine */

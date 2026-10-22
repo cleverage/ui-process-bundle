@@ -4,6 +4,9 @@ Latest
 ## Changes
 * [#138](https://github.com/cleverage/ui-process-bundle/issues/138) Installation documentation: describe the Symfony Flex recipe, which registers the bundle, imports the bundle controllers routes (`config/routes/clever_age_ui_process.yaml`, the EasyAdmin routes being imported by the EasyAdmin recipe) and creates `config/packages/clever_age_ui_process.yaml`, and the manual setup without Flex.
 
+## Fixes
+* [#200](https://github.com/cleverage/ui-process-bundle/issues/200) `UserCrudController::generateToken()`: reserved to `ROLE_ADMIN` (`403`), as the users, and `404` for an unknown user: the action relied on EasyAdmin not loading the entity for a user without the entity permission (a `500`).
+
 v3.3
 ------
 
