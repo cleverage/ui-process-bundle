@@ -6,6 +6,14 @@ configurations:
         tasks:
             data:
                 task: dummy
+    test.no_confirmation:
+        description: 'Process launched without confirmation'
+        options:
+            ui:
+                ui_launch_mode: ~
+        tasks:
+            data:
+                task: dummy
     test.form:
         description: 'Process launched with the UI form, text input'
         entry_point: data

@@ -26,7 +26,12 @@
                     <div class="modal-footer">
                         {% block modal_footer %}
                          {% if null != confirmUrl %}
-                             <a href="{{ confirmUrl }}"><button type="button" class="btn btn-primary">{{ 'Confirm'|trans }}</button></a>
+                             {# A POST request: confirming must not be possible with a simple link. The fields are attached to the
+                                form by its id: the modal can be rendered in a table, where a form cannot contain them #}
+                             {% set confirmFormId = (id ?? 'modal') ~ '-confirm' %}
+                             <form id="{{ confirmFormId }}" method="post" action="{{ confirmUrl }}"></form>
+                             {% if null != csrfToken %}<input type="hidden" name="_token" value="{{ csrfToken }}" form="{{ confirmFormId }}">{% endif %}
+                             <button type="submit" class="btn btn-primary" form="{{ confirmFormId }}">{{ 'Confirm'|trans }}</button>
                          {% endif %}
                         {% endblock %}
                     </div>

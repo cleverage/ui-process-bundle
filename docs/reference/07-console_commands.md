@@ -21,10 +21,12 @@ bin/console cleverage:ui-process:user-create [<email> [<password>]]
 bin/console cleverage:ui-process:user-create
 
 # Non-interactive, e.g. in a provisioning script
-bin/console cleverage:ui-process:user-create admin@example.com 'my-secret-password'
+bin/console cleverage:ui-process:user-create admin@example.com "$ADMIN_PASSWORD"
 ```
 
-Values passed as arguments are not validated. The email must be unique.
+Values passed as arguments are not validated. The email must be unique. A password given as argument is visible in the
+process list (`ps`) while the command runs and, when typed, in the shell history: prefer the interactive prompt, or a
+variable as above.
 
 cleverage:ui-process:purge-logs
 -------------------------------
