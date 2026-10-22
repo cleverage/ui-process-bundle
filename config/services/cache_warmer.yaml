@@ -9,3 +9,5 @@ services:
             - '@?validator.validator_factory'
         tags:
             - { name: kernel.cache_warmer }
+    CleverAge\UiProcessBundle\CacheWarmer\LaunchFormsCacheWarmer:
+        alias: cleverage_ui_process.cache_warmer.launch_forms
