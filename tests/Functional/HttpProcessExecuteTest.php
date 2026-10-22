@@ -26,8 +26,8 @@ use CleverAge\UiProcessBundle\DependencyInjection\Compiler\UploadDirectoryParame
 use CleverAge\UiProcessBundle\DependencyInjection\Configuration;
 use CleverAge\UiProcessBundle\Entity\ProcessExecution;
 use CleverAge\UiProcessBundle\Entity\User;
-use CleverAge\UiProcessBundle\EventSubscriber\ProcessEventSubscriber;
 use CleverAge\UiProcessBundle\Event\ProcessExecutionEndedEvent;
+use CleverAge\UiProcessBundle\EventSubscriber\ProcessEventSubscriber;
 use CleverAge\UiProcessBundle\Http\Model\HttpProcessExecution;
 use CleverAge\UiProcessBundle\Http\ValueResolver\HttpProcessExecuteValueResolver;
 use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
