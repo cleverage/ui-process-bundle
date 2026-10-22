@@ -16,7 +16,6 @@ namespace CleverAge\UiProcessBundle\CacheWarmer;
 use CleverAge\ProcessBundle\Configuration\ProcessConfiguration;
 use CleverAge\UiProcessBundle\Form\Type\LaunchType;
 use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\HttpKernel\CacheWarmer\CacheWarmerInterface;
 use Symfony\Component\Validator\Constraint;
@@ -41,11 +40,9 @@ use Symfony\Component\Validator\ConstraintValidatorFactoryInterface;
 final readonly class LaunchFormsCacheWarmer implements CacheWarmerInterface
 {
     public function __construct(
-        #[Autowire(service: 'cleverage_ui_process.manager.process_configuration')]
         private ProcessConfigurationsManager $processConfigurationsManager,
         private FormFactoryInterface $formFactory,
         // Null when the validator is not enabled
-        #[Autowire(service: 'validator.validator_factory')]
         private ?ConstraintValidatorFactoryInterface $constraintValidatorFactory = null,
     ) {
     }

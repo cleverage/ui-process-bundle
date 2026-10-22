@@ -113,7 +113,8 @@ class TestKernel extends Kernel
     private function getProcessConfigurations(): array
     {
         /** @var array{configurations: array<string, array{tasks: array<string, array<string, mixed>>}>} $configurations */
-        $configurations = Yaml::parseFile(__DIR__.'/config/processes.yaml');
+        // PARSE_CONSTANT: enum cases given with the "!php/enum" tag
+        $configurations = Yaml::parseFile(__DIR__.'/config/processes.yaml', Yaml::PARSE_CONSTANT);
         if (class_exists(TaskRegistry::class)) {
             return $configurations;
         }

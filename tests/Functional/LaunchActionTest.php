@@ -171,29 +171,32 @@ class LaunchActionTest extends FunctionalTestCase
 
     public function testLaunchWithForm(): void
     {
-        $this->login();
+        // The process uses the deprecated UI options of the launch form
+        $this->collectDeprecations(function (): void {
+            $this->login();
 
-        $crawler = $this->client->request('GET', '/process?routeName=cleverage_ui_process_launch&process=test.form');
+            $crawler = $this->client->request('GET', '/process?routeName=cleverage_ui_process_launch&process=test.form');
 
-        self::assertResponseIsSuccessful();
-        self::assertSame([], $this->getDispatchedMessages());
-        // Default values of the UI options
-        self::assertSame('default input', $crawler->filter('input[name="launch[input]"]')->attr('value'));
-        self::assertSame('key1', $crawler->filter('input[name="launch[context][extra][0][key]"]')->attr('value'));
+            self::assertResponseIsSuccessful();
+            self::assertSame([], $this->getDispatchedMessages());
+            // Default values of the UI options
+            self::assertSame('default input', $crawler->filter('input[name="launch[input]"]')->attr('value'));
+            self::assertSame('key1', $crawler->filter('input[name="launch[context][extra][0][key]"]')->attr('value'));
 
-        $form = $crawler->selectButton('Launch')->form();
-        /** @var array<string, array<string, mixed>> $values */
-        $values = $form->getPhpValues();
-        $values['launch']['input'] = 'my input';
-        $values['launch']['context'] = ['extra' => [['key' => 'key1', 'value' => 'value1'], ['key' => 'key2', 'value' => 'value2']]];
-        $this->client->request($form->getMethod(), $form->getUri(), $values);
+            $form = $crawler->selectButton('Launch')->form();
+            /** @var array<string, array<string, mixed>> $values */
+            $values = $form->getPhpValues();
+            $values['launch']['input'] = 'my input';
+            $values['launch']['context'] = ['extra' => [['key' => 'key1', 'value' => 'value1'], ['key' => 'key2', 'value' => 'value2']]];
+            $this->client->request($form->getMethod(), $form->getUri(), $values);
 
-        self::assertResponseRedirects();
-        $messages = $this->getDispatchedMessages();
-        self::assertCount(1, $messages);
-        self::assertSame('test.form', $messages[0]->code);
-        self::assertSame('my input', $messages[0]->input);
-        self::assertSame(['execution_user' => 'user@example.com', 'key1' => 'value1', 'key2' => 'value2'], $messages[0]->context);
+            self::assertResponseRedirects();
+            $messages = $this->getDispatchedMessages();
+            self::assertCount(1, $messages);
+            self::assertSame('test.form', $messages[0]->code);
+            self::assertSame('my input', $messages[0]->input);
+            self::assertSame(['execution_user' => 'user@example.com', 'key1' => 'value1', 'key2' => 'value2'], $messages[0]->context);
+        });
     }
 
     public function testLaunchWithDeclaredFields(): void
@@ -221,35 +224,38 @@ class LaunchActionTest extends FunctionalTestCase
 
     public function testLaunchWithFileUpload(): void
     {
-        $this->login();
-        $file = tempnam(sys_get_temp_dir(), 'upload');
-        file_put_contents((string) $file, 'line1');
+        // The process uses the deprecated UI options of the launch form
+        $this->collectDeprecations(function (): void {
+            $this->login();
+            $file = tempnam(sys_get_temp_dir(), 'upload');
+            file_put_contents((string) $file, 'line1');
 
-        // test.upload has no "default" UI option: the form must be displayed with empty default values
-        $crawler = $this->client->request('GET', '/process?routeName=cleverage_ui_process_launch&process=test.upload');
-        self::assertResponseIsSuccessful();
-        self::assertCount(0, $crawler->filter('input[name^="launch[context]"]'));
-        self::assertCount(1, $crawler->filter('input[type="file"][name="launch[input]"]'));
+            // test.upload has no "default" UI option: the form must be displayed with empty default values
+            $crawler = $this->client->request('GET', '/process?routeName=cleverage_ui_process_launch&process=test.upload');
+            self::assertResponseIsSuccessful();
+            self::assertCount(0, $crawler->filter('input[name^="launch[context]"]'));
+            self::assertCount(1, $crawler->filter('input[type="file"][name="launch[input]"]'));
 
-        $form = $crawler->selectButton('Launch')->form();
-        $this->client->request(
-            $form->getMethod(),
-            $form->getUri(),
-            $form->getPhpValues(),
-            ['launch' => ['input' => new UploadedFile((string) $file, 'data.csv', 'text/csv', null, true)]]
-        );
+            $form = $crawler->selectButton('Launch')->form();
+            $this->client->request(
+                $form->getMethod(),
+                $form->getUri(),
+                $form->getPhpValues(),
+                ['launch' => ['input' => new UploadedFile((string) $file, 'data.csv', 'text/csv', null, true)]]
+            );
 
-        self::assertResponseRedirects();
-        $messages = $this->getDispatchedMessages();
-        self::assertCount(1, $messages);
-        // The file is saved in the upload directory, its path is the process input
-        self::assertIsString($messages[0]->input);
-        self::assertStringEndsWith('.csv', $messages[0]->input);
-        $uploadDirectory = static::getContainer()->getParameter('cleverage_ui_process.upload_directory');
-        self::assertIsString($uploadDirectory);
-        self::assertStringStartsWith($uploadDirectory.'/', $messages[0]->input);
-        self::assertSame('line1', file_get_contents($messages[0]->input));
-        unlink((string) $file);
+            self::assertResponseRedirects();
+            $messages = $this->getDispatchedMessages();
+            self::assertCount(1, $messages);
+            // The file is saved in the upload directory, its path is the process input
+            self::assertIsString($messages[0]->input);
+            self::assertStringEndsWith('.csv', $messages[0]->input);
+            $uploadDirectory = static::getContainer()->getParameter('cleverage_ui_process.upload_directory');
+            self::assertIsString($uploadDirectory);
+            self::assertStringStartsWith($uploadDirectory.'/', $messages[0]->input);
+            self::assertSame('line1', file_get_contents($messages[0]->input));
+            unlink((string) $file);
+        });
     }
 
     /**
@@ -258,20 +264,23 @@ class LaunchActionTest extends FunctionalTestCase
      */
     public function testContextRowWithoutKey(): void
     {
-        $this->login();
+        // The process uses the deprecated UI options of the launch form
+        $this->collectDeprecations(function (): void {
+            $this->login();
 
-        $crawler = $this->client->request('GET', '/process?routeName=cleverage_ui_process_launch&process=test.form_constraints');
-        self::assertResponseIsSuccessful();
-        $form = $crawler->selectButton('Launch')->form();
-        /** @var array<string, array<string, mixed>> $values */
-        $values = $form->getPhpValues();
-        $values['launch']['context'] = ['extra' => [['key' => 'key1', 'value' => 'value1'], ['key' => '', 'value' => 'value2']]];
-        $this->client->request($form->getMethod(), $form->getUri(), $values);
+            $crawler = $this->client->request('GET', '/process?routeName=cleverage_ui_process_launch&process=test.form_constraints');
+            self::assertResponseIsSuccessful();
+            $form = $crawler->selectButton('Launch')->form();
+            /** @var array<string, array<string, mixed>> $values */
+            $values = $form->getPhpValues();
+            $values['launch']['context'] = ['extra' => [['key' => 'key1', 'value' => 'value1'], ['key' => '', 'value' => 'value2']]];
+            $this->client->request($form->getMethod(), $form->getUri(), $values);
 
-        // The form is displayed again with the error (LaunchAction renders an invalid form with a 200)
-        self::assertResponseIsSuccessful();
-        self::assertSelectorTextContains('.invalid-feedback', 'This value should not be blank.');
-        self::assertSame([], $this->getDispatchedMessages());
+            // The form is displayed again with the error (LaunchAction renders an invalid form with a 200)
+            self::assertResponseIsSuccessful();
+            self::assertSelectorTextContains('.invalid-feedback', 'This value should not be blank.');
+            self::assertSame([], $this->getDispatchedMessages());
+        });
     }
 
     /**
@@ -280,22 +289,25 @@ class LaunchActionTest extends FunctionalTestCase
      */
     public function testDeprecatedFormatIsUnchanged(): void
     {
-        $this->login();
+        // The process uses the deprecated UI options of the launch form
+        $this->collectDeprecations(function (): void {
+            $this->login();
 
-        $crawler = $this->client->request('GET', '/process?routeName=cleverage_ui_process_launch&process=test.form');
-        self::assertResponseIsSuccessful();
-        self::assertSame('value1', $crawler->filter('input[name="launch[context][extra][0][value]"]')->attr('value'));
-        self::assertCount(0, $crawler->filter('[name^="launch[context][0]"]'));
+            $crawler = $this->client->request('GET', '/process?routeName=cleverage_ui_process_launch&process=test.form');
+            self::assertResponseIsSuccessful();
+            self::assertSame('value1', $crawler->filter('input[name="launch[context][extra][0][value]"]')->attr('value'));
+            self::assertCount(0, $crawler->filter('[name^="launch[context][0]"]'));
 
-        // Submitted with its initial values
-        $form = $crawler->selectButton('Launch')->form();
-        $this->client->request($form->getMethod(), $form->getUri(), $form->getPhpValues());
+            // Submitted with its initial values
+            $form = $crawler->selectButton('Launch')->form();
+            $this->client->request($form->getMethod(), $form->getUri(), $form->getPhpValues());
 
-        self::assertResponseRedirects();
-        $messages = $this->getDispatchedMessages();
-        self::assertCount(1, $messages);
-        self::assertSame('default input', $messages[0]->input);
-        self::assertSame(['execution_user' => 'user@example.com', 'key1' => 'value1'], $messages[0]->context);
+            self::assertResponseRedirects();
+            $messages = $this->getDispatchedMessages();
+            self::assertCount(1, $messages);
+            self::assertSame('default input', $messages[0]->input);
+            self::assertSame(['execution_user' => 'user@example.com', 'key1' => 'value1'], $messages[0]->context);
+        });
     }
 
     /**
@@ -303,26 +315,29 @@ class LaunchActionTest extends FunctionalTestCase
      */
     public function testDeprecatedConstraintsOnTheFreeContext(): void
     {
-        $this->login();
+        // The process uses the deprecated UI options of the launch form
+        $this->collectDeprecations(function (): void {
+            $this->login();
 
-        $crawler = $this->client->request('GET', '/process?routeName=cleverage_ui_process_launch&process=test.form_constraints');
-        self::assertResponseIsSuccessful();
-        $form = $crawler->selectButton('Launch')->form();
-        /** @var array<string, array<string, mixed>> $values */
-        $values = $form->getPhpValues();
+            $crawler = $this->client->request('GET', '/process?routeName=cleverage_ui_process_launch&process=test.form_constraints');
+            self::assertResponseIsSuccessful();
+            $form = $crawler->selectButton('Launch')->form();
+            /** @var array<string, array<string, mixed>> $values */
+            $values = $form->getPhpValues();
 
-        $values['launch']['context'] = ['extra' => [['key' => 'key1', 'value' => '']]];
-        $this->client->request($form->getMethod(), $form->getUri(), $values);
-        self::assertResponseIsSuccessful();
-        self::assertSelectorTextContains('.invalid-feedback', 'This value should not be blank.');
-        self::assertSame([], $this->getDispatchedMessages());
+            $values['launch']['context'] = ['extra' => [['key' => 'key1', 'value' => '']]];
+            $this->client->request($form->getMethod(), $form->getUri(), $values);
+            self::assertResponseIsSuccessful();
+            self::assertSelectorTextContains('.invalid-feedback', 'This value should not be blank.');
+            self::assertSame([], $this->getDispatchedMessages());
 
-        $values['launch']['context'] = ['extra' => [['key' => 'key1', 'value' => 'value1']]];
-        $this->client->request($form->getMethod(), $form->getUri(), $values);
-        self::assertResponseRedirects();
-        $messages = $this->getDispatchedMessages();
-        self::assertCount(1, $messages);
-        self::assertSame(['execution_user' => 'user@example.com', 'key1' => 'value1'], $messages[0]->context);
+            $values['launch']['context'] = ['extra' => [['key' => 'key1', 'value' => 'value1']]];
+            $this->client->request($form->getMethod(), $form->getUri(), $values);
+            self::assertResponseRedirects();
+            $messages = $this->getDispatchedMessages();
+            self::assertCount(1, $messages);
+            self::assertSame(['execution_user' => 'user@example.com', 'key1' => 'value1'], $messages[0]->context);
+        });
     }
 
     public function testInvalidChoice(): void
@@ -687,14 +702,17 @@ class LaunchActionTest extends FunctionalTestCase
      */
     public function testDirectAccessRedirectsToTheDashboard(): void
     {
-        $this->login();
+        // The process uses the deprecated UI options of the launch form
+        $this->collectDeprecations(function (): void {
+            $this->login();
 
-        $this->client->request('GET', '/process/launch?process=test.form');
+            $this->client->request('GET', '/process/launch?process=test.form');
 
-        self::assertResponseRedirects('/process?routeName=cleverage_ui_process_launch&process=test.form');
-        $crawler = $this->client->followRedirect();
-        self::assertResponseIsSuccessful();
-        self::assertCount(1, $crawler->filter('input[name="launch[input]"]'));
+            self::assertResponseRedirects('/process?routeName=cleverage_ui_process_launch&process=test.form');
+            $crawler = $this->client->followRedirect();
+            self::assertResponseIsSuccessful();
+            self::assertCount(1, $crawler->filter('input[name="launch[input]"]'));
+        });
     }
 
     /**
