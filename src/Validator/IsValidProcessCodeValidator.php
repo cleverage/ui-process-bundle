@@ -13,13 +13,13 @@ declare(strict_types=1);
 
 namespace CleverAge\UiProcessBundle\Validator;
 
-use CleverAge\ProcessBundle\Registry\ProcessConfigurationRegistry;
+use CleverAge\ProcessBundle\Registry\ProcessConfigurationRegistryInterface;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
 
 final class IsValidProcessCodeValidator extends ConstraintValidator
 {
-    public function __construct(private readonly ProcessConfigurationRegistry $registry)
+    public function __construct(private readonly ProcessConfigurationRegistryInterface $registry)
     {
     }
 

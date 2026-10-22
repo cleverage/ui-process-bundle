@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace CleverAge\UiProcessBundle\Tests\Validator;
 
 use CleverAge\ProcessBundle\Configuration\ProcessConfiguration;
-use CleverAge\ProcessBundle\Registry\ProcessConfigurationRegistry;
+use CleverAge\ProcessBundle\Registry\ProcessConfigurationRegistryInterface;
 use CleverAge\UiProcessBundle\Validator\IsValidProcessCode;
 use CleverAge\UiProcessBundle\Validator\IsValidProcessCodeValidator;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -33,7 +33,7 @@ class IsValidProcessCodeValidatorTest extends ConstraintValidatorTestCase
             'demo.public' => new ProcessConfiguration('demo.public', []),
             'demo.private' => new ProcessConfiguration('demo.private', [], public: false),
         ];
-        $registry = $this->createStub(ProcessConfigurationRegistry::class);
+        $registry = $this->createStub(ProcessConfigurationRegistryInterface::class);
         $registry->method('hasProcessConfiguration')
             ->willReturnCallback(static fn (string $code): bool => isset($configurations[$code]));
         $registry->method('getProcessConfiguration')

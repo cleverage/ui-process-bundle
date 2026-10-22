@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace CleverAge\UiProcessBundle\Tests\Entity;
 
 use CleverAge\ProcessBundle\Configuration\ProcessConfiguration;
-use CleverAge\ProcessBundle\Registry\ProcessConfigurationRegistry;
+use CleverAge\ProcessBundle\Registry\ProcessConfigurationRegistryInterface;
 use CleverAge\UiProcessBundle\Entity\Enum\ProcessScheduleType;
 use CleverAge\UiProcessBundle\Entity\ProcessSchedule;
 use CleverAge\UiProcessBundle\Validator\CronExpression;
@@ -93,7 +93,7 @@ class ProcessScheduleTest extends TestCase
             ->setType($type)
             ->setExpression($expression);
 
-        $registry = $this->createStub(ProcessConfigurationRegistry::class);
+        $registry = $this->createStub(ProcessConfigurationRegistryInterface::class);
         $registry->method('hasProcessConfiguration')
             ->willReturnCallback(static fn (string $code): bool => 'demo.process' === $code);
         $registry->method('getProcessConfiguration')->willReturn(new ProcessConfiguration('demo.process', []));
