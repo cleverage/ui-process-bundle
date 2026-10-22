@@ -2,6 +2,7 @@ Latest
 ------
 
 ## Changes
+* [#207](https://github.com/cleverage/ui-process-bundle/issues/207) The `main` firewall configured by the bundle (`security.configure_firewall`) limits the login attempts (Symfony `login_throttling`, default settings: 5 failed attempts per minute for a username and an IP address, 25 for an IP address); the settings can be changed in the application firewall. Require `symfony/rate-limiter`. Update documentation and tests.
 * [#186](https://github.com/cleverage/ui-process-bundle/issues/186) `ProcessExecuteController`, `ProcessExecuteHandler`, `LaunchType`, `ProcessConfigurationsManager` and `IsValidProcessCodeValidator` are typed on `ProcessManagerInterface` / `ProcessConfigurationRegistryInterface` (process-bundle 5.4) instead of the concrete classes, `@final since 5.4`: the process manager and the process configuration registry can be decorated or replaced for the UI.
 
 v3.3.1
