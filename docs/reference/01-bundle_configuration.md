@@ -97,7 +97,7 @@ Container parameters
 | Parameter                               | Default                                   | Description |
 |-----------------------------------------|-------------------------------------------|-------------|
 | `cleverage_ui_process.upload_directory` | `%kernel.project_dir%/var/storage/uploads` | Directory where files uploaded from the launch form or the [HTTP API](06-http_api.md) are stored before being passed as process input. |
-| `upload_directory`                      | `%cleverage_ui_process.upload_directory%` | Deprecated since 3.3, removed in 4.0: use `cleverage_ui_process.upload_directory`. When your application still sets it, its value is used (unless `cleverage_ui_process.upload_directory` is also set), with a deprecation. |
+| `upload_directory`                      | `%cleverage_ui_process.upload_directory%` | Deprecated since 3.3, removed in 4.0: use `cleverage_ui_process.upload_directory`. When your application still sets it, its value is used, with a deprecation. If your application has its own `upload_directory` parameter (e.g. for another bundle), also set `cleverage_ui_process.upload_directory`: the bundle then leaves `upload_directory` alone, without deprecation. |
 
 It can be overridden in your application:
 

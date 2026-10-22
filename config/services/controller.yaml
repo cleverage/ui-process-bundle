@@ -62,7 +62,6 @@ services:
         arguments:
             $processExecutionRepository: '@cleverage_ui_process.repository.process_execution'
             $logDirectory: '%kernel.logs_dir%'
-            $translator: '@translator'
             # $staleAfter: set by the extension (process_execution.stale_after)
         calls:
             - [setContainer, ['@Psr\Container\ContainerInterface']]

@@ -46,17 +46,20 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 class ProcessExecutionCrudController extends AbstractCrudController
 {
     /**
-     * @param TranslatorInterface $translator deprecated, no longer used (the duration format is defined in the
-     *                                        admin/field/duration.html.twig template), will be removed in 4.0
-     * @param int                 $staleAfter seconds without heartbeat after which a started execution is considered
-     *                                        as not responding
+     * @param TranslatorInterface|null $translator deprecated since 3.4, no longer used (the duration format is defined in
+     *                                             the admin/field/duration.html.twig template), will be removed in 4.0
+     * @param int                      $staleAfter seconds without heartbeat after which a started execution is
+     *                                             considered as not responding
      */
-    public function __construct(// @phpstan-ignore constructor.unusedParameter ($translator deprecated, kept for BC)
+    public function __construct(
         private readonly ProcessExecutionRepository $processExecutionRepository,
         private readonly string $logDirectory,
-        TranslatorInterface $translator,
+        ?TranslatorInterface $translator = null,
         private readonly int $staleAfter = 900,
     ) {
+        if ($translator instanceof TranslatorInterface) {
+            trigger_deprecation('cleverage/ui-process-bundle', '3.4', 'Passing a translator to "%s::__construct()" is deprecated, it is not used. The argument will be removed in 4.0.', self::class);
+        }
     }
 
     public static function getEntityFqcn(): string

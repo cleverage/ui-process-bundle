@@ -22,7 +22,7 @@ clever_age_process:
                               value: King
             tasks:
                 read:
-                    service: '@CleverAge\DoctrineProcessBundle\Task\EntityManager\DoctrineReaderTask'
+                    task: doctrine_reader
                     options:
                         class_name: 'App\Entity\Author'
                         criteria:
@@ -30,13 +30,13 @@ clever_age_process:
                     outputs: [log, remove]
 
                 log:
-                    service: '@CleverAge\ProcessBundle\Task\Reporting\LoggerTask'
+                    task: logger
                     options:
                         level: warning # Counted in the execution report
                         message: 'Removing author'
 
                 remove:
-                    service: '@CleverAge\DoctrineProcessBundle\Task\EntityManager\DoctrineRemoverTask'
+                    task: doctrine_remover
 ```
 
 Then, in the UI, open "Process > Scheduler" and create a schedule:

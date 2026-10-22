@@ -38,7 +38,7 @@ clever_age_process:
                                                           message: 'delimiter context must be , or ;. {{ value }} given.'
             tasks:
                 log_file:
-                    service: '@CleverAge\ProcessBundle\Task\Reporting\LoggerTask'
+                    task: logger
                     options:
                         level: info
                         message: 'Read file'
@@ -46,13 +46,13 @@ clever_age_process:
                     outputs: [read]
 
                 read:
-                    service: '@CleverAge\ProcessBundle\Task\File\Csv\InputCsvReaderTask'
+                    task: input_csv_reader
                     options:
                         delimiter: '{{ delimiter }}' # Contextualized option, set from the launch form
                     outputs: [log_line]
 
                 log_line:
-                    service: '@CleverAge\ProcessBundle\Task\Reporting\LoggerTask'
+                    task: logger
                     options:
                         level: info
                         message: 'Read line'

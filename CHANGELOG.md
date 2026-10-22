@@ -1,6 +1,9 @@
 Latest
 ------
 
+### Changes
+* [#216](https://github.com/cleverage/ui-process-bundle/issues/216) Cookbooks with task codes, application `upload_directory` parameter left alone, deprecation notice for the unused `$translator` argument, scheduler log levels.
+
 ## Changes
 * [#186](https://github.com/cleverage/ui-process-bundle/issues/186) `ProcessExecuteController`, `ProcessExecuteHandler`, `LaunchType`, `ProcessConfigurationsManager` and `IsValidProcessCodeValidator` are typed on `ProcessManagerInterface` / `ProcessConfigurationRegistryInterface` (process-bundle 5.4) instead of the concrete classes, `@final since 5.4`: the process manager and the process configuration registry can be decorated or replaced for the UI.
 
