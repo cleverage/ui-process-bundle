@@ -15,6 +15,7 @@ namespace CleverAge\UiProcessBundle\Controller\Admin\Process;
 
 use CleverAge\ProcessBundle\Exception\MissingProcessException;
 use CleverAge\UiProcessBundle\Entity\User;
+use CleverAge\UiProcessBundle\Form\ContextValueNormalizer;
 use CleverAge\UiProcessBundle\Form\Type\LaunchType;
 use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
 use CleverAge\UiProcessBundle\Message\ProcessExecuteMessage;
@@ -23,7 +24,8 @@ use EasyCorp\Bundle\EasyAdminBundle\Contracts\Context\AdminContextInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Provider\AdminContextProvider;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\FormError;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -93,26 +95,24 @@ class LaunchAction extends AbstractController
 
             return $this->redirectToRoute('cleverage_ui_process', ['routeName' => 'cleverage_ui_process_list']);
         }
+        $launchForm = $this->processConfigurationsManager->getLaunchFormOptions($processCode) ?? throw MissingProcessException::create($processCode);
         $form = $this->createForm(
             LaunchType::class,
             null,
             [
-                'constraints' => $uiOptions['constraints'],
+                'constraints' => $launchForm['constraints'],
                 'process_code' => $processCode,
+                // Not resolved again by the form type
+                'launch_form' => $launchForm,
             ]
         );
         if (false === $form->isSubmitted()) {
-            $default = $uiOptions['default'];
-            if (false === $form->get('input')->getConfig()->getType()->getInnerType() instanceof TextType
-                && isset($default['input'])
-            ) {
-                unset($default['input']);
-            }
-            $form->setData($default);
+            $form->setData($launchForm['data']);
         }
         $form->handleRequest($this->requestStack->getMainRequest());
-        if ($form->isSubmitted() && $form->isValid()) {
-            $input = $form->get('input')->getData();
+        // Normalized after the validation: the constraints apply to the typed values
+        if ($form->isSubmitted() && $form->isValid() && null !== $values = $this->normalizeValues($form)) {
+            [$input, $context] = $values;
             if ($input instanceof UploadedFile) {
                 $filename = \sprintf('%s/%s.%s', $uploadDirectory, Uuid::v4(), $input->getClientOriginalExtension());
                 (new Filesystem())->dumpFile($filename, $input->getContent());
@@ -120,8 +120,6 @@ class LaunchAction extends AbstractController
             }
             /** @var string $processCode */
             $processCode = $form->getConfig()->getOption('process_code');
-            /** @var array<string, mixed> $context */
-            $context = $form->get('context')->getData();
             $this->dispatch($processCode, $input, $context);
             $this->addFlash(
                 'success',
@@ -138,6 +136,42 @@ class LaunchAction extends AbstractController
                 'form' => $form->createView(),
             ]
         );
+    }
+
+    /**
+     * The input (an uploaded file is kept as is) and the context of the submitted form, converted into process values;
+     * null when a value cannot be converted, the error being reported on its field.
+     *
+     * @param FormInterface<array<string, mixed>|null> $form
+     *
+     * @return array{mixed, array<string, mixed>}|null
+     */
+    private function normalizeValues(FormInterface $form): ?array
+    {
+        $normalizer = new ContextValueNormalizer();
+        $field = $form->get('input');
+        try {
+            $input = $field->getData();
+            if (!$input instanceof UploadedFile) {
+                $input = $normalizer->normalize($input, 'input');
+            }
+            $contextForm = $form->get('context');
+            /** @var array<int|string, mixed> $data */
+            $data = $contextForm->getData() ?? [];
+            $context = [];
+            foreach ($data as $key => $value) {
+                $key = (string) $key;
+                // A declared field, or the free context pairs
+                $field = $contextForm->has($key) ? $contextForm->get($key) : $contextForm;
+                $context[$key] = $normalizer->normalize($value, $key);
+            }
+        } catch (\LogicException $e) {
+            $field->addError(new FormError($e->getMessage()));
+
+            return null;
+        }
+
+        return [$input, $context];
     }
 
     /**

@@ -2,6 +2,16 @@ Latest
 ------
 
 ## Changes
+* [#160](https://github.com/cleverage/ui-process-bundle/issues/160) Launch form: full control over the fields of the launch form through the new `form` UI option.
+  * `form.input` and `form.context.<key>`: `type` (the FQCN of a form type), `options` (the form type options, with `constraints`) and `default` (the initial value; an enum case given with `!php/enum` for an `EnumType`). The declared context fields are not required by default.
+  * `form.allow_extra_context` (default `true`): free key/value context pairs for the undeclared keys. A free pair whose key is a declared field is reported as a validation error (new `reserved_keys` option of `ProcessContextType`).
+  * `form.constraints`: the constraints of the whole form.
+  * The typed values of the form are converted into process values after the validation (enums, dates, date intervals, `Stringable` objects); a value that cannot be converted is reported as an error of its field.
+  * The launch forms are checked each time the container is built (internal `LaunchFormsCacheWarmer`): they are resolved, then built with the form factory of the application (form type options, default values, constraint validators).
+  * The `form` option is only resolved by the launch page (internal `ProcessConfigurationsManager::getLaunchFormOptions()` and `LaunchFormOptionsResolver`): `getUiOptions()` does not resolve it, the process list and the executions list do not depend on the launch form.
+  * The free context pairs of the launch form are named `launch[context][extra][<index>][key|value]` (was `launch[context][<index>][key|value]`): the `context` child of `LaunchType` is a compound `FormType` (form theme blocks `_launch_context_extra_entry_*`). The duplicated keys of `default.context` are merged (the last one wins).
+  * Deprecate the `entrypoint_type` (use `form.input.type`), `default` (use `form.input.default` and `form.context.<key>.default`) and `constraints` (use `form.constraints`) UI options, folded into `form` until 4.0; their deprecation is triggered each time the launch form of such a process is displayed.
+  * Add documentation, an upgrade guide and tests.
 * [#186](https://github.com/cleverage/ui-process-bundle/issues/186) `ProcessExecuteController`, `ProcessExecuteHandler`, `LaunchType`, `ProcessConfigurationsManager` and `IsValidProcessCodeValidator` are typed on `ProcessManagerInterface` / `ProcessConfigurationRegistryInterface` (process-bundle 5.4) instead of the concrete classes, `@final since 5.4`: the process manager and the process configuration registry can be decorated or replaced for the UI.
 
 v3.3.1

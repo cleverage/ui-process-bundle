@@ -72,6 +72,38 @@ class ProcessConfigurationsManagerTest extends TestCase
         $run = $options['run'];
         self::assertNull($run);
         self::assertSame(['input' => null, 'context' => []], $options['default']);
+        self::assertSame([], $options['form']);
+    }
+
+    /**
+     * The launch form is resolved by getLaunchFormOptions() only: an invalid "form" option does not break the other
+     * pages (process list, executions), and the deprecations of the launch form are not triggered.
+     */
+    public function testLaunchFormIsNotResolved(): void
+    {
+        $form = ['input' => ['type' => 'App\\Missing'], 'context' => ['a b' => 'text']];
+        $manager = $this->createManager(['test.process' => $this->rawProcess(['ui' => [
+            'source' => 'ERP',
+            'entrypoint_type' => 'text',
+            'form' => $form,
+        ]])]);
+
+        $deprecations = [];
+        set_error_handler(static function (int $errno, string $errstr) use (&$deprecations): bool {
+            $deprecations[] = $errstr;
+
+            return true;
+        }, \E_USER_DEPRECATED);
+        try {
+            $options = $manager->getUiOptions('test.process');
+        } finally {
+            restore_error_handler();
+        }
+
+        self::assertSame([], $deprecations);
+        self::assertNotNull($options);
+        self::assertSame('ERP', $options['source']);
+        self::assertSame($form, $options['form']);
     }
 
     public function testConfiguredUiOptions(): void

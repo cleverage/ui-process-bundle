@@ -1,0 +1,13 @@
+services:
+    cleverage_ui_process.cache_warmer.launch_forms:
+        class: CleverAge\UiProcessBundle\CacheWarmer\LaunchFormsCacheWarmer
+        public: false
+        arguments:
+            - '@cleverage_ui_process.manager.process_configuration'
+            - '@form.factory'
+            # Null when the validator is not enabled
+            - '@?validator.validator_factory'
+        tags:
+            - { name: kernel.cache_warmer }
+    CleverAge\UiProcessBundle\CacheWarmer\LaunchFormsCacheWarmer:
+        alias: cleverage_ui_process.cache_warmer.launch_forms

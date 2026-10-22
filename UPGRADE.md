@@ -1,6 +1,76 @@
 Upgrade Guide
 =============
 
+## Latest
+
+### Deprecated UI options of the launch form
+
+The `entrypoint_type`, `default` and `constraints` UI options are deprecated in favor of the new `form` option (see
+[process UI options](docs/reference/02-process_ui_options.md#form-fields)), and will be removed in 4.0:
+
+| Deprecated option   | Replacement                                                                       |
+|---------------------|-----------------------------------------------------------------------------------|
+| `entrypoint_type`   | `form.input.type`                                                                 |
+| `default.input`     | `form.input.default`                                                              |
+| `default.context`   | `form.context.<key>.default` (or a free pair with `form.allow_extra_context`)     |
+| `constraints`       | `form.constraints`                                                                |
+
+```yaml
+# Before
+options:
+    ui:
+        ui_launch_mode: form
+        entrypoint_type: file
+        default:
+            context:
+                - key: delimiter
+                  value: ','
+        constraints:
+            - Collection:
+                  fields:
+                      input:
+                          - File: { extensions: [csv] }
+                      context:
+                          - Collection:
+                                fields:
+                                    delimiter:
+                                        - Choice: { choices: [',', ';'] }
+
+# After
+options:
+    ui:
+        ui_launch_mode: form
+        form:
+            input:
+                type: Symfony\Component\Form\Extension\Core\Type\FileType
+                options:
+                    constraints:
+                        - File:
+                              # A CSV file is often detected as "text/plain" (semicolon delimiter, few lines): allow it explicitly
+                              extensions:
+                                  csv: ['text/csv', 'text/plain', 'application/csv', 'text/x-csv', 'text/x-comma-separated-values']
+            context:
+                delimiter:
+                    type: Symfony\Component\Form\Extension\Core\Type\ChoiceType
+                    default: ','
+                    options:
+                        choices: { 'Comma (,)': ',', 'Semicolon (;)': ';' }
+                        required: true
+```
+
+- Mixing a deprecated option and its replacement (e.g. `entrypoint_type` and `form.input`, or `constraints` and
+  `form.constraints`) raises an `InvalidOptionsException`.
+- The HTML names of the free context pairs of the launch form change from `launch[context][<index>][key|value]` to
+  `launch[context][extra][<index>][key|value]`: update the functional tests of your application that submit this
+  form.
+- The `context` child of `LaunchType` is now a compound `FormType` (the declared fields, then the `extra`
+  `CollectionType` of the free pairs) instead of a `CollectionType`: update the form theme blocks of your application
+  (`_launch_context_entry_*` becomes `_launch_context_extra_entry_*`), the form type extensions and the code using
+  `$form->get('context')`.
+- The duplicated keys of `default.context` are merged, the last pair wins (two pairs were displayed).
+- A process using a deprecated option triggers its deprecations each time its launch form is displayed: expect them
+  in the deprecation logs until the process is migrated.
+
 ## v3.3
 
 ### Route names
