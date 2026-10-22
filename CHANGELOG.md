@@ -2,6 +2,7 @@ Latest
 ------
 
 ## Changes
+* [#202](https://github.com/cleverage/ui-process-bundle/issues/202) Documentation: the context of a process is visible to every user (stored in its execution and its log records), do not pass secrets in it; a password given as argument of `cleverage:ui-process:user-create` is visible in the process list and the shell history.
 * [#138](https://github.com/cleverage/ui-process-bundle/issues/138) Installation documentation: describe the Symfony Flex recipe, which registers the bundle, imports the bundle controllers routes (`config/routes/clever_age_ui_process.yaml`, the EasyAdmin routes being imported by the EasyAdmin recipe) and creates `config/packages/clever_age_ui_process.yaml`, and the manual setup without Flex.
 
 ## Fixes
