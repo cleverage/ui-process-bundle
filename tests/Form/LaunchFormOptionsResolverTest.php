@@ -690,7 +690,7 @@ class LaunchFormOptionsResolverTest extends TestCase
 
     private static function deprecation(string $option, string $replacement): string
     {
-        return \sprintf('Since cleverage/ui-process-bundle 3.3: The "%s" UI option of the process "test.process" is deprecated, use "%s" instead.', $option, $replacement);
+        return \sprintf('Since cleverage/ui-process-bundle 3.4: The "%s" UI option of the process "test.process" is deprecated, use "%s" instead.', $option, $replacement);
     }
 
     /**
