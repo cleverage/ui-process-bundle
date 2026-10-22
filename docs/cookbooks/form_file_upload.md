@@ -65,7 +65,7 @@ How it works:
 - `form.input` with a `FileType` type turns the `input` field into a file upload. As the process has an `entry_point`, the
   field is required (HTML attribute); its `NotNull` and `File` constraints are checked by the server: the process is
   not queued while no file is uploaded or the file is not a CSV, and the error is displayed under the field. The
-  uploaded file is saved in the `upload_directory` directory and its path is sent to the `log_file` task (see
+  uploaded file is saved in the `cleverage_ui_process.upload_directory` directory and its path is sent to the `log_file` task (see
   [launch form](../reference/02-process_ui_options.md#launch-form)).
 - `form.context.delimiter` (a `ChoiceType`) adds a `delimiter` select, pre-selected on `,`
   (see [form fields](../reference/02-process_ui_options.md#form-fields)). A value outside of the choices is refused by
@@ -79,7 +79,7 @@ How it works:
   (see [process executions & logs](../reference/04-process_executions_and_logs.md)).
 
 Uploaded files are not removed after the execution: add a cleaning step at the end of the process (e.g. a
-[FileRemoverTask](https://github.com/cleverage/process-bundle/blob/main/docs/reference/tasks/file_remover_task.md)) or purge the `upload_directory` directory periodically.
+[FileRemoverTask](https://github.com/cleverage/process-bundle/blob/main/docs/reference/tasks/file_remover_task.md)) or purge the `cleverage_ui_process.upload_directory` directory periodically.
 
 The same process can also be launched through the [HTTP API](../reference/06-http_api.md), with a file upload:
 

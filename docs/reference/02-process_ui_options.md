@@ -28,7 +28,7 @@ clever_age_process:
                             <key>: <null|field spec>    # same keys as "input"
                         allow_extra_context: <bool>     # default: true
                         constraints: <array of constraints>
-                    # Deprecated since 3.3, use "form" instead
+                    # Deprecated since 3.4, use "form" instead
                     entrypoint_type: <text|file>
                     default:
                         input: <mixed>
@@ -64,17 +64,17 @@ Options
 | `target`          | `string`, `null` | `null`                             | Free label describing where the data goes. Displayed in the process list and in the executions list.                               |
 | `ui_launch_mode`  | `string`, `null` | `modal`                            | Behaviour of the "Launch" (rocket) action of the process list. See [launch modes](#launch-modes).                                   |
 | `form`            | `array`          | `[]`                               | Fields, default values and constraints of the launch form (`form` launch mode only). See [form fields](#form-fields).              |
-| `entrypoint_type` | `string`         | `text`                             | *Deprecated since 3.3, use `form.input.type`.* `text` or `file`: type of the `input` field of the launch form.                     |
-| `default`         | `array`          | `{input: null, context: []}`       | *Deprecated since 3.3, use `form.input.default` and `form.context.<key>.default`.* See [default values](#default-values).          |
-| `constraints`     | `array`          | `[]`                               | *Deprecated since 3.3, use `form.constraints`.* Constraints applied to the launch form. See [constraints](#constraints).            |
+| `entrypoint_type` | `string`         | `text`                             | *Deprecated since 3.4, use `form.input.type`.* `text` or `file`: type of the `input` field of the launch form.                     |
+| `default`         | `array`          | `{input: null, context: []}`       | *Deprecated since 3.4, use `form.input.default` and `form.context.<key>.default`.* See [default values](#default-values).          |
+| `constraints`     | `array`          | `[]`                               | *Deprecated since 3.4, use `form.constraints`.* Constraints applied to the launch form. See [constraints](#constraints).            |
 | `run`             | `mixed`          | `null`                             | Accepted for backward compatibility, not used.                                                                                      |
 
 Process visibility
 ------------------
 
-Only public processes (`public: true`, the default of the process bundle) are displayed in the process list, can be
-selected in the [scheduler](05-scheduler.md) and can be launched through the [HTTP API](06-http_api.md). Private
-processes are still recorded in the [executions](04-process_executions_and_logs.md) when they run (e.g. as
+Only public processes (`public: true`, the default of the process bundle) are displayed in the process list and can be
+launched from it (the launch URL of a private process answers `404`), can be selected in the
+[scheduler](05-scheduler.md) and can be launched through the [HTTP API](06-http_api.md). Private processes are still recorded in the [executions](04-process_executions_and_logs.md) when they run (e.g. as
 sub-processes or from the console).
 
 Launch modes
@@ -85,6 +85,10 @@ Launch modes
 | `modal` (default)  | Opens a confirmation modal, then queues the process without input nor context.                                 |
 | `form`             | Opens a form to set the process input and context, then queues the process.                                    |
 | `~` (`null`)       | Queues the process immediately, without any confirmation.                                                      |
+
+Without form (`modal` and `~`), the process is launched by a POST request with a CSRF token: a GET request to the launch
+URL is refused (`405`), as is a request without a valid token (`403`). The `form` mode relies on the CSRF protection of
+the form.
 
 In every mode, the process is not executed by the web request: a message is dispatched to the `execute_process`
 Messenger transport and a worker runs it (see [messenger](08-messenger.md)). The UI adds the email of the connected
@@ -100,7 +104,7 @@ The launch form (`/process/launch?process=<process_code>`) contains:
   or pair becomes a process context value, like `-c key:value` on the `cleverage:process:execute` console command.
 
 The input can be of any type, but only a single uploaded file is saved: when the input is a `FileType` field, the
-uploaded file is saved to the `upload_directory` directory (see
+uploaded file is saved to the `cleverage_ui_process.upload_directory` directory (see
 [bundle configuration](01-bundle_configuration.md#container-parameters)) with a random name keeping the original
 extension, and its absolute path is passed as process input. The file is not removed after the execution.
 
@@ -251,7 +255,7 @@ launched.
 Default values
 --------------
 
-*Deprecated since 3.3, use `form.input.default` and `form.context.<key>.default` (see
+*Deprecated since 3.4, use `form.input.default` and `form.context.<key>.default` (see
 [migrating from the deprecated options](#migrating-from-the-deprecated-options)).*
 
 `default.input` pre-fills the input field. It is ignored when `entrypoint_type` is `file` (a file field cannot be
@@ -278,7 +282,7 @@ options:
 Constraints
 -----------
 
-*The `constraints` option is deprecated since 3.3, use `form.constraints`, which has the same syntax.*
+*The `constraints` option is deprecated since 3.4, use `form.constraints`, which has the same syntax.*
 
 `form.constraints` (or the deprecated `constraints`) uses the same syntax as the [ValidatorTask](https://github.com/cleverage/process-bundle/blob/main/docs/reference/tasks/validator_task.md)
 of the process bundle (and as Symfony YAML validation mapping): a list of constraint short names (or FQCN) with their

@@ -19,8 +19,14 @@ use CleverAge\UiProcessBundle\Controller\Admin\UserCrudController;
 use CleverAge\UiProcessBundle\DependencyInjection\CleverAgeUiProcessExtension;
 use CleverAge\UiProcessBundle\DependencyInjection\Configuration;
 use CleverAge\UiProcessBundle\Entity\User;
+use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
+use CleverAge\UiProcessBundle\Manager\ProcessExecutionManager;
 use CleverAge\UiProcessBundle\Message\ProcessExecuteMessage;
+use CleverAge\UiProcessBundle\Monolog\Handler\DoctrineProcessHandler;
+use CleverAge\UiProcessBundle\Monolog\Handler\ProcessHandler;
 use CleverAge\UiProcessBundle\Notifier\NotificationTrigger;
+use CleverAge\UiProcessBundle\Repository\ProcessExecutionRepository;
+use CleverAge\UiProcessBundle\Repository\ProcessScheduleRepository;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\UsesClass;
@@ -31,12 +37,88 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\DependencyInjection\ParameterBag\EnvPlaceholderParameterBag;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
+use Symfony\Component\Yaml\Yaml;
 
 #[CoversClass(CleverAgeUiProcessExtension::class)]
 #[UsesClass(Configuration::class)]
 #[UsesClass(NotificationTrigger::class)]
 class CleverAgeUiProcessExtensionTest extends TestCase
 {
+    public function testEveryServiceDefinitionFileIsLoaded(): void
+    {
+        $container = $this->createContainer('prod');
+        (new CleverAgeUiProcessExtension())->load([], $container);
+
+        $files = glob(\dirname(__DIR__, 2).'/config/services/*.yaml');
+        self::assertIsArray($files);
+        self::assertNotEmpty($files);
+        foreach ($files as $file) {
+            $config = Yaml::parseFile($file, Yaml::PARSE_CUSTOM_TAGS);
+            self::assertIsArray($config);
+            if (!isset($config['services'])) {
+                continue;
+            }
+            self::assertIsArray($config['services']);
+            foreach (array_keys($config['services']) as $id) {
+                if ('_defaults' === $id) {
+                    continue;
+                }
+                if (str_ends_with((string) $id, '\\')) {
+                    // Resource: at least one service registered under the namespace prefix
+                    $registered = array_filter(
+                        array_keys($container->getDefinitions()),
+                        static fn (string $definitionId): bool => str_starts_with($definitionId, (string) $id)
+                    );
+                    self::assertNotEmpty($registered, \sprintf('No service registered for the "%s" resource of %s', $id, basename($file)));
+                    continue;
+                }
+                self::assertTrue($container->has((string) $id), \sprintf('Service "%s" of %s is not registered', $id, basename($file)));
+            }
+        }
+    }
+
+    public function testServicesAreDefinedExplicitly(): void
+    {
+        $container = $this->createContainer('prod');
+        (new CleverAgeUiProcessExtension())->load([], $container);
+
+        // Neither autowiring nor autoconfiguration (Symfony best practices for bundles)
+        foreach ($container->getDefinitions() as $id => $definition) {
+            if (!str_starts_with((string) $definition->getClass(), 'CleverAge\\UiProcessBundle\\')) {
+                continue;
+            }
+            self::assertFalse($definition->isAutowired(), \sprintf('Service "%s" is autowired', $id));
+            self::assertFalse($definition->isAutoconfigured(), \sprintf('Service "%s" is autoconfigured', $id));
+        }
+
+        // The targeted value resolver of the HTTP API (#[AsTargetedValueResolver])
+        $resolver = $container->getDefinition('cleverage_ui_process.http_value_resolver.http_process_execute');
+        self::assertSame([['name' => 'http_process_execution']], $resolver->getTag('controller.targeted_value_resolver'));
+        self::assertTrue($resolver->hasTag('controller.argument_value_resolver'));
+    }
+
+    public function testEveryControllerIsRegistered(): void
+    {
+        $container = $this->createContainer('prod');
+        (new CleverAgeUiProcessExtension())->load([], $container);
+
+        $files = array_merge(...array_map(
+            static fn (string $pattern): array => glob($pattern) ?: [],
+            [\dirname(__DIR__, 2).'/src/Controller/*.php', \dirname(__DIR__, 2).'/src/Controller/*/*.php', \dirname(__DIR__, 2).'/src/Controller/*/*/*.php']
+        ));
+        self::assertNotEmpty($files);
+        foreach ($files as $file) {
+            $class = 'CleverAge\\UiProcessBundle\\Controller\\'.str_replace('/', '\\', substr($file, \strlen(\dirname(__DIR__, 2).'/src/Controller/'), -4));
+            self::assertTrue($container->hasDefinition($class), \sprintf('Controller "%s" is not registered', $class));
+            $definition = $container->getDefinition($class);
+            self::assertTrue($definition->isPublic());
+            self::assertTrue($definition->hasTag('controller.service_arguments'));
+            // Services of AbstractController
+            self::assertTrue($definition->hasTag('container.service_subscriber'));
+            self::assertTrue($definition->hasMethodCall('setContainer'));
+        }
+    }
+
     public function testLoadWithDefaultConfiguration(): void
     {
         $container = $this->createContainer('prod');
@@ -47,7 +129,9 @@ class CleverAgeUiProcessExtensionTest extends TestCase
         // Stateful services, reset between two messages of a worker
         self::assertSame([['method' => 'reset']], $container->getDefinition('cleverage_ui_process.manager.process_execution')->getTag('kernel.reset'));
         self::assertSame([['method' => 'reset']], $container->getDefinition('cleverage_ui_process.monolog_handler.doctrine_process')->getTag('kernel.reset'));
-        self::assertTrue($container->hasParameter('upload_directory'));
+        self::assertSame('%kernel.project_dir%/var/storage/uploads', $container->getParameter('cleverage_ui_process.upload_directory'));
+        // Deprecated, see UploadDirectoryParameterPass
+        self::assertSame('%cleverage_ui_process.upload_directory%', $container->getParameterBag()->all()['upload_directory']);
 
         self::assertSame(
             ['ROLE_ADMIN' => 'ROLE_ADMIN'],
@@ -81,6 +165,35 @@ class CleverAgeUiProcessExtensionTest extends TestCase
             ['enabled' => false, 'statuses' => ['failed', 'finish_with_report'], 'channels' => [], 'recipients' => []],
             $container->getDefinition('cleverage_ui_process.notifier.process_execution')->getArgument('$defaultOptions')
         );
+    }
+
+    /**
+     * @return iterable<string, array{class-string, string}>
+     */
+    public static function provideAutowiringAliases(): iterable
+    {
+        yield 'process execution manager' => [ProcessExecutionManager::class, 'cleverage_ui_process.manager.process_execution'];
+        yield 'process configurations manager' => [ProcessConfigurationsManager::class, 'cleverage_ui_process.manager.process_configuration'];
+        yield 'process execution repository' => [ProcessExecutionRepository::class, 'cleverage_ui_process.repository.process_execution'];
+        yield 'process schedule repository' => [ProcessScheduleRepository::class, 'cleverage_ui_process.repository.process_schedule'];
+        yield 'process handler' => [ProcessHandler::class, 'cleverage_ui_process.monolog_handler.process'];
+        yield 'doctrine process handler' => [DoctrineProcessHandler::class, 'cleverage_ui_process.monolog_handler.doctrine_process'];
+    }
+
+    /**
+     * @param class-string $class
+     */
+    #[DataProvider('provideAutowiringAliases')]
+    public function testServiceCanBeAutowired(string $class, string $id): void
+    {
+        $container = $this->createContainer('prod');
+        (new CleverAgeUiProcessExtension())->load([], $container);
+
+        // Private alias named after the class of the service
+        $alias = $container->getAlias($class);
+        self::assertSame($id, (string) $alias);
+        self::assertFalse($alias->isPublic());
+        self::assertSame($class, $container->getDefinition($id)->getClass());
     }
 
     /**

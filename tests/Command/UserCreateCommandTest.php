@@ -25,6 +25,9 @@ use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactory;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasher;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\Validator\Constraints\Email;
+use Symfony\Component\Validator\Constraints\EmailValidator;
+use Symfony\Component\Validator\ConstraintValidatorFactory;
 use Symfony\Component\Validator\Validation;
 
 #[CoversClass(UserCreateCommand::class)]
@@ -127,7 +130,10 @@ class UserCreateCommandTest extends TestCase
     {
         $application = new Application();
         $application->addCommands([new UserCreateCommand(
-            Validation::createValidator(),
+            // HTML5 email validation, as configured by the applications (the "loose" default is deprecated with Symfony 6.4)
+            Validation::createValidatorBuilder()
+                ->setConstraintValidatorFactory(new ConstraintValidatorFactory([EmailValidator::class => new EmailValidator(Email::VALIDATION_MODE_HTML5)]))
+                ->getValidator(),
             $this->passwordHasher,
             $entityManager,
         )]);

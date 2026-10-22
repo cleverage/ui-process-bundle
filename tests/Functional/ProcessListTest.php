@@ -16,13 +16,14 @@ namespace CleverAge\UiProcessBundle\Tests\Functional;
 use CleverAge\UiProcessBundle\CacheWarmer\LaunchFormsCacheWarmer;
 use CleverAge\UiProcessBundle\CleverAgeUiProcessBundle;
 use CleverAge\UiProcessBundle\Controller\Admin\LogRecordCrudController;
-use CleverAge\UiProcessBundle\Controller\Admin\Process\ListAction;
 use CleverAge\UiProcessBundle\Controller\Admin\ProcessDashboardController;
 use CleverAge\UiProcessBundle\Controller\Admin\ProcessExecutionCrudController;
 use CleverAge\UiProcessBundle\Controller\Admin\ProcessScheduleCrudController;
+use CleverAge\UiProcessBundle\Controller\Admin\Process\ListAction;
 use CleverAge\UiProcessBundle\Controller\Admin\UserCrudController;
 use CleverAge\UiProcessBundle\DependencyInjection\CleverAgeUiProcessExtension;
 use CleverAge\UiProcessBundle\DependencyInjection\Compiler\CheckDoctrineLazyGhostObjectsPass;
+use CleverAge\UiProcessBundle\DependencyInjection\Compiler\UploadDirectoryParameterPass;
 use CleverAge\UiProcessBundle\DependencyInjection\Configuration;
 use CleverAge\UiProcessBundle\Entity\User;
 use CleverAge\UiProcessBundle\EventSubscriber\ProcessEventSubscriber;
@@ -64,6 +65,7 @@ use PHPUnit\Framework\Attributes\UsesClass;
 #[UsesClass(ProcessContextType::class)]
 #[UsesClass(LaunchType::class)]
 #[UsesClass(LaunchFormsCacheWarmer::class)]
+#[UsesClass(UploadDirectoryParameterPass::class)]
 #[UsesClass(LogRecordCrudController::class)]
 #[UsesClass(ProcessExecutionCrudController::class)]
 #[UsesClass(ProcessScheduleCrudController::class)]
@@ -104,10 +106,24 @@ class ProcessListTest extends FunctionalTestCase
     {
         $this->login();
 
-        $crawler = $this->client->request('GET', '/process?routeName=process_list');
+        $deprecations = [];
+        set_error_handler(static function (int $errno, string $errstr) use (&$deprecations): bool {
+            $deprecations[] = $errstr;
+
+            return true;
+        }, \E_USER_DEPRECATED);
+        try {
+            $crawler = $this->client->request('GET', '/process?routeName=process_list');
+        } finally {
+            restore_error_handler();
+        }
 
         self::assertResponseIsSuccessful();
         self::assertStringContainsString('test.process', $crawler->filter('table')->text());
+        self::assertContains(
+            'Since cleverage/ui-process-bundle 3.3: The "process_list" route alias is deprecated, use the "cleverage_ui_process_list" route instead. It will be removed in 4.0.',
+            $deprecations
+        );
     }
 
     /**

@@ -28,12 +28,15 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\ChoiceFilter;
+use EasyCorp\Bundle\EasyAdminBundle\Filter\DateTimeFilter;
 use Monolog\Level;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 /**
  * @extends AbstractCrudController<LogRecord>
+ *
+ * @internal
  */
 #[IsGranted('ROLE_USER')]
 class LogRecordCrudController extends AbstractCrudController
@@ -83,7 +86,9 @@ class LogRecordCrudController extends AbstractCrudController
                     ]
                 )
                 ->linkToCrudAction('detail'))
-            ->add(Crud::PAGE_DETAIL, 'index');
+            ->add(Crud::PAGE_DETAIL, 'index')
+            // Read-only: Actions::new() only hides the built-in actions, their routes must be disabled too
+            ->disable(Action::NEW, Action::EDIT, Action::DELETE, Action::BATCH_DELETE);
     }
 
     #[\Override]
@@ -104,6 +109,10 @@ class LogRecordCrudController extends AbstractCrudController
                     array_map(static fn ($value) => 'enum.log_level.'.strtolower((string) $value), Level::NAMES)
                 ))
                 ->setFormTypeOption('translation_domain', 'enums'),
-        )->add('message')->add('context')->add('createdAt');
+        )->add('message')->add('context')->add(
+            // The value_type_options set by EasyAdmin replace the widget of its date filter type, whose default is
+            // deprecated with Symfony 6.4 (single_text since Symfony 7.0)
+            DateTimeFilter::new('createdAt')->setFormTypeOption('value_type_options.widget', 'single_text')
+        );
     }
 }

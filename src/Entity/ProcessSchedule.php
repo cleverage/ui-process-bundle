@@ -23,20 +23,21 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ProcessScheduleRepository::class)]
+#[ORM\Table(name: 'process_schedule')]
 class ProcessSchedule
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column]
+    #[ORM\Column(name: 'id')]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(name: 'process', length: 255)]
     #[IsValidProcessCode]
     private string $process;
 
-    #[ORM\Column(length: 6)]
+    #[ORM\Column(name: 'type', length: 6)]
     private ProcessScheduleType $type;
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(name: 'expression', length: 255)]
     #[Assert\When(
         expression: 'this.getType().value == "cron"', constraints: [new CronExpression()]
     )]
@@ -45,16 +46,16 @@ class ProcessSchedule
     )]
     private string $expression;
 
-    #[ORM\Column(length: 255, nullable: true)]
+    #[ORM\Column(name: 'input', length: 255, nullable: true)]
     private ?string $input = null;
 
     /**
      * @var string|array<string|int, mixed>
      */
-    #[ORM\Column(type: Types::JSON)]
+    #[ORM\Column(name: 'context', type: Types::JSON)]
     private string|array $context = [];
 
-    #[ORM\Column(options: ['default' => true])]
+    #[ORM\Column(name: 'enabled', options: ['default' => true])]
     private bool $enabled = true;
 
     public function getId(): ?int

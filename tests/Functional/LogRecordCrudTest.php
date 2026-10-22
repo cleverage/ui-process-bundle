@@ -25,6 +25,7 @@ use CleverAge\UiProcessBundle\Controller\Admin\ProcessScheduleCrudController;
 use CleverAge\UiProcessBundle\Controller\Admin\UserCrudController;
 use CleverAge\UiProcessBundle\DependencyInjection\CleverAgeUiProcessExtension;
 use CleverAge\UiProcessBundle\DependencyInjection\Compiler\CheckDoctrineLazyGhostObjectsPass;
+use CleverAge\UiProcessBundle\DependencyInjection\Compiler\UploadDirectoryParameterPass;
 use CleverAge\UiProcessBundle\DependencyInjection\Configuration;
 use CleverAge\UiProcessBundle\Entity\LogRecord;
 use CleverAge\UiProcessBundle\Entity\ProcessExecution;
@@ -36,6 +37,8 @@ use CleverAge\UiProcessBundle\Form\Type\ProcessContextType;
 use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
 use CleverAge\UiProcessBundle\Monolog\Handler\DoctrineProcessHandler;
 use CleverAge\UiProcessBundle\Monolog\Handler\ProcessHandler;
+use CleverAge\UiProcessBundle\Notifier\NotificationTrigger;
+use CleverAge\UiProcessBundle\Notifier\ProcessExecutionNotifier;
 use CleverAge\UiProcessBundle\Repository\ProcessExecutionRepository;
 use CleverAge\UiProcessBundle\Routing\DeprecatedEasyAdminRouteAliasLoader;
 use CleverAge\UiProcessBundle\Security\HttpProcessExecutionAuthenticator;
@@ -69,6 +72,7 @@ use PHPUnit\Framework\Attributes\UsesClass;
 #[UsesClass(ProcessContextType::class)]
 #[UsesClass(LaunchType::class)]
 #[UsesClass(LaunchFormsCacheWarmer::class)]
+#[UsesClass(UploadDirectoryParameterPass::class)]
 #[UsesClass(ProcessExecutionCrudController::class)]
 #[UsesClass(ProcessScheduleCrudController::class)]
 #[UsesClass(UserCrudController::class)]
@@ -79,6 +83,8 @@ use PHPUnit\Framework\Attributes\UsesClass;
 #[UsesClass(ProcessExecutionRepository::class)]
 #[UsesClass(DoctrineProcessHandler::class)]
 #[UsesClass(ProcessHandler::class)]
+#[UsesClass(NotificationTrigger::class)]
+#[UsesClass(ProcessExecutionNotifier::class)]
 class LogRecordCrudTest extends FunctionalTestCase
 {
     public function testIndexAndProcessFilter(): void
@@ -138,6 +144,34 @@ class LogRecordCrudTest extends FunctionalTestCase
         self::assertResponseIsSuccessful();
         self::assertStringContainsString('A message', $crawler->text());
         self::assertStringContainsString('a.csv', $crawler->text());
+    }
+
+    /**
+     * The log records are read-only: the built-in actions are not displayed, their routes must not be usable either
+     * (deleting the log records would erase the history of the process runs).
+     */
+    public function testWriteActionsAreDisabled(): void
+    {
+        $this->login();
+        $id = $this->createLogRecord($this->createExecution('test.process'), 'A message', [])->getId();
+
+        $crawler = $this->client->request('GET', '/process/log-record');
+        self::assertResponseIsSuccessful();
+        // CSRF token of the EasyAdmin delete action, rendered in the layout (the batch delete, which needs a token
+        // only rendered with its button, checks the delete action of each entity)
+        $token = $crawler->filter('input[name="token"]')->count() > 0 ? (string) $crawler->filter('input[name="token"]')->attr('value') : '';
+
+        $statusCodes = [];
+        $this->client->request('GET', '/process/log-record/new');
+        $statusCodes['new'] = $this->client->getResponse()->getStatusCode();
+        $this->client->request('GET', '/process/log-record/'.$id.'/edit');
+        $statusCodes['edit'] = $this->client->getResponse()->getStatusCode();
+        $this->client->request('POST', '/process/log-record/'.$id.'/delete', ['token' => $token]);
+        $statusCodes['delete'] = $this->client->getResponse()->getStatusCode();
+        self::assertSame(['new' => 403, 'edit' => 403, 'delete' => 403], $statusCodes);
+
+        $this->getEntityManager()->clear();
+        self::assertNotNull($this->getEntityManager()->find(LogRecord::class, $id));
     }
 
     private function createExecution(string $code): ProcessExecution

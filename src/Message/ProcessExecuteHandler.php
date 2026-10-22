@@ -13,14 +13,17 @@ declare(strict_types=1);
 
 namespace CleverAge\UiProcessBundle\Message;
 
-use CleverAge\ProcessBundle\Manager\ProcessManager;
+use CleverAge\ProcessBundle\Manager\ProcessManagerInterface;
 use CleverAge\UiProcessBundle\Monolog\Handler\ProcessHandler;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
+/**
+ * @internal
+ */
 #[AsMessageHandler]
 readonly class ProcessExecuteHandler
 {
-    public function __construct(private ProcessManager $manager, private ProcessHandler $processHandler)
+    public function __construct(private ProcessManagerInterface $manager, private ProcessHandler $processHandler)
     {
     }
 

@@ -13,6 +13,9 @@ declare(strict_types=1);
 
 namespace CleverAge\UiProcessBundle\Message;
 
+/**
+ * @final since 3.3
+ */
 readonly class ProcessExecuteMessage
 {
     /**

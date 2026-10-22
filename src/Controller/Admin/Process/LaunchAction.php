@@ -27,13 +27,18 @@ use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Uid\Uuid;
 
+/**
+ * @internal
+ */
 #[Route(
     '/process/launch',
     name: 'cleverage_ui_process_launch',
@@ -43,6 +48,8 @@ use Symfony\Component\Uid\Uuid;
 #[IsGranted('ROLE_USER')]
 class LaunchAction extends AbstractController
 {
+    public const CSRF_TOKEN_ID = 'cleverage_ui_process_launch';
+
     public function __construct(
         private readonly MessageBusInterface $messageBus,
         private readonly RequestStack $requestStack,
@@ -62,11 +69,24 @@ class LaunchAction extends AbstractController
         if ('' === $processCode) {
             throw new MissingProcessException();
         }
+        // Only the public processes are listed and can be launched, as with the HTTP API and the scheduler
+        if (!\array_key_exists($processCode, $this->processConfigurationsManager->getPublicProcesses())) {
+            throw $this->createNotFoundException(\sprintf('Unknown or private process "%s".', $processCode));
+        }
         $uiOptions = $this->processConfigurationsManager->getUiOptions($processCode);
         if (null === $uiOptions) {
             throw new \InvalidArgumentException('Missing UI Options');
         }
         if (null === $uiOptions['ui_launch_mode'] || 'modal' === $uiOptions['ui_launch_mode']) {
+            // Launched without form: only by a POST request with a CSRF token, sent by the process list (a GET request,
+            // e.g. a link or an image on another site followed by a logged-in user, must not launch a process)
+            $request = $this->requestStack->getMainRequest();
+            if (!$request instanceof Request || !$request->isMethod('POST')) {
+                throw new MethodNotAllowedHttpException(['POST'], 'This process is launched by a POST request.');
+            }
+            if (!$this->isCsrfTokenValid(self::CSRF_TOKEN_ID, $request->request->getString('_token'))) {
+                throw $this->createAccessDeniedException('Invalid CSRF token.');
+            }
             $this->dispatch($processCode);
             $this->addFlash(
                 'success',

@@ -15,7 +15,7 @@ namespace CleverAge\UiProcessBundle\Form\Type;
 
 use CleverAge\ProcessBundle\Configuration\TaskConfiguration;
 use CleverAge\ProcessBundle\Exception\MissingProcessException;
-use CleverAge\ProcessBundle\Registry\ProcessConfigurationRegistry;
+use CleverAge\ProcessBundle\Registry\ProcessConfigurationRegistryInterface;
 use CleverAge\UiProcessBundle\Form\LaunchFormOptionsResolver;
 use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
 use Symfony\Component\Form\AbstractType;
@@ -31,12 +31,14 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 /**
  * @phpstan-import-type LaunchFormOptions from LaunchFormOptionsResolver
  *
+ * @internal
+ *
  * @template-extends AbstractType<array<string, mixed>>
  */
 class LaunchType extends AbstractType
 {
     public function __construct(
-        private readonly ProcessConfigurationRegistry $registry,
+        private readonly ProcessConfigurationRegistryInterface $registry,
         private readonly ProcessConfigurationsManager $configurationsManager,
     ) {
     }

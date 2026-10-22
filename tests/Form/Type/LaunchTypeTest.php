@@ -113,7 +113,7 @@ class LaunchTypeTest extends TypeTestCase
         });
         self::assertInstanceOf(FormInterface::class, $form);
 
-        self::assertSame(['Since cleverage/ui-process-bundle 3.3: The "entrypoint_type" UI option of the process "file.process" is deprecated, use "form.input.type" instead.'], $deprecations);
+        self::assertSame(['Since cleverage/ui-process-bundle 3.4: The "entrypoint_type" UI option of the process "file.process" is deprecated, use "form.input.type" instead.'], $deprecations);
 
         self::assertInstanceOf(FileType::class, $this->getInnerType($form->get('input')));
         self::assertTrue($form->get('input')->getConfig()->getRequired(), 'The process has an entry point');
@@ -312,7 +312,7 @@ class LaunchTypeTest extends TypeTestCase
         $resolutionDeprecations = $this->collectDeprecations(static function () use ($registry, &$launchForm): void {
             $launchForm = (new ProcessConfigurationsManager($registry))->getLaunchFormOptions('file.process');
         });
-        self::assertSame(['Since cleverage/ui-process-bundle 3.3: The "entrypoint_type" UI option of the process "file.process" is deprecated, use "form.input.type" instead.'], $resolutionDeprecations);
+        self::assertSame(['Since cleverage/ui-process-bundle 3.4: The "entrypoint_type" UI option of the process "file.process" is deprecated, use "form.input.type" instead.'], $resolutionDeprecations);
         self::assertIsArray($launchForm);
 
         $form = null;

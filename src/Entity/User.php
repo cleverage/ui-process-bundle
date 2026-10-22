@@ -25,34 +25,34 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column]
+    #[ORM\Column(name: 'id')]
     private ?int $id = null;
 
-    #[ORM\Column(type: Types::STRING, length: 255, unique: true)]
+    #[ORM\Column(name: 'email', type: Types::STRING, length: 255, unique: true)]
     private string $email;
 
-    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
+    #[ORM\Column(name: 'firstname', type: Types::STRING, length: 255, nullable: true)]
     private ?string $firstname = null;
 
-    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
+    #[ORM\Column(name: 'lastname', type: Types::STRING, length: 255, nullable: true)]
     private ?string $lastname = null;
 
     /**
      * @var string[]
      */
-    #[ORM\Column(type: Types::JSON)]
+    #[ORM\Column(name: 'roles', type: Types::JSON)]
     private array $roles = [];
 
-    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
+    #[ORM\Column(name: 'password', type: Types::STRING, length: 255, nullable: true)]
     private ?string $password = null;
 
-    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
+    #[ORM\Column(name: 'timezone', type: Types::STRING, length: 255, nullable: true)]
     private ?string $timezone = null;
 
-    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
+    #[ORM\Column(name: 'locale', type: Types::STRING, length: 255, nullable: true)]
     private ?string $locale = null;
 
-    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
+    #[ORM\Column(name: 'token', type: Types::STRING, length: 255, nullable: true)]
     private ?string $token = null;
 
     public function getId(): ?int
@@ -173,6 +173,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    /**
+     * Required by UserInterface before Symfony 8.0: no temporary sensitive data is stored on the user.
+     */
+    #[\Deprecated]
     public function eraseCredentials(): void
     {
         // If you store any temporary, sensitive data on the user, clear it here

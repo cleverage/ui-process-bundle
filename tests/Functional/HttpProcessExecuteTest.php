@@ -23,11 +23,12 @@ use CleverAge\UiProcessBundle\Controller\Admin\UserCrudController;
 use CleverAge\UiProcessBundle\Controller\ProcessExecuteController;
 use CleverAge\UiProcessBundle\DependencyInjection\CleverAgeUiProcessExtension;
 use CleverAge\UiProcessBundle\DependencyInjection\Compiler\CheckDoctrineLazyGhostObjectsPass;
+use CleverAge\UiProcessBundle\DependencyInjection\Compiler\UploadDirectoryParameterPass;
 use CleverAge\UiProcessBundle\DependencyInjection\Configuration;
 use CleverAge\UiProcessBundle\Entity\ProcessExecution;
 use CleverAge\UiProcessBundle\Entity\User;
-use CleverAge\UiProcessBundle\Event\ProcessExecutionEndedEvent;
 use CleverAge\UiProcessBundle\EventSubscriber\ProcessEventSubscriber;
+use CleverAge\UiProcessBundle\Event\ProcessExecutionEndedEvent;
 use CleverAge\UiProcessBundle\Form\LaunchFormOptionsResolver;
 use CleverAge\UiProcessBundle\Form\Type\LaunchType;
 use CleverAge\UiProcessBundle\Form\Type\ProcessContextType;
@@ -65,6 +66,7 @@ use Symfony\Component\PasswordHasher\Hasher\Pbkdf2PasswordHasher;
 #[UsesClass(ProcessContextType::class)]
 #[UsesClass(LaunchType::class)]
 #[UsesClass(LaunchFormsCacheWarmer::class)]
+#[UsesClass(UploadDirectoryParameterPass::class)]
 #[UsesClass(LogRecordCrudController::class)]
 #[UsesClass(ProcessDashboardController::class)]
 #[UsesClass(ProcessExecutionCrudController::class)]
@@ -146,7 +148,7 @@ class HttpProcessExecuteTest extends FunctionalTestCase
         self::assertResponseStatusCodeSame(500);
         $content = json_decode((string) $this->client->getResponse()->getContent(), true);
         self::assertIsString($content);
-        self::assertStringContainsString('output', $content);
+        self::assertStringContainsString('File does not exists', $content);
         // The id of the failed process execution, to find its logs in the UI
         $execution = $this->getEntityManager()->getRepository(ProcessExecution::class)->findOneBy(['code' => 'test.failing']);
         self::assertInstanceOf(ProcessExecution::class, $execution);

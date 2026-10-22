@@ -82,7 +82,7 @@ final class LaunchFormOptionsResolver
     {
         foreach (self::DEPRECATED_OPTIONS as $option => $replacement) {
             if (\array_key_exists($option, $ui)) {
-                trigger_deprecation('cleverage/ui-process-bundle', '3.3', 'The "%s" UI option of the process "%s" is deprecated, use %s instead.', $option, $processCode, $replacement);
+                trigger_deprecation('cleverage/ui-process-bundle', '3.4', 'The "%s" UI option of the process "%s" is deprecated, use %s instead.', $option, $processCode, $replacement);
             }
         }
 

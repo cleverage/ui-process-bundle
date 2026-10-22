@@ -17,6 +17,7 @@ use CleverAge\UiProcessBundle\Entity\LogRecord;
 use CleverAge\UiProcessBundle\Entity\ProcessExecution;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -26,6 +27,8 @@ use Doctrine\Persistence\ManagerRegistry;
  * @method ProcessExecution|null findOneBy(mixed[] $criteria, string[] $orderBy = null)
  * @method ProcessExecution[]    findAll()
  * @method ProcessExecution[]    findBy(mixed[] $criteria, string[] $orderBy = null, $limit = null, $offset = null)
+ *
+ * @final since 3.3
  */
 class ProcessExecutionRepository extends EntityRepository
 {
@@ -78,7 +81,7 @@ class ProcessExecutionRepository extends EntityRepository
         /** @var ProcessExecution|null $processExecution */
         $processExecution = $qb->select('pe')
             ->where($qb->expr()->eq('pe.code', $qb->expr()->literal($code)))
-            ->orderBy('pe.startDate', 'DESC')
+            ->orderBy('pe.startDate', $this->descending())
             ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
@@ -88,13 +91,24 @@ class ProcessExecutionRepository extends EntityRepository
 
     public function hasLogs(ProcessExecution $processExecution): bool
     {
-        $qb = $this->createQueryBuilder('pe')
+        $qb = $this->getEntityManager()->createQueryBuilder()
             ->select('count(lr.id)')
-            ->join(LogRecord::class, 'lr', 'WITH', 'lr.processExecution = pe')
-            ->where('pe.id = :id')
-            ->setParameter('id', $processExecution->getId()
-            );
+            ->from(LogRecord::class, 'lr')
+            ->where('lr.processExecution = :processExecution')
+            ->setParameter('processExecution', $processExecution->getId());
 
         return (int) $qb->getQuery()->getSingleScalarResult() > 0;
+    }
+
+    /**
+     * doctrine/orm 3.7 deprecates the string sort directions in favor of the \SortDirection enum (PHP 8.6, polyfilled),
+     * which the previous versions do not accept (the enum may exist with them, e.g. on PHP 8.6).
+     */
+    private function descending(): \SortDirection|string
+    {
+        static $acceptsSortDirection = null;
+        $acceptsSortDirection ??= str_contains((string) (new \ReflectionMethod(QueryBuilder::class, 'orderBy'))->getParameters()[1]->getType(), 'SortDirection');
+
+        return $acceptsSortDirection ? \SortDirection::Descending : 'DESC';
     }
 }

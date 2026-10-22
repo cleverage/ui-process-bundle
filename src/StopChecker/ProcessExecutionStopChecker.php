@@ -26,6 +26,8 @@ use Psr\Log\LoggerInterface;
  *
  * DBAL queries are used: no ORM query per item, and the entity manager may have been cleared or closed by the process
  * tasks.
+ *
+ * @internal
  */
 class ProcessExecutionStopChecker implements ProcessStopCheckerInterface
 {

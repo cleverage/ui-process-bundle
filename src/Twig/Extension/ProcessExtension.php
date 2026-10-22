@@ -14,19 +14,22 @@ declare(strict_types=1);
 namespace CleverAge\UiProcessBundle\Twig\Extension;
 
 use CleverAge\UiProcessBundle\Twig\Runtime\ProcessExtensionRuntime;
+use Twig\DeprecatedCallableInfo;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFunction;
 
+/**
+ * @internal
+ */
 class ProcessExtension extends AbstractExtension
 {
     #[\Override]
     public function getFunctions(): array
     {
         return [
-            new TwigFunction(
-                'resolve_ui_options',
-                [ProcessExtensionRuntime::class, 'getUiOptions']
-            ),
+            new TwigFunction('cleverage_ui_process_resolve_ui_options', [ProcessExtensionRuntime::class, 'getUiOptions']),
+            // Former names, removed in 4.0
+            new TwigFunction('resolve_ui_options', [ProcessExtensionRuntime::class, 'getUiOptions'], ['deprecation_info' => new DeprecatedCallableInfo('cleverage/ui-process-bundle', '3.3', 'cleverage_ui_process_resolve_ui_options')]),
         ];
     }
 }

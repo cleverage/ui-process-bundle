@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace CleverAge\UiProcessBundle\Manager;
 
 use CleverAge\ProcessBundle\Configuration\ProcessConfiguration;
-use CleverAge\ProcessBundle\Registry\ProcessConfigurationRegistry;
+use CleverAge\ProcessBundle\Registry\ProcessConfigurationRegistryInterface;
 use CleverAge\ProcessBundle\Validator\ConstraintLoader;
 use CleverAge\UiProcessBundle\Form\LaunchFormOptionsResolver;
 use CleverAge\UiProcessBundle\Notifier\NotificationTrigger;
@@ -50,7 +50,7 @@ use Symfony\Component\Validator\Constraint;
 final readonly class ProcessConfigurationsManager
 {
     public function __construct(
-        private ProcessConfigurationRegistry $registry,
+        private ProcessConfigurationRegistryInterface $registry,
         private LaunchFormOptionsResolver $launchFormOptionsResolver = new LaunchFormOptionsResolver(),
     ) {
     }

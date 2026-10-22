@@ -23,6 +23,9 @@ use Symfony\Component\Scheduler\Schedule;
 use Symfony\Component\Scheduler\ScheduleProviderInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
+/**
+ * @internal
+ */
 readonly class CronScheduler implements ScheduleProviderInterface
 {
     public function __construct(

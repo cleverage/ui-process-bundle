@@ -16,14 +16,15 @@ namespace CleverAge\UiProcessBundle\Tests\Functional;
 use CleverAge\UiProcessBundle\CacheWarmer\LaunchFormsCacheWarmer;
 use CleverAge\UiProcessBundle\CleverAgeUiProcessBundle;
 use CleverAge\UiProcessBundle\Controller\Admin\LogRecordCrudController;
-use CleverAge\UiProcessBundle\Controller\Admin\Process\LaunchAction;
-use CleverAge\UiProcessBundle\Controller\Admin\Process\ListAction;
 use CleverAge\UiProcessBundle\Controller\Admin\ProcessDashboardController;
 use CleverAge\UiProcessBundle\Controller\Admin\ProcessExecutionCrudController;
 use CleverAge\UiProcessBundle\Controller\Admin\ProcessScheduleCrudController;
+use CleverAge\UiProcessBundle\Controller\Admin\Process\LaunchAction;
+use CleverAge\UiProcessBundle\Controller\Admin\Process\ListAction;
 use CleverAge\UiProcessBundle\Controller\Admin\UserCrudController;
 use CleverAge\UiProcessBundle\DependencyInjection\CleverAgeUiProcessExtension;
 use CleverAge\UiProcessBundle\DependencyInjection\Compiler\CheckDoctrineLazyGhostObjectsPass;
+use CleverAge\UiProcessBundle\DependencyInjection\Compiler\UploadDirectoryParameterPass;
 use CleverAge\UiProcessBundle\DependencyInjection\Configuration;
 use CleverAge\UiProcessBundle\Entity\User;
 use CleverAge\UiProcessBundle\EventSubscriber\ProcessEventSubscriber;
@@ -73,6 +74,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 #[UsesClass(CleverAgeUiProcessBundle::class)]
 #[UsesClass(CheckDoctrineLazyGhostObjectsPass::class)]
 #[UsesClass(LaunchFormsCacheWarmer::class)]
+#[UsesClass(UploadDirectoryParameterPass::class)]
 #[UsesClass(LogRecordCrudController::class)]
 #[UsesClass(ProcessExecutionCrudController::class)]
 #[UsesClass(ProcessScheduleCrudController::class)]
@@ -89,7 +91,12 @@ class LaunchActionTest extends FunctionalTestCase
     {
         $this->login();
 
-        $this->client->request('GET', '/process?routeName=cleverage_ui_process_launch&process=test.process');
+        // Confirmation of the modal of the process list: a POST form with a CSRF token
+        $crawler = $this->client->request('GET', '/process?routeName=cleverage_ui_process_list');
+        self::assertResponseIsSuccessful();
+        $form = $crawler->filter('#test\\.process-confirm')->form();
+        self::assertSame('POST', $form->getMethod());
+        $this->client->submit($form);
 
         self::assertResponseRedirects();
         self::assertStringContainsString('routeName=cleverage_ui_process_list', (string) $this->client->getResponse()->headers->get('Location'));
@@ -101,6 +108,65 @@ class LaunchActionTest extends FunctionalTestCase
 
         $this->client->followRedirect();
         self::assertSelectorTextContains('.alert-success', 'Process has been added to queue');
+    }
+
+    public function testLaunchWithoutConfirmation(): void
+    {
+        $this->login();
+
+        // ui_launch_mode: ~, the "Launch" action of the process list is a POST form with a CSRF token
+        $crawler = $this->client->request('GET', '/process?routeName=cleverage_ui_process_list');
+        self::assertResponseIsSuccessful();
+        $form = $crawler->filter('form[action$="process=test.no_confirmation"]')->form();
+        self::assertSame('POST', $form->getMethod());
+        $this->client->submit($form);
+
+        self::assertResponseRedirects();
+        $messages = $this->getDispatchedMessages();
+        self::assertCount(1, $messages);
+        self::assertSame('test.no_confirmation', $messages[0]->code);
+    }
+
+    /**
+     * A GET request (a link or an image on another site, followed by a logged-in user) must not launch a process.
+     */
+    public function testLaunchWithoutFormByGetRequestIsRefused(): void
+    {
+        $this->login();
+
+        $this->client->request('GET', '/process?routeName=cleverage_ui_process_launch&process=test.process');
+
+        self::assertResponseStatusCodeSame(405);
+        self::assertSame([], $this->getDispatchedMessages());
+    }
+
+    public function testLaunchWithoutFormWithoutValidCsrfTokenIsRefused(): void
+    {
+        $this->login();
+
+        $this->client->request('POST', '/process?routeName=cleverage_ui_process_launch&process=test.process');
+        self::assertResponseStatusCodeSame(403);
+
+        $this->client->request('POST', '/process?routeName=cleverage_ui_process_launch&process=test.process', ['_token' => 'invalid']);
+        self::assertResponseStatusCodeSame(403);
+
+        self::assertSame([], $this->getDispatchedMessages());
+    }
+
+    /**
+     * A private process is not listed: it cannot be launched from the UI, as with the HTTP API and the scheduler.
+     */
+    public function testPrivateProcessCannotBeLaunched(): void
+    {
+        $this->login();
+
+        $this->client->request('GET', '/process?routeName=cleverage_ui_process_launch&process=test.private');
+        self::assertResponseStatusCodeSame(404);
+
+        $this->client->request('POST', '/process?routeName=cleverage_ui_process_launch&process=test.private');
+        self::assertResponseStatusCodeSame(404);
+
+        self::assertSame([], $this->getDispatchedMessages());
     }
 
     public function testLaunchWithForm(): void
@@ -179,7 +245,7 @@ class LaunchActionTest extends FunctionalTestCase
         // The file is saved in the upload directory, its path is the process input
         self::assertIsString($messages[0]->input);
         self::assertStringEndsWith('.csv', $messages[0]->input);
-        $uploadDirectory = static::getContainer()->getParameter('upload_directory');
+        $uploadDirectory = static::getContainer()->getParameter('cleverage_ui_process.upload_directory');
         self::assertIsString($uploadDirectory);
         self::assertStringStartsWith($uploadDirectory.'/', $messages[0]->input);
         self::assertSame('line1', file_get_contents($messages[0]->input));
@@ -586,8 +652,8 @@ class LaunchActionTest extends FunctionalTestCase
         $deprecations = $this->collectDeprecations(fn () => $this->client->request('GET', '/process?routeName=cleverage_ui_process_launch&process=test.form'));
         self::assertResponseIsSuccessful();
         self::assertSame([
-            'Since cleverage/ui-process-bundle 3.3: The "entrypoint_type" UI option of the process "test.form" is deprecated, use "form.input.type" instead.',
-            'Since cleverage/ui-process-bundle 3.3: The "default" UI option of the process "test.form" is deprecated, use "form.input.default" and "form.context.<key>.default" instead.',
+            'Since cleverage/ui-process-bundle 3.4: The "entrypoint_type" UI option of the process "test.form" is deprecated, use "form.input.type" instead.',
+            'Since cleverage/ui-process-bundle 3.4: The "default" UI option of the process "test.form" is deprecated, use "form.input.default" and "form.context.<key>.default" instead.',
         ], $deprecations);
 
         // A process with the "form" UI option triggers no deprecation
@@ -611,7 +677,7 @@ class LaunchActionTest extends FunctionalTestCase
 
         $this->client->request('GET', '/process?routeName=cleverage_ui_process_launch&process=unknown');
 
-        self::assertResponseStatusCodeSame(500);
+        self::assertResponseStatusCodeSame(404);
         self::assertSame([], $this->getDispatchedMessages());
     }
 

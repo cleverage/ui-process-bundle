@@ -15,6 +15,9 @@ namespace CleverAge\UiProcessBundle\Twig\Runtime;
 
 use Twig\Extension\RuntimeExtensionInterface;
 
+/**
+ * @internal
+ */
 class MD5ExtensionRuntime implements RuntimeExtensionInterface
 {
     public function md5(string $value): string

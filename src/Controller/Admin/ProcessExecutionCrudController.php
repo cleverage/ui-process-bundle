@@ -29,6 +29,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ArrayField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
+use EasyCorp\Bundle\EasyAdminBundle\Filter\DateTimeFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -38,6 +39,8 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * @extends AbstractCrudController<ProcessExecution>
+ *
+ * @internal
  */
 #[IsGranted('ROLE_USER')]
 class ProcessExecutionCrudController extends AbstractCrudController
@@ -161,7 +164,9 @@ class ProcessExecutionCrudController extends AbstractCrudController
                     ->renderAsForm()
                     ->askConfirmation('Do you really want to mark this process execution as failed? Do it only if its process is no longer running.')
                     ->displayIf(fn (ProcessExecution $entity) => $entity->isStale($this->staleAfter))
-            );
+            )
+            // Read-only: Actions::new() only hides the built-in actions, their routes must be disabled too
+            ->disable(Action::NEW, Action::EDIT, Action::DELETE, Action::BATCH_DELETE);
     }
 
     /**
@@ -250,7 +255,9 @@ class ProcessExecutionCrudController extends AbstractCrudController
     {
         return $filters
             ->add('code')
-            ->add('startDate')
+            // The value_type_options set by EasyAdmin replace the widget of its date filter type, whose default is
+            // deprecated with Symfony 6.4 (single_text since Symfony 7.0)
+            ->add(DateTimeFilter::new('startDate')->setFormTypeOption('value_type_options.widget', 'single_text'))
             ->add(
                 ProcessExecutionDurationFilter::new('duration', 'Duration (in seconds)')
                     ->setFormTypeOption('mapped', false)

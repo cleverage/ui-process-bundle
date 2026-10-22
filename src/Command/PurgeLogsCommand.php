@@ -33,6 +33,8 @@ use Symfony\Component\Finder\Finder;
  * "logs.file_max_days" days, both overridable by the "logs" option of each process. The process executions are kept.
  *
  * DBAL queries are used: the log records are deleted by batches, without loading them.
+ *
+ * @internal
  */
 #[AsCommand(
     name: 'cleverage:ui-process:purge-logs',

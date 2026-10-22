@@ -13,10 +13,14 @@ declare(strict_types=1);
 
 namespace CleverAge\UiProcessBundle\Twig\Components;
 
+/**
+ * @internal
+ */
 class BootstrapModal
 {
     public ?string $id = null;
     public ?string $title = null;
     public ?string $message = null;
     public ?string $confirmUrl = null;
+    public ?string $csrfToken = null;
 }

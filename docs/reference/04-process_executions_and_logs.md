@@ -107,6 +107,34 @@ When a log record has a level greater than or equal to `report_increment_level` 
 execution report, e.g. `{"Warning": 12, "Error": 1}`. This gives an overview of the problems of an execution
 without opening its logs.
 
+### In your code
+
+The services of the bundle can be autowired by their class name:
+
+| Class                                                             | Service                                              | Usage                                                                                                                                                         |
+|-------------------------------------------------------------------|------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `CleverAge\UiProcessBundle\Manager\ProcessExecutionManager`       | `cleverage_ui_process.manager.process_execution`     | Execution of the running process: `getCurrentProcessExecution()`, `increment('<key>')` / `setReport('<key>', '<value>')` to add your own entries to its report. |
+| `CleverAge\UiProcessBundle\Repository\ProcessExecutionRepository` | `cleverage_ui_process.repository.process_execution`  | `getLastProcessExecution('<process code>')`: last execution of a process.                                                                                     |
+| `CleverAge\UiProcessBundle\Repository\ProcessScheduleRepository`  | `cleverage_ui_process.repository.process_schedule`   | `findEnabled()`: enabled [schedules](05-scheduler.md).                                                                                                        |
+| `CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager`  | `cleverage_ui_process.manager.process_configuration` | `getPublicProcesses()`, `getPrivateProcesses()` and the resolved [UI options](02-process_ui_options.md) of a process (`getUiOptions('<process code>')`).       |
+
+```php
+use CleverAge\UiProcessBundle\Manager\ProcessExecutionManager;
+
+final class MyService
+{
+    public function __construct(private readonly ProcessExecutionManager $processExecutionManager)
+    {
+    }
+
+    public function doSomething(): void
+    {
+        // Counted in the report of the running execution (nothing happens outside of a process)
+        $this->processExecutionManager->increment('imported');
+    }
+}
+```
+
 Logs
 ----
 

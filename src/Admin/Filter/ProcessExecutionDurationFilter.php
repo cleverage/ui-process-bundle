@@ -21,6 +21,9 @@ use EasyCorp\Bundle\EasyAdminBundle\Dto\FilterDataDto;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\FilterTrait;
 use EasyCorp\Bundle\EasyAdminBundle\Form\Filter\Type\NumericFilterType;
 
+/**
+ * @internal
+ */
 class ProcessExecutionDurationFilter implements FilterInterface
 {
     use FilterTrait;
