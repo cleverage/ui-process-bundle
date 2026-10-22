@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace CleverAge\UiProcessBundle\Form\Type;
 
 use CleverAge\ProcessBundle\Configuration\TaskConfiguration;
-use CleverAge\ProcessBundle\Registry\ProcessConfigurationRegistry;
+use CleverAge\ProcessBundle\Registry\ProcessConfigurationRegistryInterface;
 use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\CallbackTransformer;
@@ -32,7 +32,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 class LaunchType extends AbstractType
 {
     public function __construct(
-        private readonly ProcessConfigurationRegistry $registry,
+        private readonly ProcessConfigurationRegistryInterface $registry,
         private readonly ProcessConfigurationsManager $configurationsManager,
     ) {
     }

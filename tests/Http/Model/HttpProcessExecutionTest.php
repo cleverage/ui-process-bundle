@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace CleverAge\UiProcessBundle\Tests\Http\Model;
 
 use CleverAge\ProcessBundle\Configuration\ProcessConfiguration;
-use CleverAge\ProcessBundle\Registry\ProcessConfigurationRegistry;
+use CleverAge\ProcessBundle\Registry\ProcessConfigurationRegistryInterface;
 use CleverAge\UiProcessBundle\Http\Model\HttpProcessExecution;
 use CleverAge\UiProcessBundle\Validator\IsValidProcessCode;
 use CleverAge\UiProcessBundle\Validator\IsValidProcessCodeValidator;
@@ -58,7 +58,7 @@ class HttpProcessExecutionTest extends TestCase
     #[DataProvider('provideValidation')]
     public function testValidation(?string $code, string|array $context, array $expectedViolations): void
     {
-        $registry = $this->createStub(ProcessConfigurationRegistry::class);
+        $registry = $this->createStub(ProcessConfigurationRegistryInterface::class);
         $registry->method('hasProcessConfiguration')
             ->willReturnCallback(static fn (string $code): bool => 'demo.process' === $code);
         $registry->method('getProcessConfiguration')->willReturn(new ProcessConfiguration('demo.process', []));
@@ -98,7 +98,7 @@ class HttpProcessExecutionTest extends TestCase
 
     public function testInvalidJsonContext(): void
     {
-        $registry = $this->createStub(ProcessConfigurationRegistry::class);
+        $registry = $this->createStub(ProcessConfigurationRegistryInterface::class);
         $registry->method('hasProcessConfiguration')->willReturn(true);
         $registry->method('getProcessConfiguration')->willReturn(new ProcessConfiguration('demo.process', []));
         $validator = Validation::createValidatorBuilder()

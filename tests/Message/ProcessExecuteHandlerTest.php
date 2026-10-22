@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace CleverAge\UiProcessBundle\Tests\Message;
 
-use CleverAge\ProcessBundle\Manager\ProcessManager;
+use CleverAge\ProcessBundle\Manager\ProcessManagerInterface;
 use CleverAge\UiProcessBundle\Manager\ProcessExecutionManager;
 use CleverAge\UiProcessBundle\Message\ProcessExecuteHandler;
 use CleverAge\UiProcessBundle\Message\ProcessExecuteMessage;
@@ -33,7 +33,7 @@ class ProcessExecuteHandlerTest extends TestCase
         // Log file of a previous execution, in the same worker
         $processHandler->setFilename('previous.log');
 
-        $manager = $this->createMock(ProcessManager::class);
+        $manager = $this->createMock(ProcessManagerInterface::class);
         $manager->expects(self::once())
             ->method('execute')
             ->with('test.process', 'data.csv', ['foo' => 'bar'])

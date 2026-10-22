@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace CleverAge\UiProcessBundle\Tests\Twig\Runtime;
 
 use CleverAge\ProcessBundle\Configuration\ProcessConfiguration;
-use CleverAge\ProcessBundle\Registry\ProcessConfigurationRegistry;
+use CleverAge\ProcessBundle\Registry\ProcessConfigurationRegistryInterface;
 use CleverAge\UiProcessBundle\Entity\ProcessExecution;
 use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
 use CleverAge\UiProcessBundle\Repository\ProcessExecutionRepository;
@@ -63,7 +63,7 @@ class ProcessExecutionExtensionRuntimeTest extends TestCase
             'demo.with_ui' => new ProcessConfiguration('demo.with_ui', [], ['ui' => ['source' => 'Pim', 'target' => 'Shop']]),
             'demo.without_ui' => new ProcessConfiguration('demo.without_ui', []),
         ];
-        $registry = $this->createStub(ProcessConfigurationRegistry::class);
+        $registry = $this->createStub(ProcessConfigurationRegistryInterface::class);
         $registry->method('hasProcessConfiguration')
             ->willReturnCallback(static fn (string $code): bool => isset($configurations[$code]));
         $registry->method('getProcessConfiguration')

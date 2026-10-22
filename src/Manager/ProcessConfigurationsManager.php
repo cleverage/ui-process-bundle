@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace CleverAge\UiProcessBundle\Manager;
 
 use CleverAge\ProcessBundle\Configuration\ProcessConfiguration;
-use CleverAge\ProcessBundle\Registry\ProcessConfigurationRegistry;
+use CleverAge\ProcessBundle\Registry\ProcessConfigurationRegistryInterface;
 use CleverAge\ProcessBundle\Validator\ConstraintLoader;
 use CleverAge\UiProcessBundle\Notifier\NotificationTrigger;
 use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
@@ -45,7 +45,7 @@ use Symfony\Component\Validator\Constraint;
  */
 final readonly class ProcessConfigurationsManager
 {
-    public function __construct(private ProcessConfigurationRegistry $registry)
+    public function __construct(private ProcessConfigurationRegistryInterface $registry)
     {
     }
 

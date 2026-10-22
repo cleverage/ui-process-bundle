@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace CleverAge\UiProcessBundle\Controller;
 
-use CleverAge\ProcessBundle\Manager\ProcessManager;
+use CleverAge\ProcessBundle\Manager\ProcessManagerInterface;
 use CleverAge\UiProcessBundle\Entity\ProcessExecution;
 use CleverAge\UiProcessBundle\Http\Model\HttpProcessExecution;
 use CleverAge\UiProcessBundle\Manager\ProcessExecutionManager;
@@ -38,7 +38,7 @@ class ProcessExecuteController extends AbstractController
     public function __construct(
         private readonly ValidatorInterface $validator,
         private readonly MessageBusInterface $bus,
-        private readonly ProcessManager $processManager,
+        private readonly ProcessManagerInterface $processManager,
         private readonly ProcessExecutionManager $processExecutionManager,
     ) {
     }
