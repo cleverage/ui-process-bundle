@@ -97,6 +97,7 @@ Container parameters
 | Parameter                               | Default                                   | Description |
 |-----------------------------------------|-------------------------------------------|-------------|
 | `cleverage_ui_process.upload_directory` | `%kernel.project_dir%/var/storage/uploads` | Directory where files uploaded from the launch form or the [HTTP API](06-http_api.md) are stored before being passed as process input. |
+| `cleverage_ui_process.delete_uploaded_files` | `true` | Delete the uploaded file once the process has been executed (successfully or not), by the Messenger handler or by the HTTP API when the process is not queued. Only the files of `cleverage_ui_process.upload_directory` are deleted. Set it to `false` to keep them, e.g. when a process stores the path of its input. |
 | `upload_directory`                      | `%cleverage_ui_process.upload_directory%` | Deprecated since 3.3, removed in 4.0: use `cleverage_ui_process.upload_directory`. When your application still sets it, its value is used (unless `cleverage_ui_process.upload_directory` is also set), with a deprecation. |
 
 It can be overridden in your application:
