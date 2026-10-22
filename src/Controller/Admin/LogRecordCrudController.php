@@ -86,7 +86,9 @@ class LogRecordCrudController extends AbstractCrudController
                     ]
                 )
                 ->linkToCrudAction('detail'))
-            ->add(Crud::PAGE_DETAIL, 'index');
+            ->add(Crud::PAGE_DETAIL, 'index')
+            // Read-only: Actions::new() only hides the built-in actions, their routes must be disabled too
+            ->disable(Action::NEW, Action::EDIT, Action::DELETE, Action::BATCH_DELETE);
     }
 
     #[\Override]
