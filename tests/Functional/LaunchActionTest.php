@@ -81,7 +81,12 @@ class LaunchActionTest extends FunctionalTestCase
     {
         $this->login();
 
-        $this->client->request('GET', '/process?routeName=cleverage_ui_process_launch&process=test.process');
+        // Confirmation of the modal of the process list: a POST form with a CSRF token
+        $crawler = $this->client->request('GET', '/process?routeName=cleverage_ui_process_list');
+        self::assertResponseIsSuccessful();
+        $form = $crawler->filter('#test\\.process-confirm')->form();
+        self::assertSame('POST', $form->getMethod());
+        $this->client->submit($form);
 
         self::assertResponseRedirects();
         self::assertStringContainsString('routeName=cleverage_ui_process_list', (string) $this->client->getResponse()->headers->get('Location'));
@@ -93,6 +98,65 @@ class LaunchActionTest extends FunctionalTestCase
 
         $this->client->followRedirect();
         self::assertSelectorTextContains('.alert-success', 'Process has been added to queue');
+    }
+
+    public function testLaunchWithoutConfirmation(): void
+    {
+        $this->login();
+
+        // ui_launch_mode: ~, the "Launch" action of the process list is a POST form with a CSRF token
+        $crawler = $this->client->request('GET', '/process?routeName=cleverage_ui_process_list');
+        self::assertResponseIsSuccessful();
+        $form = $crawler->filter('form[action$="process=test.no_confirmation"]')->form();
+        self::assertSame('POST', $form->getMethod());
+        $this->client->submit($form);
+
+        self::assertResponseRedirects();
+        $messages = $this->getDispatchedMessages();
+        self::assertCount(1, $messages);
+        self::assertSame('test.no_confirmation', $messages[0]->code);
+    }
+
+    /**
+     * A GET request (a link or an image on another site, followed by a logged-in user) must not launch a process.
+     */
+    public function testLaunchWithoutFormByGetRequestIsRefused(): void
+    {
+        $this->login();
+
+        $this->client->request('GET', '/process?routeName=cleverage_ui_process_launch&process=test.process');
+
+        self::assertResponseStatusCodeSame(405);
+        self::assertSame([], $this->getDispatchedMessages());
+    }
+
+    public function testLaunchWithoutFormWithoutValidCsrfTokenIsRefused(): void
+    {
+        $this->login();
+
+        $this->client->request('POST', '/process?routeName=cleverage_ui_process_launch&process=test.process');
+        self::assertResponseStatusCodeSame(403);
+
+        $this->client->request('POST', '/process?routeName=cleverage_ui_process_launch&process=test.process', ['_token' => 'invalid']);
+        self::assertResponseStatusCodeSame(403);
+
+        self::assertSame([], $this->getDispatchedMessages());
+    }
+
+    /**
+     * A private process is not listed: it cannot be launched from the UI, as with the HTTP API and the scheduler.
+     */
+    public function testPrivateProcessCannotBeLaunched(): void
+    {
+        $this->login();
+
+        $this->client->request('GET', '/process?routeName=cleverage_ui_process_launch&process=test.private');
+        self::assertResponseStatusCodeSame(404);
+
+        $this->client->request('POST', '/process?routeName=cleverage_ui_process_launch&process=test.private');
+        self::assertResponseStatusCodeSame(404);
+
+        self::assertSame([], $this->getDispatchedMessages());
     }
 
     public function testLaunchWithForm(): void
@@ -192,7 +256,7 @@ class LaunchActionTest extends FunctionalTestCase
 
         $this->client->request('GET', '/process?routeName=cleverage_ui_process_launch&process=unknown');
 
-        self::assertResponseStatusCodeSame(500);
+        self::assertResponseStatusCodeSame(404);
         self::assertSame([], $this->getDispatchedMessages());
     }
 

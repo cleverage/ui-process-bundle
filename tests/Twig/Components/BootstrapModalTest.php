@@ -27,15 +27,18 @@ class BootstrapModalTest extends TestCase
         self::assertNull($modal->title);
         self::assertNull($modal->message);
         self::assertNull($modal->confirmUrl);
+        self::assertNull($modal->csrfToken);
 
         $modal->id = 'modal-id';
         $modal->title = 'Title';
         $modal->message = 'Are you sure?';
         $modal->confirmUrl = '/confirm';
+        $modal->csrfToken = 'token';
 
         self::assertSame('modal-id', $modal->id);
         self::assertSame('Title', $modal->title);
         self::assertSame('Are you sure?', $modal->message);
         self::assertSame('/confirm', $modal->confirmUrl);
+        self::assertSame('token', $modal->csrfToken);
     }
 }

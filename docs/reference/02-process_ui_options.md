@@ -53,9 +53,9 @@ Options
 Process visibility
 ------------------
 
-Only public processes (`public: true`, the default of the process bundle) are displayed in the process list, can be
-selected in the [scheduler](05-scheduler.md) and can be launched through the [HTTP API](06-http_api.md). Private
-processes are still recorded in the [executions](04-process_executions_and_logs.md) when they run (e.g. as
+Only public processes (`public: true`, the default of the process bundle) are displayed in the process list and can be
+launched from it (the launch URL of a private process answers `404`), can be selected in the
+[scheduler](05-scheduler.md) and can be launched through the [HTTP API](06-http_api.md). Private processes are still recorded in the [executions](04-process_executions_and_logs.md) when they run (e.g. as
 sub-processes or from the console).
 
 Launch modes
@@ -66,6 +66,10 @@ Launch modes
 | `modal` (default)  | Opens a confirmation modal, then queues the process without input nor context.                                 |
 | `form`             | Opens a form to set the process input and context, then queues the process.                                    |
 | `~` (`null`)       | Queues the process immediately, without any confirmation.                                                      |
+
+Without form (`modal` and `~`), the process is launched by a POST request with a CSRF token: a GET request to the launch
+URL is refused (`405`), as is a request without a valid token (`403`). The `form` mode relies on the CSRF protection of
+the form.
 
 In every mode, the process is not executed by the web request: a message is dispatched to the `execute_process`
 Messenger transport and a worker runs it (see [messenger](08-messenger.md)). The UI adds the email of the connected
