@@ -28,6 +28,12 @@ use Symfony\Component\Serializer\SerializerInterface;
 #[AsTargetedValueResolver('http_process_execution')]
 readonly class HttpProcessExecuteValueResolver implements ValueResolverInterface
 {
+    /**
+     * Request attribute: path of the uploaded input file written by the resolver, to be deleted once the process has
+     * been executed or when the request is rejected (an input given by its path is never deleted).
+     */
+    public const UPLOADED_INPUT_ATTRIBUTE = '_cleverage_ui_process_uploaded_input';
+
     public function __construct(private string $storageDir, private SerializerInterface $serializer)
     {
     }
@@ -61,6 +67,7 @@ readonly class HttpProcessExecuteValueResolver implements ValueResolverInterface
                 if ($input instanceof UploadedFile) {
                     $uploadFileName = $this->storageDir.\DIRECTORY_SEPARATOR.date('YmdHis').'_'.uniqid().'_'.$input->getClientOriginalName();
                     (new Filesystem())->dumpFile($uploadFileName, $input->getContent());
+                    $request->attributes->set(self::UPLOADED_INPUT_ATTRIBUTE, $uploadFileName);
                     $input = $uploadFileName;
                 }
 

@@ -9,3 +9,12 @@ services:
             - '@cleverage_ui_process.monolog_handler.doctrine_process'
             - '@cleverage_ui_process.manager.process_execution'
             - '@event_dispatcher'
+
+    cleverage_ui_process.event_subscriber.uploaded_file:
+        class: CleverAge\UiProcessBundle\EventSubscriber\UploadedFileSubscriber
+        public: false
+        tags:
+            - { name: 'kernel.event_subscriber' }
+        arguments:
+            - '@cleverage_ui_process.manager.uploaded_file'
+            # Failure transports: set by the UploadedFileSubscriberPass

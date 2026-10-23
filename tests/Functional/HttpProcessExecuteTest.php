@@ -24,11 +24,13 @@ use CleverAge\UiProcessBundle\DependencyInjection\CleverAgeUiProcessExtension;
 use CleverAge\UiProcessBundle\DependencyInjection\Compiler\CheckDoctrineLazyGhostObjectsPass;
 use CleverAge\UiProcessBundle\DependencyInjection\Compiler\LoginThrottlingPass;
 use CleverAge\UiProcessBundle\DependencyInjection\Compiler\UploadDirectoryParameterPass;
+use CleverAge\UiProcessBundle\DependencyInjection\Compiler\UploadedFileSubscriberPass;
 use CleverAge\UiProcessBundle\DependencyInjection\Configuration;
 use CleverAge\UiProcessBundle\Entity\ProcessExecution;
 use CleverAge\UiProcessBundle\Entity\User;
 use CleverAge\UiProcessBundle\Event\ProcessExecutionEndedEvent;
 use CleverAge\UiProcessBundle\EventSubscriber\ProcessEventSubscriber;
+use CleverAge\UiProcessBundle\EventSubscriber\UploadedFileSubscriber;
 use CleverAge\UiProcessBundle\Http\Model\HttpProcessExecution;
 use CleverAge\UiProcessBundle\Http\ValueResolver\HttpProcessExecuteValueResolver;
 use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
@@ -53,6 +55,8 @@ use CleverAge\UiProcessBundle\Validator\IsValidProcessCodeValidator;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\UsesClass;
+use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\PasswordHasher\Hasher\Pbkdf2PasswordHasher;
 
 /**
@@ -60,6 +64,8 @@ use Symfony\Component\PasswordHasher\Hasher\Pbkdf2PasswordHasher;
  */
 #[CoversClass(ProcessExecuteController::class)]
 #[UsesClass(UploadedFileManager::class)]
+#[UsesClass(UploadedFileSubscriber::class)]
+#[UsesClass(UploadedFileSubscriberPass::class)]
 #[CoversClass(HttpProcessExecutionAuthenticator::class)]
 #[UsesClass(CleverAgeUiProcessBundle::class)]
 #[UsesClass(CheckDoctrineLazyGhostObjectsPass::class)]
@@ -255,6 +261,133 @@ class HttpProcessExecuteTest extends FunctionalTestCase
 
         self::assertResponseIsSuccessful();
         self::assertSame('"Process has been proceed well."', $this->client->getResponse()->getContent());
+    }
+
+    public function testUploadedFileQueued(): void
+    {
+        $this->upload(['code' => 'test.process']);
+
+        self::assertResponseIsSuccessful();
+        $messages = $this->getDispatchedMessages();
+        self::assertCount(1, $messages);
+        self::assertIsString($messages[0]->input);
+        self::assertStringStartsWith($this->getUploadDirectory().'/', $messages[0]->input);
+        // Deleted once executed by the Messenger handler
+        self::assertTrue($messages[0]->deleteInput);
+        self::assertFileExists($messages[0]->input);
+    }
+
+    public function testUploadedFileSynchronous(): void
+    {
+        $this->upload(['code' => 'test.process', 'queue' => '0']);
+
+        self::assertResponseIsSuccessful();
+        self::assertSame([], $this->getUploadedFiles());
+    }
+
+    public function testUploadedFileFailingSynchronous(): void
+    {
+        $this->upload(['code' => 'test.failing', 'queue' => '0']);
+
+        self::assertResponseStatusCodeSame(500);
+        self::assertSame([], $this->getUploadedFiles());
+    }
+
+    /**
+     * The file written for a rejected request is deleted (it was kept forever).
+     */
+    #[DataProvider('provideQueue')]
+    public function testUploadedFileRejected(bool $queue): void
+    {
+        $this->upload(['code' => 'unknown', 'queue' => $queue ? '1' : '0']);
+
+        self::assertResponseStatusCodeSame(422);
+        self::assertSame([], $this->getDispatchedMessages());
+        self::assertSame([], $this->getUploadedFiles());
+    }
+
+    /**
+     * A file of the upload directory given by its path (e.g. a file uploaded by another user, still waiting in the
+     * queue) is never deleted.
+     */
+    #[DataProvider('provideQueue')]
+    public function testFileOfTheUploadDirectoryGivenByItsPathIsNotDeleted(bool $queue): void
+    {
+        $file = $this->getUploadDirectory().'/other_user_file.csv';
+        (new Filesystem())->dumpFile($file, 'data');
+
+        $this->execute(['code' => 'test.process', 'input' => $file, 'queue' => $queue ? '1' : '0']);
+
+        self::assertResponseIsSuccessful();
+        self::assertFileExists($file);
+        if ($queue) {
+            $messages = $this->getDispatchedMessages();
+            self::assertCount(1, $messages);
+            self::assertSame($file, $messages[0]->input);
+            self::assertFalse($messages[0]->deleteInput);
+        }
+        (new Filesystem())->remove($file);
+    }
+
+    public function testFileOfTheUploadDirectoryGivenByItsPathInAJsonBodyIsNotDeleted(): void
+    {
+        $file = $this->getUploadDirectory().'/other_user_file.csv';
+        (new Filesystem())->dumpFile($file, 'data');
+
+        $this->client->request(
+            'POST',
+            '/http/process/execute',
+            server: ['HTTP_AUTHORIZATION' => 'Bearer '.self::TOKEN, 'CONTENT_TYPE' => 'application/json'],
+            content: json_encode(['code' => 'test.process', 'input' => $file, 'queue' => false, 'deleteInput' => true], \JSON_THROW_ON_ERROR)
+        );
+
+        self::assertResponseIsSuccessful();
+        self::assertFileExists($file);
+        (new Filesystem())->remove($file);
+    }
+
+    /**
+     * @return iterable<string, array{bool}>
+     */
+    public static function provideQueue(): iterable
+    {
+        yield 'queued' => [true];
+        yield 'synchronous' => [false];
+    }
+
+    /**
+     * @param array<string, mixed> $parameters
+     */
+    private function upload(array $parameters): void
+    {
+        (new Filesystem())->remove($this->getUploadDirectory());
+        $file = tempnam(sys_get_temp_dir(), 'upload');
+        file_put_contents((string) $file, 'line1');
+
+        $this->client->request(
+            'POST',
+            '/http/process/execute',
+            $parameters,
+            ['input' => new UploadedFile((string) $file, 'data.csv', 'text/csv', null, true)],
+            ['HTTP_AUTHORIZATION' => 'Bearer '.self::TOKEN]
+        );
+        unlink((string) $file);
+    }
+
+    private function getUploadDirectory(): string
+    {
+        $uploadDirectory = static::getContainer()->getParameter('cleverage_ui_process.upload_directory');
+        self::assertIsString($uploadDirectory);
+
+        return $uploadDirectory;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function getUploadedFiles(): array
+    {
+        return array_map(basename(...), glob($this->getUploadDirectory().'/*') ?: []);
     }
 
     /**
