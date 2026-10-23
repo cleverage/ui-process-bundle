@@ -136,9 +136,10 @@ final class CleverAgeUiProcessExtension extends Extension implements PrependExte
     /**
      * Configure the other bundles: Monolog handlers, migrations path, Messenger transport and security.
      *
-     * The Messenger configuration is prepended (the application configuration wins). The other ones are appended, so
-     * they override the application configuration: in particular the security one replaces the provider, login form
-     * and logout of the application "main" firewall, unless the "security.configure_firewall" option is false.
+     * The Messenger configuration and the login throttling of the "main" firewall are prepended (the application
+     * configuration wins). The other ones are appended, so they override the application configuration: in particular
+     * the security one replaces the provider, login form and logout of the application "main" firewall, unless the
+     * "security.configure_firewall" option is false.
      */
     public function prepend(ContainerBuilder $container): void
     {
@@ -226,6 +227,8 @@ final class CleverAgeUiProcessExtension extends Extension implements PrependExte
 
     private function configureSecurity(ContainerBuilder $container): void
     {
+        // Prepended: the application can change the throttling settings (max_attempts, interval...)
+        $container->prependExtensionConfig('security', ['firewalls' => ['main' => ['login_throttling' => []]]]);
         $container->loadFromExtension(
             'security',
             [

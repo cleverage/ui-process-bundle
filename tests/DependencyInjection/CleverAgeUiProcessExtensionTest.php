@@ -403,10 +403,12 @@ class CleverAgeUiProcessExtensionTest extends TestCase
         );
 
         $security = $container->getExtensionConfig('security');
-        self::assertCount(1, $security);
+        self::assertCount(2, $security);
+        // Prepended: the application can change the throttling settings
+        self::assertSame(['firewalls' => ['main' => ['login_throttling' => []]]], $security[0]);
         self::assertSame(
             ['process_user_provider' => ['entity' => ['class' => User::class, 'property' => 'email']]],
-            $security[0]['providers']
+            $security[1]['providers']
         );
         self::assertSame(
             [
@@ -417,7 +419,7 @@ class CleverAgeUiProcessExtensionTest extends TestCase
                     'logout' => ['path' => 'cleverage_ui_process_logout', 'target' => 'cleverage_ui_process_login', 'clear_site_data' => '*'],
                 ],
             ],
-            $security[0]['firewalls']
+            $security[1]['firewalls']
         );
     }
 
