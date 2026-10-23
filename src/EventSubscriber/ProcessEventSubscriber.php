@@ -56,7 +56,9 @@ final readonly class ProcessEventSubscriber implements EventSubscriberInterface
     public function success(ProcessEvent $event): void
     {
         if ($event->getProcessCode() === $this->processExecutionManager->getCurrentProcessExecution()?->getCode()) {
-            $this->processExecutionManager->getCurrentProcessExecution()->setStatus(ProcessExecutionStatus::Finish);
+            $this->processExecutionManager->getCurrentProcessExecution()->setStatus(
+                $this->isStoppedOnPurpose($event) ? ProcessExecutionStatus::Stopped : ProcessExecutionStatus::Finish
+            );
             $this->processExecutionManager->getCurrentProcessExecution()->end();
             $this->endProcessExecution($event);
         }
@@ -86,6 +88,15 @@ final readonly class ProcessEventSubscriber implements EventSubscriberInterface
             $this->processHandler->close();
         }
         $this->dispatchEnded($event);
+    }
+
+    /**
+     * The process has been stopped on purpose by a StopTask: it has ended normally, flagged as stopped
+     * (ProcessEvent::isProcessStopped(), since the process bundle version following 5.4).
+     */
+    private function isStoppedOnPurpose(ProcessEvent $event): bool
+    {
+        return method_exists($event, 'isProcessStopped') && $event->isProcessStopped();
     }
 
     /**

@@ -32,6 +32,7 @@ use CleverAge\UiProcessBundle\Http\Model\HttpProcessExecution;
 use CleverAge\UiProcessBundle\Http\ValueResolver\HttpProcessExecuteValueResolver;
 use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
 use CleverAge\UiProcessBundle\Manager\ProcessExecutionManager;
+use CleverAge\UiProcessBundle\Manager\UploadedFileManager;
 use CleverAge\UiProcessBundle\Message\ProcessExecuteMessage;
 use CleverAge\UiProcessBundle\Monolog\Handler\DoctrineProcessHandler;
 use CleverAge\UiProcessBundle\Monolog\Handler\ProcessHandler;
@@ -55,6 +56,7 @@ use Symfony\Component\PasswordHasher\Hasher\Pbkdf2PasswordHasher;
  * HTTP API: POST /http/process/execute, authenticated with a Bearer token.
  */
 #[CoversClass(ProcessExecuteController::class)]
+#[UsesClass(UploadedFileManager::class)]
 #[CoversClass(HttpProcessExecutionAuthenticator::class)]
 #[UsesClass(CleverAgeUiProcessBundle::class)]
 #[UsesClass(CheckDoctrineLazyGhostObjectsPass::class)]

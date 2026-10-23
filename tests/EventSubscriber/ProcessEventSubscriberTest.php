@@ -186,6 +186,23 @@ class ProcessEventSubscriberTest extends TestCase
         ];
     }
 
+    public function testProcessStoppedByAStopTask(): void
+    {
+        if (!method_exists(ProcessEvent::class, 'isProcessStopped')) {
+            self::markTestSkipped('ProcessEvent::isProcessStopped() requires a newer cleverage/process-bundle');
+        }
+        $processExecution = new ProcessExecution('test.process', 'test.log');
+        $processExecutionManager = new ProcessExecutionManager($this->createRepositoryStub());
+        $processExecutionManager->setCurrentProcessExecution($processExecution);
+
+        $this->createSubscriber(new ProcessHandler('/var/log/process', $processExecutionManager), $processExecutionManager)
+            ->success(new ProcessEvent('test.process', null, [], null, null, true));
+
+        self::assertSame(ProcessExecutionStatus::Stopped, $processExecution->status);
+        self::assertInstanceOf(\DateTimeImmutable::class, $processExecution->endDate);
+        self::assertNull($processExecutionManager->getCurrentProcessExecution());
+    }
+
     #[DataProvider('provideStopErrors')]
     public function testStoppedProcess(\Throwable $error): void
     {

@@ -1,4 +1,6 @@
 parameters:
   cleverage_ui_process.upload_directory: '%kernel.project_dir%/var/storage/uploads'
+  # Delete the files sent as input of a process (launch form, HTTP API) once the process has been executed
+  cleverage_ui_process.delete_uploaded_files: true
   # Deprecated since 3.3, removed in 4.0 (see UploadDirectoryParameterPass)
   upload_directory: '%cleverage_ui_process.upload_directory%'
