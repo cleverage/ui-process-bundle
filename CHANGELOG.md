@@ -1,6 +1,9 @@
 Latest
 ------
 
+### Changes
+* [#216](https://github.com/cleverage/ui-process-bundle/issues/216) Cookbooks with task codes, application `upload_directory` parameter left alone, deprecation notice for the unused `$translator` argument, scheduler log levels.
+
 ## Changes
 * [#220](https://github.com/cleverage/ui-process-bundle/issues/220) A process stopped on purpose by a `StopTask` (e.g. not going on when the source file does not exist) is recorded with the `stopped` status, and notified as `stopped`, instead of `finish`. Requires the process bundle version providing `ProcessEvent::isProcessStopped()` (cleverage/process-bundle#337); with an older version, the execution keeps the `finish` status. Update documentation, add tests.
 * [#207](https://github.com/cleverage/ui-process-bundle/issues/207) The `main` firewall configured by the bundle (`security.configure_firewall`) limits the login attempts (Symfony `login_throttling`, default settings: 5 failed attempts per minute for a username and an IP address, 25 for an IP address); the settings can be changed in the application firewall. Require `symfony/rate-limiter`. Update documentation and tests.

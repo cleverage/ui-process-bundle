@@ -18,7 +18,7 @@ clever_age_process:
                     target: Logs
             tasks:
                 request:
-                    service: '@CleverAge\RestProcessBundle\Task\RequestTask'
+                    task: rest_request
                     options:
                         client: apicarto_ign
                         url: '/codes-postaux/communes/{codePostal}'
@@ -27,14 +27,14 @@ clever_age_process:
                     outputs: [decode]
 
                 decode:
-                    service: '@CleverAge\ProcessBundle\Task\TransformerTask'
+                    task: transformer
                     options:
                         transformers:
                             json_decode: ~ # Generic transformer defined in the application
                     outputs: [log]
 
                 log:
-                    service: '@CleverAge\ProcessBundle\Task\Reporting\LoggerTask'
+                    task: logger
                     options:
                         level: info
                         message: 'Communes fetched'

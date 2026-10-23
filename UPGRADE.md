@@ -53,6 +53,12 @@ removed in 4.0: update your templates (e.g. overridden templates of the bundle).
 | `resolve_ui_options()`           | `cleverage_ui_process_resolve_ui_options()`           |
 | `md5` (filter)                   | `cleverage_ui_process_md5` (filter)                   |
 
+### Process executions controller
+
+The `$translator` argument of `ProcessExecutionCrudController::__construct()` is deprecated (it is not used since 3.3,
+the duration format being defined in the `admin/field/duration.html.twig` template): passing it triggers a deprecation,
+it will be removed in 4.0. Only an application that redefines this controller service is concerned.
+
 ### Process bundle 5.4
 
 `cleverage/process-bundle` `^5.4` is required: follow its
