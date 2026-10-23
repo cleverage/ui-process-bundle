@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace CleverAge\UiProcessBundle\Message;
 
 use CleverAge\ProcessBundle\Manager\ProcessManagerInterface;
+use CleverAge\UiProcessBundle\Manager\UploadedFileManager;
 use CleverAge\UiProcessBundle\Monolog\Handler\ProcessHandler;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
@@ -23,13 +24,20 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 #[AsMessageHandler]
 readonly class ProcessExecuteHandler
 {
-    public function __construct(private ProcessManagerInterface $manager, private ProcessHandler $processHandler)
-    {
+    public function __construct(
+        private ProcessManagerInterface $manager,
+        private ProcessHandler $processHandler,
+        private ?UploadedFileManager $uploadedFileManager = null,
+    ) {
     }
 
     public function __invoke(ProcessExecuteMessage $message): void
     {
         $this->processHandler->close();
-        $this->manager->execute($message->code, $message->input, $message->context);
+        try {
+            $this->manager->execute($message->code, $message->input, $message->context);
+        } finally {
+            $this->uploadedFileManager?->deleteInput($message->input);
+        }
     }
 }

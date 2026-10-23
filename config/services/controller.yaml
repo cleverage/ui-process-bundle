@@ -124,6 +124,7 @@ services:
             $bus: '@messenger.default_bus'
             $processManager: '@cleverage_process.manager.process'
             $processExecutionManager: '@cleverage_ui_process.manager.process_execution'
+            $uploadedFileManager: '@cleverage_ui_process.manager.uploaded_file'
         calls:
             - [setContainer, ['@Psr\Container\ContainerInterface']]
         tags:

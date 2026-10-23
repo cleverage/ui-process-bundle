@@ -17,6 +17,7 @@ use CleverAge\ProcessBundle\Manager\ProcessManagerInterface;
 use CleverAge\UiProcessBundle\Entity\ProcessExecution;
 use CleverAge\UiProcessBundle\Http\Model\HttpProcessExecution;
 use CleverAge\UiProcessBundle\Manager\ProcessExecutionManager;
+use CleverAge\UiProcessBundle\Manager\UploadedFileManager;
 use CleverAge\UiProcessBundle\Message\ProcessExecuteMessage;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -40,6 +41,7 @@ class ProcessExecuteController extends AbstractController
         private readonly MessageBusInterface $bus,
         private readonly ProcessManagerInterface $processManager,
         private readonly ProcessExecutionManager $processExecutionManager,
+        private readonly ?UploadedFileManager $uploadedFileManager = null,
     ) {
     }
 
@@ -84,6 +86,8 @@ class ProcessExecuteController extends AbstractController
                 : $e->getMessage();
 
             return new JsonResponse($message, Response::HTTP_INTERNAL_SERVER_ERROR);
+        } finally {
+            $this->uploadedFileManager?->deleteInput($httpProcessExecution->input);
         }
 
         return new JsonResponse('Process has been proceed well.');
