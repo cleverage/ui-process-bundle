@@ -38,7 +38,7 @@ class ProcessExecutionCrudControllerTest extends TestCase
         }
 
         self::assertSame(
-            ['Since cleverage/ui-process-bundle 3.4: Passing a translator to "'.ProcessExecutionCrudController::class.'::__construct()" is deprecated, it is not used. The argument will be removed in 4.0.'],
+            ['Since cleverage/ui-process-bundle 3.3: Passing a translator to "'.ProcessExecutionCrudController::class.'::__construct()" is deprecated, it is not used. The argument will be removed in 4.0.'],
             $deprecations
         );
     }

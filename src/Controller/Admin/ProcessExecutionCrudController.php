@@ -46,7 +46,7 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 class ProcessExecutionCrudController extends AbstractCrudController
 {
     /**
-     * @param TranslatorInterface|null $translator deprecated since 3.4, no longer used (the duration format is defined in
+     * @param TranslatorInterface|null $translator deprecated since 3.3, no longer used (the duration format is defined in
      *                                             the admin/field/duration.html.twig template), will be removed in 4.0
      * @param int                      $staleAfter seconds without heartbeat after which a started execution is
      *                                             considered as not responding
@@ -58,7 +58,7 @@ class ProcessExecutionCrudController extends AbstractCrudController
         private readonly int $staleAfter = 900,
     ) {
         if ($translator instanceof TranslatorInterface) {
-            trigger_deprecation('cleverage/ui-process-bundle', '3.4', 'Passing a translator to "%s::__construct()" is deprecated, it is not used. The argument will be removed in 4.0.', self::class);
+            trigger_deprecation('cleverage/ui-process-bundle', '3.3', 'Passing a translator to "%s::__construct()" is deprecated, it is not used. The argument will be removed in 4.0.', self::class);
         }
     }
 
