@@ -26,6 +26,7 @@ use CleverAge\UiProcessBundle\Monolog\Handler\DoctrineProcessHandler;
 use CleverAge\UiProcessBundle\Monolog\Handler\ProcessHandler;
 use CleverAge\UiProcessBundle\Repository\ProcessExecutionRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\UnitOfWork;
 use Monolog\Level;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -279,7 +280,14 @@ class ProcessEventSubscriberTest extends TestCase
         $processExecutionManager = new ProcessExecutionManager($this->createRepositoryStub());
         $processExecutionManager->setCurrentProcessExecution(new ProcessExecution('test.process', 'test.log'));
 
+        // doctrine/orm 2: no native return types, a mock would return null
+        $unitOfWork = $this->createStub(UnitOfWork::class);
+        $unitOfWork->method('getScheduledEntityInsertions')->willReturn([]);
+        $unitOfWork->method('getScheduledEntityDeletions')->willReturn([]);
+        $unitOfWork->method('getScheduledCollectionDeletions')->willReturn([]);
+        $unitOfWork->method('getIdentityMap')->willReturn([]);
         $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager->method('getUnitOfWork')->willReturn($unitOfWork);
         $entityManager->expects(self::once())->method('persist')->with(self::isInstanceOf(LogRecord::class));
         $entityManager->expects(self::atLeastOnce())->method('flush');
 
@@ -296,6 +304,7 @@ class ProcessEventSubscriberTest extends TestCase
             $processExecutionManager
         );
         $subscriber->flushDoctrineLogs(new ProcessEvent('test.process'));
+        $doctrineProcessHandler->disable(); // no flush on destruction, during another test
     }
 
     private function createSubscriber(

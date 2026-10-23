@@ -174,7 +174,19 @@ When `store_in_database` is `true` (default), log records are also stored in the
 | `context`   | Log record context.                           |
 | `createdAt` | Date of the log record.                       |
 
-Records are buffered and inserted every 500 records, and at the end (or failure) of the process.
+The lengths are counted in characters (Unicode code points, as MySQL and PostgreSQL do): an emoji or a letter with
+combining marks may count several characters. The invalid UTF-8 sequences of the message and the channel are replaced
+by `?` and their NUL characters removed; a context which cannot be encoded in JSON is stored with its invalid UTF-8 sequences replaced by `U+FFFD` (`�`)
+and its values which cannot be encoded (e.g. a resource) replaced by `null`.
+
+Records are buffered and inserted every 500 records, and at the end (or failure) of the process. When the insertion of
+the log records fails (e.g. a database error), they are dropped and the failure is logged as an error on the
+`cleverage_process` channel (in the [log file](#log-file), not in database): the process goes on, and the status of its
+execution is saved. The entity manager is shared with the process tasks: when changes of their entities are pending
+(e.g. persisted by a task, not flushed yet), they are written with the log records, and a failure is not caught, as any
+error of the tasks. To know it, when entities of the tasks are managed by the entity manager, their changes are computed
+before each insertion of the log records (and again by the flush): a cost proportional to the number of managed
+entities, every 500 log records.
 
 On processes logging a lot, storing logs in database may be slow and memory consuming: raise `database_level`, or
 disable `store_in_database` and rely on the log file (see [troubleshooting](../troubleshooting.md)).
