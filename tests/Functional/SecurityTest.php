@@ -29,6 +29,7 @@ use CleverAge\UiProcessBundle\Controller\Admin\Security\LogoutController;
 use CleverAge\UiProcessBundle\Controller\Admin\UserCrudController;
 use CleverAge\UiProcessBundle\DependencyInjection\CleverAgeUiProcessExtension;
 use CleverAge\UiProcessBundle\DependencyInjection\Compiler\CheckDoctrineLazyGhostObjectsPass;
+use CleverAge\UiProcessBundle\DependencyInjection\Compiler\LoginThrottlingPass;
 use CleverAge\UiProcessBundle\DependencyInjection\Compiler\UploadDirectoryParameterPass;
 use CleverAge\UiProcessBundle\DependencyInjection\Configuration;
 use CleverAge\UiProcessBundle\Entity\User;
@@ -39,6 +40,8 @@ use CleverAge\UiProcessBundle\Monolog\Handler\ProcessHandler;
 use CleverAge\UiProcessBundle\Repository\ProcessExecutionRepository;
 use CleverAge\UiProcessBundle\Routing\DeprecatedEasyAdminRouteAliasLoader;
 use CleverAge\UiProcessBundle\Security\HttpProcessExecutionAuthenticator;
+use CleverAge\UiProcessBundle\Security\HttpProcessExecutionRequestRateLimiter;
+use CleverAge\UiProcessBundle\Security\PeekableHttpProcessExecutionRequestRateLimiter;
 use CleverAge\UiProcessBundle\Twig\Extension\LogLevelExtension;
 use CleverAge\UiProcessBundle\Twig\Extension\MD5Extension;
 use CleverAge\UiProcessBundle\Twig\Extension\ProcessExecutionExtension;
@@ -74,6 +77,9 @@ use PHPUnit\Framework\Attributes\UsesClass;
 #[UsesClass(CleverAgeUiProcessBundle::class)]
 #[UsesClass(CheckDoctrineLazyGhostObjectsPass::class)]
 #[UsesClass(UploadDirectoryParameterPass::class)]
+#[UsesClass(LoginThrottlingPass::class)]
+#[UsesClass(HttpProcessExecutionRequestRateLimiter::class)]
+#[UsesClass(PeekableHttpProcessExecutionRequestRateLimiter::class)]
 #[UsesClass(CleverAgeUiProcessExtension::class)]
 #[UsesClass(DeprecatedEasyAdminRouteAliasLoader::class)]
 #[UsesClass(Configuration::class)]

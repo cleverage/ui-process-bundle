@@ -445,6 +445,55 @@ class CleverAgeUiProcessExtensionTest extends TestCase
         self::assertCount(1, $container->getExtensionConfig('doctrine_migrations'));
     }
 
+    /**
+     * @return iterable<string, array{list<mixed>, bool}>
+     */
+    public static function provideApplicationLoginThrottling(): iterable
+    {
+        yield 'not configured' => [[], true];
+        yield 'disabled' => [[false], false];
+        // "~" enables it with the default settings
+        yield 'null' => [[null], true];
+        yield 'settings' => [[['max_attempts' => 3]], true];
+        yield 'disabled, then enabled' => [[false, ['max_attempts' => 3]], true];
+        yield 'enabled, then disabled' => [[['max_attempts' => 3], false], false];
+        // Normalized to "login_throttling" by the Config component, e.g. in XML
+        yield 'disabled with a dash' => [[['login-throttling' => false]], false];
+        yield 'enabled with a dash' => [[['login-throttling' => null]], true];
+        yield 'both keys: the underscore one wins' => [[['login_throttling' => null, 'login-throttling' => false]], true];
+        // Not resolved before the security configuration is processed
+        yield 'parameter' => [['%throttle%'], true];
+    }
+
+    /**
+     * @param list<mixed> $applicationValues "login_throttling" values of the application "main" firewall
+     */
+    #[DataProvider('provideApplicationLoginThrottling')]
+    public function testPrependLoginThrottling(array $applicationValues, bool $enabled): void
+    {
+        $container = $this->createContainer('prod');
+        $container->registerExtension($this->createExtension('security'));
+        $container->loadFromExtension('security', ['firewalls' => ['dev' => ['security' => false]]]);
+        foreach ($applicationValues as $value) {
+            // A whole firewall configuration (to test the keys) or the "login_throttling" value
+            $firewall = \is_array($value) && [] !== array_intersect(['login_throttling', 'login-throttling'], array_keys($value)) ? $value : ['login_throttling' => $value];
+            $container->loadFromExtension('security', ['firewalls' => ['main' => $firewall]]);
+        }
+
+        (new CleverAgeUiProcessExtension())->prepend($container);
+
+        $security = $container->getExtensionConfig('security');
+        self::assertCount(\count($applicationValues) + 2, $security);
+        $bundleFirewalls = end($security)['firewalls'] ?? null;
+        self::assertIsArray($bundleFirewalls);
+        $bundleFirewall = $bundleFirewalls['main'] ?? null;
+        self::assertIsArray($bundleFirewall);
+        self::assertSame($enabled, \array_key_exists('login_throttling', $bundleFirewall));
+        if ($enabled) {
+            self::assertSame([], $bundleFirewall['login_throttling']);
+        }
+    }
+
     public function testPrependWithAParameterAsFirewallConfiguration(): void
     {
         $container = $this->createContainer('prod');

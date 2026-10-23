@@ -1,6 +1,9 @@
 Latest
 ------
 
+## Fixes
+* [#229](https://github.com/cleverage/ui-process-bundle/issues/229) Login throttling of the `main` firewall (#207, #222): the requests of the HTTP API (`HttpProcessExecutionAuthenticator`) are no longer counted, on every firewall with a login throttling (`LoginThrottlingPass` decorates its limiter, the firewall settings still apply to the login form): failed logins blocked a valid API token, and invalid tokens blocked the login form of the IP address. `login_throttling: false` in the application `main` firewall disables it (it was enabled again by the bundle). With `framework.rate_limiter: false`, an explicit error tells how to fix the configuration instead of "Parent definition "limiter" does not exist". `HttpProcessExecutionAuthenticator::onAuthenticationFailure()` answers the message key of the exception, instead of an empty message when there were too many attempts. Update documentation, add tests.
+
 v3.4
 ------
 

@@ -22,6 +22,7 @@ use CleverAge\UiProcessBundle\Controller\Admin\UserCrudController;
 use CleverAge\UiProcessBundle\Controller\ProcessExecuteController;
 use CleverAge\UiProcessBundle\DependencyInjection\CleverAgeUiProcessExtension;
 use CleverAge\UiProcessBundle\DependencyInjection\Compiler\CheckDoctrineLazyGhostObjectsPass;
+use CleverAge\UiProcessBundle\DependencyInjection\Compiler\LoginThrottlingPass;
 use CleverAge\UiProcessBundle\DependencyInjection\Compiler\UploadDirectoryParameterPass;
 use CleverAge\UiProcessBundle\DependencyInjection\Configuration;
 use CleverAge\UiProcessBundle\Entity\ProcessExecution;
@@ -41,6 +42,8 @@ use CleverAge\UiProcessBundle\Notifier\ProcessExecutionNotifier;
 use CleverAge\UiProcessBundle\Repository\ProcessExecutionRepository;
 use CleverAge\UiProcessBundle\Routing\DeprecatedEasyAdminRouteAliasLoader;
 use CleverAge\UiProcessBundle\Security\HttpProcessExecutionAuthenticator;
+use CleverAge\UiProcessBundle\Security\HttpProcessExecutionRequestRateLimiter;
+use CleverAge\UiProcessBundle\Security\PeekableHttpProcessExecutionRequestRateLimiter;
 use CleverAge\UiProcessBundle\StopChecker\ProcessExecutionStopChecker;
 use CleverAge\UiProcessBundle\Twig\Extension\LogLevelExtension;
 use CleverAge\UiProcessBundle\Twig\Extension\MD5Extension;
@@ -61,6 +64,9 @@ use Symfony\Component\PasswordHasher\Hasher\Pbkdf2PasswordHasher;
 #[UsesClass(CleverAgeUiProcessBundle::class)]
 #[UsesClass(CheckDoctrineLazyGhostObjectsPass::class)]
 #[UsesClass(UploadDirectoryParameterPass::class)]
+#[UsesClass(LoginThrottlingPass::class)]
+#[UsesClass(HttpProcessExecutionRequestRateLimiter::class)]
+#[UsesClass(PeekableHttpProcessExecutionRequestRateLimiter::class)]
 #[UsesClass(LogRecordCrudController::class)]
 #[UsesClass(ProcessDashboardController::class)]
 #[UsesClass(ProcessExecutionCrudController::class)]
@@ -207,6 +213,7 @@ class HttpProcessExecuteTest extends FunctionalTestCase
         $this->client->request('POST', '/http/process/execute', ['code' => 'test.process'], server: ['HTTP_AUTHORIZATION' => 'Bearer invalid']);
 
         self::assertResponseStatusCodeSame(401);
+        self::assertSame(['message' => 'Invalid token.'], json_decode((string) $this->client->getResponse()->getContent(), true));
         self::assertSame([], $this->getDispatchedMessages());
     }
 
@@ -215,6 +222,7 @@ class HttpProcessExecuteTest extends FunctionalTestCase
         $this->client->request('POST', '/http/process/execute', ['code' => 'test.process']);
 
         self::assertResponseStatusCodeSame(401);
+        self::assertSame(['message' => 'Missing auth token.'], json_decode((string) $this->client->getResponse()->getContent(), true));
         self::assertSame([], $this->getDispatchedMessages());
     }
 
