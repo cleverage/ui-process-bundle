@@ -26,7 +26,7 @@ enum NotificationTrigger: string
     /** Finished with log levels counted in its report (see the "logs.report_increment_level" configuration) */
     case FinishWithReport = 'finish_with_report';
     case Finish = 'finish';
-    /** Stopped on a stop request from the UI */
+    /** Stopped on a stop request from the UI, or on purpose by a StopTask */
     case Stopped = 'stopped';
 
     public static function fromProcessExecution(ProcessExecution $processExecution): ?self
