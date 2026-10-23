@@ -27,13 +27,14 @@ security:
                 clear_site_data: '*'
 ```
 
-The [login throttling](https://symfony.com/doc/current/security.html#limiting-login-attempts) is added **before** the
-application configuration: its default settings (5 failed attempts per minute for a username and an IP address, 25 for
-an IP address) can be changed in the `main` firewall of the application (e.g. `login_throttling: { max_attempts: 3 }`).
-The rest of this configuration is added **after** the application one, so it overrides it: the `provider`, `form_login` and `logout`
+This configuration is added **after** the application one, so it overrides it: the `provider`, `form_login` and `logout`
 of your `main` firewall are replaced by the bundle ones (e.g. the `provider: users_in_memory` of the default Symfony
 recipe), and the API token authenticator is added to it. So your application firewall must be named `main`, and it is
-dedicated to the UI. To keep the control of your security configuration, disable it, see
+dedicated to the UI. The default settings of the
+[login throttling](https://symfony.com/doc/current/security.html#limiting-login-attempts) (5 failed attempts per minute
+for a username and an IP address, 25 for an IP address) can still be changed in the `main` firewall of the application
+(e.g. `login_throttling: { max_attempts: 3 }`): the empty `login_throttling` of the bundle keeps them. To keep the
+control of your security configuration, disable it, see
 [configuring the security in your application](#configuring-the-security-in-your-application).
 
 With this configuration, the only required application configuration is a password
