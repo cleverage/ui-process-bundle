@@ -38,7 +38,7 @@ clever_age_process:
                                                           message: 'delimiter context must be , or ;. {{ value }} given.'
             tasks:
                 log_file:
-                    service: '@CleverAge\ProcessBundle\Task\Reporting\LoggerTask'
+                    task: logger
                     options:
                         level: info
                         message: 'Read file'
@@ -46,13 +46,13 @@ clever_age_process:
                     outputs: [read]
 
                 read:
-                    service: '@CleverAge\ProcessBundle\Task\File\Csv\InputCsvReaderTask'
+                    task: input_csv_reader
                     options:
                         delimiter: '{{ delimiter }}' # Contextualized option, set from the launch form
                     outputs: [log_line]
 
                 log_line:
-                    service: '@CleverAge\ProcessBundle\Task\Reporting\LoggerTask'
+                    task: logger
                     options:
                         level: info
                         message: 'Read line'
@@ -79,8 +79,9 @@ How it works:
 - The execution, its report and its logs are then available in "Process > Executions"
   (see [process executions & logs](../reference/04-process_executions_and_logs.md)).
 
-Uploaded files are not removed after the execution: add a cleaning step at the end of the process (e.g. a
-[FileRemoverTask](https://github.com/cleverage/process-bundle/blob/main/docs/reference/tasks/file_remover_task.md)) or purge the `cleverage_ui_process.upload_directory` directory periodically.
+Uploaded files are deleted once the process has been executed (see the `cleverage_ui_process.delete_uploaded_files`
+[parameter](../reference/01-bundle_configuration.md#container-parameters)): copy the file in the process if it must be
+kept.
 
 The same process can also be launched through the [HTTP API](../reference/06-http_api.md), with a file upload:
 

@@ -25,7 +25,7 @@ How it works
 
 - The bundle registers a schedule provider named `cron` (`CleverAge\UiProcessBundle\Scheduler\CronScheduler`), so
   Symfony creates the `scheduler_cron` transport. It builds a recurring message for each valid and enabled
-  `ProcessSchedule`. Invalid schedules are skipped and logged (`info` level, `scheduler` channel).
+  `ProcessSchedule`. Invalid schedules are skipped and logged (`info` level, `scheduler` channel); a schedule that cannot be added (e.g. a duplicate, an expression refused by the Scheduler component) is logged at the `critical` level.
 - When a schedule is due, the `scheduler_cron` worker receives a `CronProcessMessage`. It reads the schedule again
   from the database: if it has been disabled or deleted since, the process is not run (logged, `info` level,
   `scheduler` channel). Otherwise, it dispatches a `ProcessExecuteMessage` (with the current schedule input and

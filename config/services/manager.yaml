@@ -17,6 +17,13 @@ services:
     CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager:
         alias: cleverage_ui_process.manager.process_configuration
 
+    cleverage_ui_process.manager.uploaded_file:
+        class: CleverAge\UiProcessBundle\Manager\UploadedFileManager
+        public: false
+        arguments:
+            - '%cleverage_ui_process.upload_directory%'
+            - '%cleverage_ui_process.delete_uploaded_files%'
+
     cleverage_ui_process.stop_checker.process_execution:
         class: CleverAge\UiProcessBundle\StopChecker\ProcessExecutionStopChecker
         public: false

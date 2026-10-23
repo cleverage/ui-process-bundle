@@ -403,6 +403,7 @@ class CleverAgeUiProcessExtensionTest extends TestCase
         );
 
         $security = $container->getExtensionConfig('security');
+        // Only appended: a prepended firewall would prevent the application from declaring its other firewalls
         self::assertCount(1, $security);
         self::assertSame(
             ['process_user_provider' => ['entity' => ['class' => User::class, 'property' => 'email']]],
@@ -414,6 +415,7 @@ class CleverAgeUiProcessExtensionTest extends TestCase
                     'provider' => 'process_user_provider',
                     'custom_authenticator' => ['cleverage_ui_process.security.http_process_execution_authenticator'],
                     'form_login' => ['login_path' => 'cleverage_ui_process_login', 'check_path' => 'cleverage_ui_process_login'],
+                    'login_throttling' => [],
                     'logout' => ['path' => 'cleverage_ui_process_logout', 'target' => 'cleverage_ui_process_login', 'clear_site_data' => '*'],
                 ],
             ],

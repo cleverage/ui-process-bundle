@@ -62,7 +62,6 @@ services:
         arguments:
             $processExecutionRepository: '@cleverage_ui_process.repository.process_execution'
             $logDirectory: '%kernel.logs_dir%'
-            $translator: '@translator'
             # $staleAfter: set by the extension (process_execution.stale_after)
         calls:
             - [setContainer, ['@Psr\Container\ContainerInterface']]
@@ -124,6 +123,7 @@ services:
             $bus: '@messenger.default_bus'
             $processManager: '@cleverage_process.manager.process'
             $processExecutionManager: '@cleverage_ui_process.manager.process_execution'
+            $uploadedFileManager: '@cleverage_ui_process.manager.uploaded_file'
         calls:
             - [setContainer, ['@Psr\Container\ContainerInterface']]
         tags:
