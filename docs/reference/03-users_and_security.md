@@ -20,13 +20,17 @@ security:
             form_login:
                 login_path: cleverage_ui_process_login
                 check_path: cleverage_ui_process_login
+            login_throttling: ~
             logout:
                 path: cleverage_ui_process_logout
                 target: cleverage_ui_process_login
                 clear_site_data: '*'
 ```
 
-This configuration is added **after** the application one, so it overrides it: the `provider`, `form_login` and `logout`
+The [login throttling](https://symfony.com/doc/current/security.html#limiting-login-attempts) is added **before** the
+application configuration: its default settings (5 failed attempts per minute for a username and an IP address, 25 for
+an IP address) can be changed in the `main` firewall of the application (e.g. `login_throttling: { max_attempts: 3 }`).
+The rest of this configuration is added **after** the application one, so it overrides it: the `provider`, `form_login` and `logout`
 of your `main` firewall are replaced by the bundle ones (e.g. the `provider: users_in_memory` of the default Symfony
 recipe), and the API token authenticator is added to it. So your application firewall must be named `main`, and it is
 dedicated to the UI. To keep the control of your security configuration, disable it, see
@@ -81,6 +85,7 @@ security:
             form_login:
                 login_path: cleverage_ui_process_login
                 check_path: cleverage_ui_process_login
+            login_throttling: ~
             logout:
                 path: cleverage_ui_process_logout
                 target: cleverage_ui_process_login
