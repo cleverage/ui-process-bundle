@@ -24,15 +24,3 @@ parameters:
           path: tests/*
         - identifier: method.impossibleType
           path: tests/*
-        # ProcessEvent::isProcessStopped() is only provided by the process bundle version following 5.4 (#220): remove
-        # these entries once this version is required
-        - identifier: function.alreadyNarrowedType
-          paths:
-              - src/EventSubscriber/ProcessEventSubscriber.php
-              - tests/EventSubscriber/ProcessEventSubscriberTest.php
-        - identifier: function.impossibleType
-          paths:
-              - src/EventSubscriber/ProcessEventSubscriber.php
-              - tests/EventSubscriber/ProcessEventSubscriberTest.php
-        - identifier: arguments.count
-          path: tests/EventSubscriber/ProcessEventSubscriberTest.php

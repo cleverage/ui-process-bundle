@@ -13,7 +13,7 @@ An event subscriber listens to the process bundle events:
   name of the log file,
 - on process end, its status becomes `finish` and its end date is set, or `stopped` when the process has been stopped
   on purpose by a [StopTask](https://github.com/cleverage/process-bundle/blob/main/docs/reference/tasks/stop_task.md)
-  (e.g. not going on when the source file does not exist; requires the process bundle version following 5.4),
+  (e.g. not going on when the source file does not exist),
 - on process failure, its status becomes `failed` and its end date is set, or `stopped` when the process has been
   [stopped from the UI](#stopping-a-process-execution).
 
