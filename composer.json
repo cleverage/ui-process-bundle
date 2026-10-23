@@ -33,6 +33,12 @@
             "role": "Maintainer"
         }
     ],
+    "support": {
+        "issues": "https://github.com/cleverage/ui-process-bundle/issues",
+        "source": "https://github.com/cleverage/ui-process-bundle",
+        "docs": "https://github.com/cleverage/ui-process-bundle/blob/main/docs/index.md",
+        "security": "https://github.com/cleverage/ui-process-bundle/security/policy"
+    },
     "autoload": {
         "psr-4": {
             "CleverAge\\UiProcessBundle\\": "src/"
@@ -126,8 +132,7 @@
     },
     "config": {
         "allow-plugins": {
-            "phpstan/extension-installer": true,
-            "symfony/runtime": true
+            "phpstan/extension-installer": true
         },
         "sort-packages": true
     }
