@@ -22,6 +22,9 @@ The token is generated from the UI, on the user edit page ("Generate token" acti
 | `401` `{"message": "Missing auth token."}`         | No `Authorization` header.                           |
 | `401` `{"message": "Invalid token."}`              | The token does not match any user.                   |
 
+The requests of the API are not limited by the
+[login throttling](03-users_and_security.md#login-throttling) of the firewall.
+
 Parameters
 ----------
 

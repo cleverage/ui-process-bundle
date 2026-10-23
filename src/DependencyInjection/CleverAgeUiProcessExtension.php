@@ -226,6 +226,28 @@ final class CleverAgeUiProcessExtension extends Extension implements PrependExte
 
     private function configureSecurity(ContainerBuilder $container): void
     {
+        $firewall = [
+            'provider' => 'process_user_provider',
+            'custom_authenticator' => ['cleverage_ui_process.security.http_process_execution_authenticator'],
+            'form_login' => [
+                'login_path' => 'cleverage_ui_process_login',
+                'check_path' => 'cleverage_ui_process_login',
+            ],
+            // Not prepended: a prepended firewall would be the first definition of the "firewalls" node, the other
+            // firewalls of the application (e.g. "dev") could no longer be declared. Merged after the application
+            // configuration, it keeps its settings (max_attempts, interval...), but would enable it again when the
+            // application disables it
+            'login_throttling' => [],
+            'logout' => [
+                'path' => 'cleverage_ui_process_logout',
+                'target' => 'cleverage_ui_process_login',
+                'clear_site_data' => '*',
+            ],
+        ];
+        if ($this->isLoginThrottlingDisabled($container)) {
+            unset($firewall['login_throttling']);
+        }
+
         $container->loadFromExtension(
             'security',
             [
@@ -238,26 +260,35 @@ final class CleverAgeUiProcessExtension extends Extension implements PrependExte
                     ],
                 ],
                 'firewalls' => [
-                    'main' => [
-                        'provider' => 'process_user_provider',
-                        'custom_authenticator' => ['cleverage_ui_process.security.http_process_execution_authenticator'],
-                        'form_login' => [
-                            'login_path' => 'cleverage_ui_process_login',
-                            'check_path' => 'cleverage_ui_process_login',
-                        ],
-                        // Not prepended: a prepended firewall would be the first definition of the "firewalls" node,
-                        // the other firewalls of the application (e.g. "dev") could no longer be declared. Merged
-                        // after the application configuration, it keeps its settings (max_attempts, interval...)
-                        'login_throttling' => [],
-                        'logout' => [
-                            'path' => 'cleverage_ui_process_logout',
-                            'target' => 'cleverage_ui_process_login',
-                            'clear_site_data' => '*',
-                        ],
-                    ],
+                    'main' => $firewall,
                 ],
             ]
         );
+    }
+
+    /**
+     * Whether the application disables the login throttling of its "main" firewall ("login_throttling: false"): the
+     * last value defined wins, as when the security configuration is processed. A null value ("login_throttling: ~")
+     * enables it with the default settings. Only a literal false is recognized: parameters are not resolved yet.
+     */
+    private function isLoginThrottlingDisabled(ContainerBuilder $container): bool
+    {
+        $disabled = false;
+        foreach ($container->getExtensionConfig('security') as $config) {
+            $firewall = \is_array($config['firewalls'] ?? null) ? ($config['firewalls']['main'] ?? null) : null;
+            if (!\is_array($firewall)) {
+                continue;
+            }
+            // "login-throttling" is normalized to "login_throttling", unless both are defined
+            foreach (['login_throttling', 'login-throttling'] as $key) {
+                if (\array_key_exists($key, $firewall)) {
+                    $disabled = false === $firewall[$key];
+                    break;
+                }
+            }
+        }
+
+        return $disabled;
     }
 
     /**

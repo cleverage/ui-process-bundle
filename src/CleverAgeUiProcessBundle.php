@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace CleverAge\UiProcessBundle;
 
 use CleverAge\UiProcessBundle\DependencyInjection\Compiler\CheckDoctrineLazyGhostObjectsPass;
+use CleverAge\UiProcessBundle\DependencyInjection\Compiler\LoginThrottlingPass;
 use CleverAge\UiProcessBundle\DependencyInjection\Compiler\UploadDirectoryParameterPass;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
@@ -36,5 +37,6 @@ class CleverAgeUiProcessBundle extends Bundle
 
         $container->addCompilerPass(new CheckDoctrineLazyGhostObjectsPass());
         $container->addCompilerPass(new UploadDirectoryParameterPass());
+        $container->addCompilerPass(new LoginThrottlingPass());
     }
 }

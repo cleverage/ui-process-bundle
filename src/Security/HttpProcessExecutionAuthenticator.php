@@ -21,6 +21,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\Pbkdf2PasswordHasher;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
+use Symfony\Component\Security\Core\Exception\CustomUserMessageAuthenticationException;
 use Symfony\Component\Security\Http\Authenticator\AbstractAuthenticator;
 use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
 use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
@@ -43,7 +44,7 @@ class HttpProcessExecutionAuthenticator extends AbstractAuthenticator
     public function authenticate(Request $request): Passport
     {
         if (false === $request->headers->has('Authorization')) {
-            throw new AuthenticationException('Missing auth token.');
+            throw new CustomUserMessageAuthenticationException('Missing auth token.');
         }
         $token = $request->headers->get('Authorization');
         $token = str_replace('Bearer ', '', $token ?? '');
@@ -51,7 +52,7 @@ class HttpProcessExecutionAuthenticator extends AbstractAuthenticator
             ['token' => (new Pbkdf2PasswordHasher())->hash($token)]
         );
         if (null === $user) {
-            throw new AuthenticationException('Invalid token.');
+            throw new CustomUserMessageAuthenticationException('Invalid token.');
         }
 
         return new SelfValidatingPassport(new UserBadge($user->getEmail() ?? ''));
@@ -64,8 +65,9 @@ class HttpProcessExecutionAuthenticator extends AbstractAuthenticator
 
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception): ?Response
     {
+        // The message key: some exceptions have no message (e.g. TooManyLoginAttemptsAuthenticationException)
         $data = [
-            'message' => $exception->getMessage(),
+            'message' => strtr($exception->getMessageKey(), $exception->getMessageData()),
         ];
 
         return new JsonResponse($data, Response::HTTP_UNAUTHORIZED);

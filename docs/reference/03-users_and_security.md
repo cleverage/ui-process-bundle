@@ -30,12 +30,24 @@ security:
 This configuration is added **after** the application one, so it overrides it: the `provider`, `form_login` and `logout`
 of your `main` firewall are replaced by the bundle ones (e.g. the `provider: users_in_memory` of the default Symfony
 recipe), and the API token authenticator is added to it. So your application firewall must be named `main`, and it is
-dedicated to the UI. The default settings of the
-[login throttling](https://symfony.com/doc/current/security.html#limiting-login-attempts) (5 failed attempts per minute
-for a username and an IP address, 25 for an IP address) can still be changed in the `main` firewall of the application
-(e.g. `login_throttling: { max_attempts: 3 }`): the empty `login_throttling` of the bundle keeps them. To keep the
-control of your security configuration, disable it, see
+dedicated to the UI. To keep the control of your security configuration, disable it, see
 [configuring the security in your application](#configuring-the-security-in-your-application).
+
+### Login throttling
+
+The [login throttling](https://symfony.com/doc/current/security.html#limiting-login-attempts) limits the failed
+attempts of the login form: by default 5 per minute for a username and an IP address, 25 for an IP address. Its
+settings can still be changed in the `main` firewall of the application (e.g. `login_throttling: { max_attempts: 3 }`,
+or a custom `limiter`): the empty `login_throttling` of the bundle keeps them. `login_throttling: false` disables it
+(`login_throttling: ~` enables it with the default settings). Only a literal `false` is recognized: a parameter (e.g.
+`'%throttle%'`) or an environment variable is not resolved when the bundle reads it.
+
+It requires the Symfony rate limiter (`framework.rate_limiter`, enabled by default): when your application disables it,
+the container cannot be compiled until the login throttling is disabled too.
+
+The requests of the [HTTP API](06-http_api.md) are not counted (they are authenticated by a token, not by a password),
+on every firewall with a login throttling: a failed login does not block the API, and an invalid token does not block
+the login form.
 
 With this configuration, the only required application configuration is a password
 hasher for the `User` entity (the Symfony default configuration is enough):
