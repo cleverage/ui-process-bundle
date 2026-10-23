@@ -6,6 +6,9 @@ Latest
 * [#186](https://github.com/cleverage/ui-process-bundle/issues/186) `ProcessExecuteController`, `ProcessExecuteHandler`, `LaunchType`, `ProcessConfigurationsManager` and `IsValidProcessCodeValidator` are typed on `ProcessManagerInterface` / `ProcessConfigurationRegistryInterface` (process-bundle 5.4) instead of the concrete classes, `@final since 5.4`: the process manager and the process configuration registry can be decorated or replaced for the UI.
 * [#209](https://github.com/cleverage/ui-process-bundle/issues/209) The files sent as input of a process (launch form, HTTP API) are deleted from the upload directory once the process has been executed, successfully or not (they were kept forever). Set the new `cleverage_ui_process.delete_uploaded_files` parameter to `false` to keep them. Update documentation, add tests.
 
+## Fixes
+* [#222](https://github.com/cleverage/ui-process-bundle/issues/222) The login throttling of the `main` firewall (#207) is added after the application configuration, with the rest of the firewall, instead of before: an application declaring another firewall (e.g. the `dev` firewall of the Symfony recipe) could no longer boot ("You are not allowed to define new elements for path "security.firewalls""). The application settings of `login_throttling` are kept. Update documentation and tests.
+
 v3.3.1
 ------
 
