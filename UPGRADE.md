@@ -1,6 +1,50 @@
 Upgrade Guide
 =============
 
+## v3.4
+
+No deprecation in this version (the `$translator` argument of `ProcessExecutionCrudController::__construct()` triggers
+its notice since this version, see v3.3).
+
+### Login throttling
+
+The `main` firewall configured by the bundle (`security.configure_firewall`, enabled by default) limits the login
+attempts (Symfony `login_throttling`: 5 failed attempts per minute for a username and an IP address, 25 for an IP
+address). `symfony/rate-limiter` is now required. The settings can be changed in the `main` firewall of your
+application:
+
+```yaml
+# config/packages/security.yaml
+security:
+    firewalls:
+        main:
+            login_throttling:
+                max_attempts: 3
+```
+
+### Uploaded files
+
+The files sent as input of a process (launch form, HTTP API) are deleted from the upload directory once the process
+has been executed, successfully or not (they were kept forever). To keep them, e.g. when a process stores the path of
+its input:
+
+```yaml
+# config/services.yaml
+parameters:
+    cleverage_ui_process.delete_uploaded_files: false
+```
+
+### Process bundle 5.5
+
+`cleverage/process-bundle` `^5.5` is required: follow its
+[upgrade guide](https://github.com/cleverage/process-bundle/blob/main/UPGRADE.md#v55).
+
+### Processes stopped by a `stop` task
+
+A process stopped on purpose by a `stop` task is recorded with the `stopped` status (it was `finish`), and notified as
+`stopped`: the `stopped` executions are not notified by default, add `stopped` to the notified `statuses` to keep a
+notification.
+
 ## v3.3
 
 ### Route names

@@ -1,15 +1,16 @@
 Latest
 ------
 
-### Changes
-* [#216](https://github.com/cleverage/ui-process-bundle/issues/216) Cookbooks with task codes, application `upload_directory` parameter left alone, deprecation notice for the unused `$translator` argument, scheduler log levels.
+v3.4
+------
 
 ## Changes
 * [#226](https://github.com/cleverage/ui-process-bundle/issues/226) Require `cleverage/process-bundle` `^5.5` (`ProcessEvent::isProcessStopped()`, #220): the compatibility code with process-bundle 5.4 is removed.
-* [#220](https://github.com/cleverage/ui-process-bundle/issues/220) A process stopped on purpose by a `StopTask` (e.g. not going on when the source file does not exist) is recorded with the `stopped` status, and notified as `stopped`, instead of `finish`. Requires the process bundle version providing `ProcessEvent::isProcessStopped()` (cleverage/process-bundle#337); with an older version, the execution keeps the `finish` status. Update documentation, add tests.
+* [#220](https://github.com/cleverage/ui-process-bundle/issues/220) A process stopped on purpose by a `StopTask` (e.g. not going on when the source file does not exist) is recorded with the `stopped` status, and notified as `stopped`, instead of `finish`. Uses `ProcessEvent::isProcessStopped()` of `cleverage/process-bundle` 5.5 (cleverage/process-bundle#337). Update documentation, add tests.
 * [#207](https://github.com/cleverage/ui-process-bundle/issues/207) The `main` firewall configured by the bundle (`security.configure_firewall`) limits the login attempts (Symfony `login_throttling`, default settings: 5 failed attempts per minute for a username and an IP address, 25 for an IP address); the settings can be changed in the application firewall. Require `symfony/rate-limiter`. Update documentation and tests.
 * [#186](https://github.com/cleverage/ui-process-bundle/issues/186) `ProcessExecuteController`, `ProcessExecuteHandler`, `LaunchType`, `ProcessConfigurationsManager` and `IsValidProcessCodeValidator` are typed on `ProcessManagerInterface` / `ProcessConfigurationRegistryInterface` (process-bundle 5.4) instead of the concrete classes, `@final since 5.4`: the process manager and the process configuration registry can be decorated or replaced for the UI.
 * [#209](https://github.com/cleverage/ui-process-bundle/issues/209) The files sent as input of a process (launch form, HTTP API) are deleted from the upload directory once the process has been executed, successfully or not (they were kept forever). Set the new `cleverage_ui_process.delete_uploaded_files` parameter to `false` to keep them. Update documentation, add tests.
+* [#216](https://github.com/cleverage/ui-process-bundle/issues/216) Cookbooks with task codes, application `upload_directory` parameter left alone, deprecation notice for the unused `$translator` argument, scheduler log levels.
 
 ## Fixes
 * [#222](https://github.com/cleverage/ui-process-bundle/issues/222) The login throttling of the `main` firewall (#207) is added after the application configuration, with the rest of the firewall, instead of before: an application declaring another firewall (e.g. the `dev` firewall of the Symfony recipe) could no longer boot ("You are not allowed to define new elements for path "security.firewalls""). The application settings of `login_throttling` are kept. Update documentation and tests.
