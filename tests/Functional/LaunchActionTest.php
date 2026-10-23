@@ -25,6 +25,7 @@ use CleverAge\UiProcessBundle\DependencyInjection\CleverAgeUiProcessExtension;
 use CleverAge\UiProcessBundle\DependencyInjection\Compiler\CheckDoctrineLazyGhostObjectsPass;
 use CleverAge\UiProcessBundle\DependencyInjection\Compiler\LoginThrottlingPass;
 use CleverAge\UiProcessBundle\DependencyInjection\Compiler\UploadDirectoryParameterPass;
+use CleverAge\UiProcessBundle\DependencyInjection\Compiler\UploadedFileSubscriberPass;
 use CleverAge\UiProcessBundle\DependencyInjection\Configuration;
 use CleverAge\UiProcessBundle\Entity\User;
 use CleverAge\UiProcessBundle\EventSubscriber\ProcessEventSubscriber;
@@ -67,6 +68,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 #[UsesClass(CheckDoctrineLazyGhostObjectsPass::class)]
 #[UsesClass(UploadDirectoryParameterPass::class)]
 #[UsesClass(LoginThrottlingPass::class)]
+#[UsesClass(UploadedFileSubscriberPass::class)]
 #[UsesClass(LogRecordCrudController::class)]
 #[UsesClass(ProcessExecutionCrudController::class)]
 #[UsesClass(ProcessScheduleCrudController::class)]
@@ -185,6 +187,8 @@ class LaunchActionTest extends FunctionalTestCase
         self::assertCount(1, $messages);
         self::assertSame('test.form', $messages[0]->code);
         self::assertSame('my input', $messages[0]->input);
+        // A text input is never deleted, even when it is a file of the upload directory
+        self::assertFalse($messages[0]->deleteInput);
         self::assertSame(['execution_user' => 'user@example.com', 'key1' => 'value1', 'key2' => 'value2'], $messages[0]->context);
     }
 
@@ -218,6 +222,8 @@ class LaunchActionTest extends FunctionalTestCase
         self::assertIsString($uploadDirectory);
         self::assertStringStartsWith($uploadDirectory.'/', $messages[0]->input);
         self::assertSame('line1', file_get_contents($messages[0]->input));
+        // Deleted once executed by the Messenger handler
+        self::assertTrue($messages[0]->deleteInput);
         unlink((string) $file);
     }
 

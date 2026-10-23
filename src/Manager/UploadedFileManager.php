@@ -31,6 +31,10 @@ final readonly class UploadedFileManager
 
     /**
      * Deletes the input if it is a file of the upload directory.
+     *
+     * Only call it for a file the bundle has just written for this execution (launch form, HTTP API): a file of the
+     * upload directory can also be given by its path (HTTP API, text input of the launch form, schedule, default
+     * input), it must then be kept.
      */
     public function deleteInput(mixed $input): void
     {
@@ -38,7 +42,7 @@ final readonly class UploadedFileManager
             return;
         }
         $uploadDirectory = realpath($this->uploadDirectory);
-        // Only the files written by the bundle, never a file given by its path
+        // Defense in depth: never a file outside of the upload directory
         if (false === $uploadDirectory || realpath(\dirname($input)) !== $uploadDirectory) {
             return;
         }

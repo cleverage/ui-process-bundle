@@ -16,11 +16,13 @@ namespace CleverAge\UiProcessBundle\Controller;
 use CleverAge\ProcessBundle\Manager\ProcessManagerInterface;
 use CleverAge\UiProcessBundle\Entity\ProcessExecution;
 use CleverAge\UiProcessBundle\Http\Model\HttpProcessExecution;
+use CleverAge\UiProcessBundle\Http\ValueResolver\HttpProcessExecuteValueResolver;
 use CleverAge\UiProcessBundle\Manager\ProcessExecutionManager;
 use CleverAge\UiProcessBundle\Manager\UploadedFileManager;
 use CleverAge\UiProcessBundle\Message\ProcessExecuteMessage;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\ValueResolver;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
@@ -47,13 +49,18 @@ class ProcessExecuteController extends AbstractController
 
     public function __invoke(
         #[ValueResolver('http_process_execution')] HttpProcessExecution $httpProcessExecution,
+        Request $request,
     ): JsonResponse {
+        // Only the file written by the value resolver is deleted, never a file given by its path
+        $uploadedInput = $request->attributes->get(HttpProcessExecuteValueResolver::UPLOADED_INPUT_ATTRIBUTE);
+        $deleteInput = \is_string($uploadedInput) && $uploadedInput === $httpProcessExecution->input;
         $violations = $this->validator->validate($httpProcessExecution);
         if ($violations->count() > 0) {
             $violationsMessages = [];
             foreach ($violations as $violation) {
                 $violationsMessages[] = $violation->getMessage();
             }
+            $this->uploadedFileManager?->deleteInput($uploadedInput);
             throw new UnprocessableEntityHttpException(implode('. ', $violationsMessages));
         }
         /** @var array<string, mixed> $context */
@@ -65,7 +72,8 @@ class ProcessExecuteController extends AbstractController
                 new ProcessExecuteMessage(
                     $httpProcessExecution->code ?? '',
                     $httpProcessExecution->input,
-                    $context
+                    $context,
+                    $deleteInput
                 )
             );
 
@@ -87,7 +95,9 @@ class ProcessExecuteController extends AbstractController
 
             return new JsonResponse($message, Response::HTTP_INTERNAL_SERVER_ERROR);
         } finally {
-            $this->uploadedFileManager?->deleteInput($httpProcessExecution->input);
+            if ($deleteInput) {
+                $this->uploadedFileManager?->deleteInput($httpProcessExecution->input);
+            }
         }
 
         return new JsonResponse('Process has been proceed well.');

@@ -29,11 +29,13 @@ use CleverAge\UiProcessBundle\DependencyInjection\CleverAgeUiProcessExtension;
 use CleverAge\UiProcessBundle\DependencyInjection\Compiler\CheckDoctrineLazyGhostObjectsPass;
 use CleverAge\UiProcessBundle\DependencyInjection\Compiler\LoginThrottlingPass;
 use CleverAge\UiProcessBundle\DependencyInjection\Compiler\UploadDirectoryParameterPass;
+use CleverAge\UiProcessBundle\DependencyInjection\Compiler\UploadedFileSubscriberPass;
 use CleverAge\UiProcessBundle\DependencyInjection\Configuration;
 use CleverAge\UiProcessBundle\Entity\ProcessExecution;
 use CleverAge\UiProcessBundle\Entity\User;
 use CleverAge\UiProcessBundle\Event\ProcessExecutionEndedEvent;
 use CleverAge\UiProcessBundle\EventSubscriber\ProcessEventSubscriber;
+use CleverAge\UiProcessBundle\EventSubscriber\UploadedFileSubscriber;
 use CleverAge\UiProcessBundle\Http\Model\HttpProcessExecution;
 use CleverAge\UiProcessBundle\Http\ValueResolver\HttpProcessExecuteValueResolver;
 use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
@@ -78,6 +80,8 @@ use Symfony\Component\PasswordHasher\Hasher\Pbkdf2PasswordHasher;
 #[UsesClass(CleverAgeUiProcessBundle::class)]
 #[UsesClass(CheckDoctrineLazyGhostObjectsPass::class)]
 #[UsesClass(UploadDirectoryParameterPass::class)]
+#[UsesClass(UploadedFileSubscriberPass::class)]
+#[UsesClass(UploadedFileSubscriber::class)]
 #[UsesClass(ContextField::class)]
 #[UsesClass(EnumField::class)]
 #[UsesClass(LogProcessFilter::class)]

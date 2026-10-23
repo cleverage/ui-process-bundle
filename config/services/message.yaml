@@ -17,5 +17,6 @@ services:
             - '@cleverage_process.manager.process'
             - '@cleverage_ui_process.monolog_handler.process'
             - '@cleverage_ui_process.manager.uploaded_file'
+            - '@cleverage_ui_process.event_subscriber.uploaded_file'
         tags: [messenger.message_handler]
 
