@@ -13,12 +13,14 @@ declare(strict_types=1);
 
 namespace CleverAge\UiProcessBundle\Tests\DependencyInjection;
 
+use CleverAge\ProcessBundle\Event\ProcessEvent;
 use CleverAge\UiProcessBundle\Controller\Admin\ProcessDashboardController;
 use CleverAge\UiProcessBundle\Controller\Admin\ProcessExecutionCrudController;
 use CleverAge\UiProcessBundle\Controller\Admin\UserCrudController;
 use CleverAge\UiProcessBundle\DependencyInjection\CleverAgeUiProcessExtension;
 use CleverAge\UiProcessBundle\DependencyInjection\Configuration;
 use CleverAge\UiProcessBundle\Entity\User;
+use CleverAge\UiProcessBundle\Event\ProcessExecutionEndedEvent;
 use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
 use CleverAge\UiProcessBundle\Manager\ProcessExecutionManager;
 use CleverAge\UiProcessBundle\Message\ProcessExecuteMessage;
@@ -37,6 +39,9 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\DependencyInjection\ParameterBag\EnvPlaceholderParameterBag;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
+use Symfony\Component\Messenger\Event\WorkerMessageFailedEvent;
+use Symfony\Component\Messenger\Event\WorkerMessageHandledEvent;
+use Symfony\Component\Messenger\Event\WorkerMessageReceivedEvent;
 use Symfony\Component\Yaml\Yaml;
 
 #[CoversClass(CleverAgeUiProcessExtension::class)]
@@ -95,6 +100,29 @@ class CleverAgeUiProcessExtensionTest extends TestCase
         $resolver = $container->getDefinition('cleverage_ui_process.http_value_resolver.http_process_execute');
         self::assertSame([['name' => 'http_process_execution']], $resolver->getTag('controller.targeted_value_resolver'));
         self::assertTrue($resolver->hasTag('controller.argument_value_resolver'));
+    }
+
+    public function testEventListeners(): void
+    {
+        $container = $this->createContainer('prod');
+        (new CleverAgeUiProcessExtension())->load([], $container);
+
+        self::assertSame([
+            ['event' => ProcessEvent::EVENT_PROCESS_STARTED, 'method' => 'onProcessStart'],
+            // The logs are saved before the end of the process execution
+            ['event' => ProcessEvent::EVENT_PROCESS_ENDED, 'method' => 'flushDoctrineLogs', 'priority' => 101],
+            ['event' => ProcessEvent::EVENT_PROCESS_ENDED, 'method' => 'success', 'priority' => 100],
+            ['event' => ProcessEvent::EVENT_PROCESS_FAILED, 'method' => 'flushDoctrineLogs', 'priority' => 101],
+            ['event' => ProcessEvent::EVENT_PROCESS_FAILED, 'method' => 'fail', 'priority' => 100],
+        ], $container->getDefinition('cleverage_ui_process.event_subscriber.process')->getTag('kernel.event_listener'));
+        self::assertSame([
+            ['event' => WorkerMessageReceivedEvent::class, 'method' => 'onMessageReceived'],
+            ['event' => WorkerMessageHandledEvent::class, 'method' => 'onMessageHandled'],
+            ['event' => WorkerMessageFailedEvent::class, 'method' => 'onMessageFailed'],
+        ], $container->getDefinition('cleverage_ui_process.event_subscriber.uploaded_file')->getTag('kernel.event_listener'));
+        self::assertSame([
+            ['event' => ProcessExecutionEndedEvent::class, 'method' => 'onProcessExecutionEnded'],
+        ], $container->getDefinition('cleverage_ui_process.notifier.process_execution')->getTag('kernel.event_listener'));
     }
 
     public function testEveryControllerIsRegistered(): void

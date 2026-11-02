@@ -55,10 +55,11 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\UsesClass;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Event\WorkerMessageFailedEvent;
+use Symfony\Component\Messenger\Event\WorkerMessageHandledEvent;
+use Symfony\Component\Messenger\Event\WorkerMessageReceivedEvent;
 use Symfony\Component\Messenger\EventListener\StopWorkerOnMessageLimitListener;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\Stamp\SentToFailureTransportStamp;
@@ -118,9 +119,11 @@ class ProcessExecuteWorkerTest extends FunctionalTestCase
         $transport->send(new Envelope(new ProcessExecuteMessage($code, $input, [], $deleteInput)));
 
         $eventDispatcher = new EventDispatcher();
-        /** @var EventSubscriberInterface $subscriber */
+        /** @var UploadedFileSubscriber $subscriber */
         $subscriber = static::getContainer()->get('cleverage_ui_process.event_subscriber.uploaded_file');
-        $eventDispatcher->addSubscriber($subscriber);
+        $eventDispatcher->addListener(WorkerMessageReceivedEvent::class, $subscriber->onMessageReceived(...));
+        $eventDispatcher->addListener(WorkerMessageHandledEvent::class, $subscriber->onMessageHandled(...));
+        $eventDispatcher->addListener(WorkerMessageFailedEvent::class, $subscriber->onMessageFailed(...));
         $eventDispatcher->addSubscriber(new StopWorkerOnMessageLimitListener(1));
         if ($retry) {
             // As the retry strategy of a transport with retries

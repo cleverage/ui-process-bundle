@@ -45,18 +45,6 @@ use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 #[UsesClass(ProcessHandler::class)]
 class ProcessEventSubscriberTest extends TestCase
 {
-    public function testSubscribedEvents(): void
-    {
-        self::assertSame(
-            [
-                ProcessEvent::EVENT_PROCESS_STARTED => 'onProcessStart',
-                ProcessEvent::EVENT_PROCESS_ENDED => [['flushDoctrineLogs', 100], ['success', 100]],
-                ProcessEvent::EVENT_PROCESS_FAILED => [['flushDoctrineLogs', 100], ['fail', 100]],
-            ],
-            ProcessEventSubscriber::getSubscribedEvents()
-        );
-    }
-
     public function testProcessStartCreatesTheProcessExecution(): void
     {
         $repository = $this->createMock(ProcessExecutionRepository::class);
@@ -303,7 +291,7 @@ class ProcessEventSubscriberTest extends TestCase
             $doctrineProcessHandler,
             $processExecutionManager
         );
-        $subscriber->flushDoctrineLogs(new ProcessEvent('test.process'));
+        $subscriber->flushDoctrineLogs();
         $doctrineProcessHandler->disable(); // no flush on destruction, during another test
     }
 

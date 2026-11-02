@@ -16,7 +16,6 @@ namespace CleverAge\UiProcessBundle\Notifier;
 use CleverAge\UiProcessBundle\Event\ProcessExecutionEndedEvent;
 use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Notifier\Notifier;
 use Symfony\Component\Notifier\NotifierInterface;
 use Symfony\Component\Notifier\Recipient\Recipient;
@@ -35,7 +34,7 @@ use Symfony\Component\Notifier\Recipient\RecipientInterface;
  *      'recipients': array<array{'email': ?string, 'phone': ?string}>
  *  }
  */
-final readonly class ProcessExecutionNotifier implements EventSubscriberInterface
+final readonly class ProcessExecutionNotifier
 {
     /**
      * @param ResolvedNotificationOptions $defaultOptions
@@ -93,11 +92,6 @@ final readonly class ProcessExecutionNotifier implements EventSubscriberInterfac
             'channels' => $processOptions['channels'] ?? $this->defaultOptions['channels'],
             'recipients' => $processOptions['recipients'] ?? $this->defaultOptions['recipients'],
         ];
-    }
-
-    public static function getSubscribedEvents(): array
-    {
-        return [ProcessExecutionEndedEvent::class => 'onProcessExecutionEnded'];
     }
 
     /**

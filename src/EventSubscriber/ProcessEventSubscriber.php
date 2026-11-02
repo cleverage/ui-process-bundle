@@ -21,14 +21,13 @@ use CleverAge\UiProcessBundle\Event\ProcessExecutionEndedEvent;
 use CleverAge\UiProcessBundle\Manager\ProcessExecutionManager;
 use CleverAge\UiProcessBundle\Monolog\Handler\DoctrineProcessHandler;
 use CleverAge\UiProcessBundle\Monolog\Handler\ProcessHandler;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Uid\Uuid;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**
  * @internal
  */
-final readonly class ProcessEventSubscriber implements EventSubscriberInterface
+final readonly class ProcessEventSubscriber
 {
     public function __construct(
         private ProcessHandler $processHandler,
@@ -114,23 +113,8 @@ final readonly class ProcessEventSubscriber implements EventSubscriberInterface
         }
     }
 
-    public function flushDoctrineLogs(ProcessEvent $event): void
+    public function flushDoctrineLogs(): void
     {
         $this->doctrineProcessHandler->flush();
-    }
-
-    public static function getSubscribedEvents(): array
-    {
-        return [
-            ProcessEvent::EVENT_PROCESS_STARTED => 'onProcessStart',
-            ProcessEvent::EVENT_PROCESS_ENDED => [
-                ['flushDoctrineLogs', 100],
-                ['success', 100],
-            ],
-            ProcessEvent::EVENT_PROCESS_FAILED => [
-                ['flushDoctrineLogs', 100],
-                ['fail', 100],
-            ],
-        ];
     }
 }

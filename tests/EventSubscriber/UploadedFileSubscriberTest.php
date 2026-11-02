@@ -26,7 +26,6 @@ use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Event\WorkerMessageFailedEvent;
-use Symfony\Component\Messenger\Event\WorkerMessageHandledEvent;
 use Symfony\Component\Messenger\Event\WorkerMessageReceivedEvent;
 use Symfony\Component\Messenger\EventListener\SendFailedMessageToFailureTransportListener;
 use Symfony\Component\Messenger\Stamp\SentToFailureTransportStamp;
@@ -62,18 +61,6 @@ class UploadedFileSubscriberTest extends TestCase
         (new Filesystem())->remove($this->directory);
     }
 
-    public function testSubscribedEvents(): void
-    {
-        self::assertSame(
-            [
-                WorkerMessageReceivedEvent::class => 'onMessageReceived',
-                WorkerMessageHandledEvent::class => 'onMessageHandled',
-                WorkerMessageFailedEvent::class => 'onMessageFailed',
-            ],
-            UploadedFileSubscriber::getSubscribedEvents()
-        );
-    }
-
     public function testMessageHandledByWorker(): void
     {
         $subscriber = new UploadedFileSubscriber(new UploadedFileManager($this->directory));
@@ -85,7 +72,7 @@ class UploadedFileSubscriberTest extends TestCase
         self::assertTrue($subscriber->isHandledByWorker($message));
         self::assertFalse($subscriber->isHandledByWorker(new ProcessExecuteMessage('test.process', $this->input, [], true)));
 
-        $subscriber->onMessageHandled(new WorkerMessageHandledEvent($envelope, 'execute_process'));
+        $subscriber->onMessageHandled();
         self::assertFalse($subscriber->isHandledByWorker($message));
         // Deleted by the handler after a successful execution
         self::assertFileExists($this->input);
@@ -161,7 +148,8 @@ class UploadedFileSubscriberTest extends TestCase
             $failureTransports
         ));
         $eventDispatcher = new EventDispatcher();
-        $eventDispatcher->addSubscriber(new UploadedFileSubscriber(new UploadedFileManager($this->directory), $failureSenders, $failureTransportsByName));
+        $subscriber = new UploadedFileSubscriber(new UploadedFileManager($this->directory), $failureSenders, $failureTransportsByName);
+        $eventDispatcher->addListener(WorkerMessageFailedEvent::class, $subscriber->onMessageFailed(...));
         $eventDispatcher->addSubscriber(new SendFailedMessageToFailureTransportListener($failureSenders, null, $failureTransports));
 
         $eventDispatcher->dispatch($this->createFailedEvent($deleteInput, $willRetry, $receiverName, $sentToFailureTransportFrom));
