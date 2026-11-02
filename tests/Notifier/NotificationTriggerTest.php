@@ -26,14 +26,17 @@ use PHPUnit\Framework\TestCase;
 class NotificationTriggerTest extends TestCase
 {
     /**
-     * @return iterable<string, array{ProcessExecutionStatus, array<string, mixed>, ?NotificationTrigger}>
+     * @return iterable<string, array{0: ProcessExecutionStatus, 1: array<string, mixed>, 2: ?NotificationTrigger, 3?: bool}>
      */
     public static function provideProcessExecutions(): iterable
     {
         yield 'started' => [ProcessExecutionStatus::Started, [], null];
         yield 'failed' => [ProcessExecutionStatus::Failed, [], NotificationTrigger::Failed];
         yield 'failed with report' => [ProcessExecutionStatus::Failed, ['Error' => 2], NotificationTrigger::Failed];
-        yield 'stopped' => [ProcessExecutionStatus::Stopped, ['Warning' => 1], NotificationTrigger::Stopped];
+        yield 'stopped' => [ProcessExecutionStatus::Stopped, [], NotificationTrigger::Stopped];
+        yield 'stopped with a custom report key' => [ProcessExecutionStatus::Stopped, ['imported' => 0], NotificationTrigger::Stopped];
+        yield 'stopped with report' => [ProcessExecutionStatus::Stopped, ['Error' => 2], NotificationTrigger::FinishWithReport];
+        yield 'stopped on a stop request' => [ProcessExecutionStatus::Stopped, ['Critical' => 1], NotificationTrigger::Stopped, true];
         yield 'finish' => [ProcessExecutionStatus::Finish, [], NotificationTrigger::Finish];
         yield 'finish with a custom report key' => [ProcessExecutionStatus::Finish, ['imported' => 12], NotificationTrigger::Finish];
         yield 'finish with report' => [ProcessExecutionStatus::Finish, ['Warning' => 3, 'imported' => 12], NotificationTrigger::FinishWithReport];
@@ -43,10 +46,13 @@ class NotificationTriggerTest extends TestCase
      * @param array<string, mixed> $report
      */
     #[DataProvider('provideProcessExecutions')]
-    public function testFromProcessExecution(ProcessExecutionStatus $status, array $report, ?NotificationTrigger $expected): void
+    public function testFromProcessExecution(ProcessExecutionStatus $status, array $report, ?NotificationTrigger $expected, bool $stopRequested = false): void
     {
         $processExecution = new ProcessExecution('test.process', 'test.log');
         $processExecution->setStatus($status);
+        if ($stopRequested) {
+            $processExecution->requestStop();
+        }
         foreach ($report as $key => $value) {
             $processExecution->addReport($key, $value);
         }
