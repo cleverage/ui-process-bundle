@@ -32,6 +32,7 @@ use CleverAge\UiProcessBundle\EventSubscriber\ProcessEventSubscriber;
 use CleverAge\UiProcessBundle\Form\Type\LaunchType;
 use CleverAge\UiProcessBundle\Form\Type\ProcessContextType;
 use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
+use CleverAge\UiProcessBundle\Manager\ProcessExecutionManager;
 use CleverAge\UiProcessBundle\Message\ProcessExecuteMessage;
 use CleverAge\UiProcessBundle\Monolog\Handler\DoctrineProcessHandler;
 use CleverAge\UiProcessBundle\Monolog\Handler\ProcessHandler;
@@ -79,6 +80,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 #[UsesClass(ProcessEventSubscriber::class)]
 #[UsesClass(DoctrineProcessHandler::class)]
 #[UsesClass(ProcessHandler::class)]
+#[UsesClass(ProcessExecutionManager::class)]
 class LaunchActionTest extends FunctionalTestCase
 {
     public function testLaunchWithoutForm(): void

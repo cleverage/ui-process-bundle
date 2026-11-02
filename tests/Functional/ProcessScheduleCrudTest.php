@@ -32,6 +32,7 @@ use CleverAge\UiProcessBundle\Entity\User;
 use CleverAge\UiProcessBundle\EventSubscriber\ProcessEventSubscriber;
 use CleverAge\UiProcessBundle\Form\Type\ProcessContextType;
 use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
+use CleverAge\UiProcessBundle\Manager\ProcessExecutionManager;
 use CleverAge\UiProcessBundle\Monolog\Handler\DoctrineProcessHandler;
 use CleverAge\UiProcessBundle\Monolog\Handler\ProcessHandler;
 use CleverAge\UiProcessBundle\Repository\ProcessExecutionRepository;
@@ -80,6 +81,7 @@ use PHPUnit\Framework\Attributes\UsesClass;
 #[UsesClass(ProcessExecutionRepository::class)]
 #[UsesClass(DoctrineProcessHandler::class)]
 #[UsesClass(ProcessHandler::class)]
+#[UsesClass(ProcessExecutionManager::class)]
 class ProcessScheduleCrudTest extends FunctionalTestCase
 {
     public function testIndexWarnsWhenNoWorkerIsRunning(): void

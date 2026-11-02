@@ -33,6 +33,7 @@ use CleverAge\UiProcessBundle\Entity\ProcessExecution;
 use CleverAge\UiProcessBundle\Entity\User;
 use CleverAge\UiProcessBundle\EventSubscriber\ProcessEventSubscriber;
 use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
+use CleverAge\UiProcessBundle\Manager\ProcessExecutionManager;
 use CleverAge\UiProcessBundle\Monolog\Handler\DoctrineProcessHandler;
 use CleverAge\UiProcessBundle\Monolog\Handler\ProcessHandler;
 use CleverAge\UiProcessBundle\Notifier\NotificationTrigger;
@@ -81,6 +82,7 @@ use PHPUnit\Framework\Attributes\UsesClass;
 #[UsesClass(ProcessHandler::class)]
 #[UsesClass(NotificationTrigger::class)]
 #[UsesClass(ProcessExecutionNotifier::class)]
+#[UsesClass(ProcessExecutionManager::class)]
 class LogRecordCrudTest extends FunctionalTestCase
 {
     public function testIndexAndProcessFilter(): void
