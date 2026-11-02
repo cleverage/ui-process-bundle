@@ -1,6 +1,14 @@
 Upgrade Guide
 =============
 
+## v3.4.1
+
+### Processes stopped by a `stop` task
+
+A process stopped on purpose by a `stop` task with log levels counted in its report (`logs.report_increment_level`) is
+notified as `finish_with_report` (notified by default) instead of `stopped`. If you added `stopped` to the notified
+`statuses` after upgrading to 3.4, you can remove it: only the stops without such log levels are left.
+
 ## v3.4
 
 No deprecation in this version (the `$translator` argument of `ProcessExecutionCrudController::__construct()` triggers

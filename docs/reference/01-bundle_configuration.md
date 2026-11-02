@@ -77,7 +77,7 @@ Notification of the end of the process executions, with [symfony/notifier](https
 | Key          | Type       | Default                          | Description                                                                                                                         |
 |--------------|------------|----------------------------------|-------------------------------------------------------------------------------------------------------------------------------------|
 | `enabled`    | `bool`     | `false`                          | Notify the end of the process executions. `true` requires `symfony/notifier`.                                                       |
-| `statuses`   | `string[]` | `[failed, finish_with_report]`   | Ends of process executions to notify: `failed`, `finish_with_report` (finished with log levels counted in its report), `finish` (finished without them), `stopped` (stopped from the UI). |
+| `statuses`   | `string[]` | `[failed, finish_with_report]`   | Ends of process executions to notify: `failed`, `finish_with_report` (finished, or stopped by a `StopTask`, with log levels counted in its report), `finish` (finished without them), `stopped` (stopped from the UI, or by a `StopTask` without them). |
 | `channels`   | `string[]` | `[]`                             | Notifier channels, e.g. `chat/slack`, `email`. Empty: the `channel_policy` of the notifier, by importance.                           |
 | `recipients` | `array[]`  | `[]`                             | Recipients, with an `email` and/or a `phone`. Empty: the `admin_recipients` of the notifier.                                         |
 
