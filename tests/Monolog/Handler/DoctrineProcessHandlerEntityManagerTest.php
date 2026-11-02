@@ -173,7 +173,7 @@ class DoctrineProcessHandlerEntityManagerTest extends KernelTestCase
         $connection->executeStatement('ALTER TABLE log_record RENAME TO log_record_renamed');
         try {
             // ProcessEvent::EVENT_PROCESS_ENDED listeners
-            $subscriber->flushDoctrineLogs($event);
+            $subscriber->flushDoctrineLogs();
             // Reset right away for the process tasks
             self::assertTrue($this->entityManager->isOpen());
             $subscriber->success($event);

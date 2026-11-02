@@ -116,7 +116,8 @@ use Symfony\Component\PasswordHasher\Hasher\Pbkdf2PasswordHasher;
 class LoginThrottlingTest extends FunctionalTestCase
 {
     private const TOKEN = 'api-token';
-    private const TOO_MANY_ATTEMPTS = 'Too many failed login attempts, please try again in 1 minute.';
+    // The number of minutes is computed by Symfony from the limiter state, it changes between Symfony versions
+    private const TOO_MANY_ATTEMPTS = 'Too many failed login attempts, please try again in';
 
     /**
      * Failed logins with the email of the API user do not block the API.

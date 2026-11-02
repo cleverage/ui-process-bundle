@@ -16,9 +16,7 @@ namespace CleverAge\UiProcessBundle\EventSubscriber;
 use CleverAge\UiProcessBundle\Manager\UploadedFileManager;
 use CleverAge\UiProcessBundle\Message\ProcessExecuteMessage;
 use Psr\Container\ContainerInterface;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Messenger\Event\WorkerMessageFailedEvent;
-use Symfony\Component\Messenger\Event\WorkerMessageHandledEvent;
 use Symfony\Component\Messenger\Event\WorkerMessageReceivedEvent;
 use Symfony\Component\Messenger\Stamp\SentToFailureTransportStamp;
 
@@ -31,7 +29,7 @@ use Symfony\Component\Messenger\Stamp\SentToFailureTransportStamp;
  *
  * @internal
  */
-final class UploadedFileSubscriber implements EventSubscriberInterface
+final class UploadedFileSubscriber
 {
     /**
      * Message being handled by a worker.
@@ -54,15 +52,6 @@ final class UploadedFileSubscriber implements EventSubscriberInterface
     ) {
     }
 
-    public static function getSubscribedEvents(): array
-    {
-        return [
-            WorkerMessageReceivedEvent::class => 'onMessageReceived',
-            WorkerMessageHandledEvent::class => 'onMessageHandled',
-            WorkerMessageFailedEvent::class => 'onMessageFailed',
-        ];
-    }
-
     /**
      * Whether the message is handled by a worker: if it fails, its input is deleted by this subscriber.
      */
@@ -76,7 +65,7 @@ final class UploadedFileSubscriber implements EventSubscriberInterface
         $this->workerMessage = $event->getEnvelope()->getMessage();
     }
 
-    public function onMessageHandled(WorkerMessageHandledEvent $event): void
+    public function onMessageHandled(): void
     {
         $this->workerMessage = null;
     }
