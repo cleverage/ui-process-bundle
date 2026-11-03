@@ -2,6 +2,7 @@ Latest
 ------
 
 ## Changes
+* [#244](https://github.com/cleverage/ui-process-bundle/issues/244) New `process_execution.entity_manager` option: the name of the Doctrine entity manager writing the process executions, their logs (`DoctrineProcessHandler`) and their heartbeat (`ProcessExecutionStopChecker`), the default one by default (unchanged). An entity manager on a connection of its own isolates them from the process tasks: a task reading with an unbuffered query failed as soon as the log records were inserted, and a transaction rolled back by a task rolled back the log records too. `ProcessExecutionRepository` takes the name of its entity manager (new optional `$managerName` argument), reset by its name when it has been closed. Update documentation, add tests.
 * [#242](https://github.com/cleverage/ui-process-bundle/issues/242) Documentation: non-interactive install with Symfony Flex, the recipes of the bundle and of `cleverage/process-bundle` being in `recipes-contrib` (`allow-contrib`, `recipes:install`).
 
 ## Fixes

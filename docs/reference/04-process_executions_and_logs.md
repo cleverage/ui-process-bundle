@@ -196,7 +196,8 @@ the next ones are not called: only the records counted in the report, inserted r
 file has all of them). When the insertion of
 the log records fails (e.g. a database error), they are dropped and the failure is logged as an error on the
 `cleverage_process` channel (in the [log file](#log-file), not in database): the process goes on, and the status of its
-execution is saved. The entity manager is shared with the process tasks: when changes of their entities are pending
+execution is saved. The entity manager is shared with the process tasks (unless [another one is
+configured](#entity-manager-of-the-process-executions)): when changes of their entities are pending
 (e.g. persisted by a task, not flushed yet), they are written with the log records, and a failure is not caught, as any
 error of the tasks. To know it, when entities of the tasks are managed by the entity manager, their changes are computed
 before each insertion of the log records (and again by the flush): a cost proportional to the number of managed
@@ -214,6 +215,57 @@ clever_age_ui_process:
         file_level: Debug # Everything in the log file
         report_increment_level: Error
 ```
+
+### Entity manager of the process executions
+
+By default, the process executions, their logs and their heartbeat are written with the default entity manager
+(`doctrine.orm.entity_manager`), so on the connection of the process tasks:
+
+- a task reading with an unbuffered query (e.g. `PDO::MYSQL_ATTR_USE_BUFFERED_QUERY` set to `false` for a large
+  export) fails as soon as the log records are inserted during its read ("Cannot execute queries while other
+  unbuffered queries are active"), while the same process works without the UI;
+- a transaction rolled back by a task also rolls back the log records and the state of the execution written meanwhile;
+- the pending changes of the entities of the tasks are written with the log records (see above).
+
+To isolate them, give the name of an entity manager on a connection of its own, mapping the entities of the bundle, in
+the `process_execution.entity_manager` option:
+
+```yaml
+# config/packages/doctrine.yaml
+doctrine:
+    dbal:
+        default_connection: default
+        connections:
+            default:
+                url: '%env(resolve:DATABASE_URL)%'
+            # Same database, another connection
+            process_ui:
+                url: '%env(resolve:DATABASE_URL)%'
+    orm:
+        default_entity_manager: default
+        entity_managers:
+            default:
+                connection: default
+                auto_mapping: true # also maps the entities of the bundle, read by the UI
+                # mappings of your application...
+            process_ui:
+                connection: process_ui
+                mappings:
+                    CleverAgeUiProcessBundle:
+                        type: attribute
+                        is_bundle: true
+
+# config/packages/clever_age_ui_process.yaml
+clever_age_ui_process:
+    process_execution:
+        entity_manager: process_ui
+```
+
+The entity manager is the `doctrine.orm.<name>_entity_manager` service. The `ProcessExecutionRepository` service of the
+bundle uses it too (reset by its name when it has been closed); the pages of the UI read the entities with the entity
+manager managing their class (the default one in this example). Each running process then opens one more connection to
+the database. The migrations of the bundle are still executed on the connection of Doctrine Migrations (the same
+database). With SQLite, two connections writing to the same file may wait for each other's lock: keep the default.
 
 ### Log retention
 

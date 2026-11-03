@@ -65,6 +65,7 @@ class ConfigurationTest extends TestCase
                 'process_execution' => [
                     'heartbeat_interval' => 5,
                     'stale_after' => 900,
+                    'entity_manager' => null,
                 ],
             ],
             $this->process($env, [])
@@ -110,6 +111,7 @@ class ConfigurationTest extends TestCase
                 'process_execution' => [
                     'heartbeat_interval' => 10,
                     'stale_after' => 3600,
+                    'entity_manager' => 'process_ui',
                 ],
             ],
             $this->process('dev', [
@@ -129,7 +131,7 @@ class ConfigurationTest extends TestCase
                     'channels' => ['chat/slack', 'email'],
                     'recipients' => [['email' => 'ops@example.com'], ['phone' => '+33600000000']],
                 ],
-                'process_execution' => ['heartbeat_interval' => 10, 'stale_after' => 3600],
+                'process_execution' => ['heartbeat_interval' => 10, 'stale_after' => 3600, 'entity_manager' => 'process_ui'],
             ])
         );
     }
@@ -199,6 +201,10 @@ class ConfigurationTest extends TestCase
         yield 'stale_after not an integer' => [
             ['process_execution' => ['stale_after' => '15 minutes']],
             'clever_age_ui_process.process_execution.stale_after',
+        ];
+        yield 'empty entity_manager' => [
+            ['process_execution' => ['entity_manager' => '']],
+            'clever_age_ui_process.process_execution.entity_manager',
         ];
         yield 'notification recipient without email nor phone' => [
             ['notification' => ['recipients' => [[]]]],
