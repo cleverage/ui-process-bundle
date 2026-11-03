@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace CleverAge\UiProcessBundle\Tests\Functional;
 
 use CleverAge\ProcessBundle\Manager\ProcessManager;
+use CleverAge\UiProcessBundle\CacheWarmer\LaunchFormsCacheWarmer;
 use CleverAge\UiProcessBundle\CleverAgeUiProcessBundle;
 use CleverAge\UiProcessBundle\DependencyInjection\CleverAgeUiProcessExtension;
 use CleverAge\UiProcessBundle\DependencyInjection\Compiler\CheckDoctrineLazyGhostObjectsPass;
@@ -43,6 +44,7 @@ use PHPUnit\Framework\Attributes\UsesClass;
  */
 #[CoversClass(CleverAgeUiProcessExtension::class)]
 #[CoversClass(ProcessExecutionRepository::class)]
+#[UsesClass(LaunchFormsCacheWarmer::class)]
 #[UsesClass(ProcessExecutionNotifier::class)]
 #[UsesClass(ProcessExecutionEndedEvent::class)]
 #[UsesClass(CleverAgeUiProcessBundle::class)]

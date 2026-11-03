@@ -42,14 +42,15 @@ clever_age_process:
 
 Every key is optional: a process without `options.ui` is displayed and launched with a confirmation modal. Unknown
 keys, or invalid values, raise an options resolver error when the process list is displayed. The `form` option (and
-its interaction with the deprecated options) is not resolved by the process list. It is checked each time the
-container is built (`cache:clear`, `cache:warmup`, or the automatic rebuild in debug mode), with a message naming the
-process: the launch form is resolved (types, keys, file fields, default values of the enum fields, constraints,
-conflicts with the deprecated options), then built with the form factory of the application (the options of the form
-types with the type extensions of the application, the default values of the fields, and the validators of the
-constraints, nested constraints included).
+its interaction with the deprecated options) is not resolved by the process list. Its structure is checked by an
+optional cache warmer on `cache:clear` and `cache:warmup`, with a message naming the process: types, keys, file fields,
+default values of the enum fields, constraints, conflicts with the deprecated options. The warmer does not run on the
+automatic rebuild of the container in debug mode, and `cache:warmup --no-optional-warmers` skips it (e.g. when the
+environment variables used by the process options are not available at build time).
 
-It is resolved again when the launch form of the process is displayed.
+The form itself is only built when the launch form of the process is displayed, since building it may depend on the
+runtime (a form type querying the database, the current user, the request): the options of the form types, the default
+values of the fields and the validators of the constraints are checked there.
 
 The `notification` key, next to `ui`, configures the [notification](09-notifications.md) of the end of the process
 executions. The `logs` key, next to `ui`, configures the [log retention](04-process_executions_and_logs.md#log-retention)
@@ -172,7 +173,7 @@ bridge (e.g. `Symfony\Bridge\Doctrine\Form\Type\EntityType`, if installed) or a 
 `Symfony\Component\Form\FormTypeInterface` and must not be a button type; the short names (`text`, `choice`...) are
 not supported. A form type with dependencies must be a service (tag `form.type`, autoconfigured by default). An
 option that the type does not define (e.g. `choices` on a `TextType` field), or an invalid option value, fails when
-the container is built (see [YAML configuration](#yaml-configuration)).
+the launch form is displayed (see [YAML configuration](#yaml-configuration)).
 
 ### Constraints of a field
 

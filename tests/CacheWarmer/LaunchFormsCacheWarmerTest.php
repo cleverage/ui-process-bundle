@@ -16,41 +16,28 @@ namespace CleverAge\UiProcessBundle\Tests\CacheWarmer;
 use CleverAge\ProcessBundle\Registry\ProcessConfigurationRegistry;
 use CleverAge\UiProcessBundle\CacheWarmer\LaunchFormsCacheWarmer;
 use CleverAge\UiProcessBundle\Form\LaunchFormOptionsResolver;
-use CleverAge\UiProcessBundle\Form\Type\LaunchType;
-use CleverAge\UiProcessBundle\Form\Type\ProcessContextType;
 use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
 use CleverAge\UiProcessBundle\Tests\App\Validator\Even;
-use CleverAge\UiProcessBundle\Tests\App\Validator\WithoutValidator;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\DoesNotPerformAssertions;
 use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\DependencyInjection\Container;
-use Symfony\Component\Form\Exception\TransformationFailedException;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
-use Symfony\Component\Form\Extension\Validator\ValidatorExtension;
-use Symfony\Component\Form\Forms;
 use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
-use Symfony\Component\OptionsResolver\Exception\UndefinedOptionsException;
-use Symfony\Component\Validator\ContainerConstraintValidatorFactory;
-use Symfony\Component\Validator\Exception\ValidatorException;
-use Symfony\Component\Validator\Validation;
 
 #[CoversClass(LaunchFormsCacheWarmer::class)]
 #[UsesClass(LaunchFormOptionsResolver::class)]
-#[UsesClass(LaunchType::class)]
-#[UsesClass(ProcessContextType::class)]
 #[UsesClass(ProcessConfigurationsManager::class)]
 class LaunchFormsCacheWarmerTest extends TestCase
 {
-    public function testIsNotOptional(): void
+    public function testIsOptional(): void
     {
-        self::assertFalse($this->createWarmer([])->isOptional());
+        self::assertTrue($this->createWarmer([])->isOptional());
     }
 
     /**
@@ -114,56 +101,42 @@ class LaunchFormsCacheWarmerTest extends TestCase
      */
     public static function provideInvalidLaunchForms(): iterable
     {
-        yield 'unknown option of the type' => [
-            ['context' => ['comment' => ['type' => TextType::class, 'options' => ['choices' => ['a' => 'a']]]]],
-            UndefinedOptionsException::class,
-            'The option "choices" does not exist.',
-        ];
-        yield 'invalid option value' => [
-            ['context' => ['delimiter' => ['type' => ChoiceType::class, 'options' => ['choices' => ',']]]],
+        yield 'type that is not a form type' => [
+            ['context' => ['comment' => ['type' => \stdClass::class]]],
             InvalidOptionsException::class,
-            'The option "choices" with value "," is expected to be of type',
+            'must implement',
         ];
-        yield 'default value that cannot be transformed' => [
-            ['context' => ['from' => ['type' => DateType::class, 'default' => 'yesterday', 'options' => ['widget' => 'single_text']]]],
-            TransformationFailedException::class,
-            '',
+        yield 'file field in the context' => [
+            ['context' => ['file' => ['type' => FileType::class]]],
+            InvalidOptionsException::class,
+            'file fields are only supported for the input',
         ];
-        yield 'missing validator of a field constraint' => [
-            ['context' => ['comment' => ['options' => ['constraints' => [[WithoutValidator::class => null]]]]]],
-            ValidatorException::class,
-            'App\Validator\MissingValidator',
-        ];
-        yield 'missing validator of a nested constraint' => [
-            ['constraints' => [['Collection' => ['fields' => ['input' => [[WithoutValidator::class => null]]], 'allowExtraFields' => true]]]],
-            ValidatorException::class,
-            'App\Validator\MissingValidator',
+        yield 'invalid context key' => [
+            ['context' => ['a b' => null]],
+            InvalidOptionsException::class,
+            'is not a valid form field name',
         ];
     }
 
     /**
-     * Without the validator component enabled, the validators of the constraints are not checked.
+     * The form is not built at warmup: the options of the form types, the default values and the constraint validators
+     * depend on the runtime, they are checked when the launch form is displayed.
      */
     #[DoesNotPerformAssertions]
-    public function testWithoutConstraintValidatorFactory(): void
+    public function testFormNotBuilt(): void
     {
-        $this->createWarmer(['test.process' => $this->rawProcess(['form' => ['context' => ['comment' => ['options' => ['constraints' => [[WithoutValidator::class => null]]]]]]])], false)
-            ->warmUp(sys_get_temp_dir());
+        $this->createWarmer(['test.process' => $this->rawProcess(['form' => ['context' => [
+            'comment' => ['type' => TextType::class, 'options' => ['choices' => ['a' => 'a']]],
+            'from' => ['type' => DateType::class, 'default' => 'yesterday', 'options' => ['widget' => 'single_text']],
+        ]]])])->warmUp(sys_get_temp_dir());
     }
 
     /**
      * @param array<string, array<string, mixed>> $configurations
      */
-    private function createWarmer(array $configurations, bool $withValidatorFactory = true): LaunchFormsCacheWarmer
+    private function createWarmer(array $configurations): LaunchFormsCacheWarmer
     {
-        $registry = new ProcessConfigurationRegistry($configurations, 'stop');
-        $manager = new ProcessConfigurationsManager($registry);
-        $formFactory = Forms::createFormFactoryBuilder()
-            ->addExtension(new ValidatorExtension(Validation::createValidator()))
-            ->addType(new LaunchType($registry, $manager))
-            ->getFormFactory();
-
-        return new LaunchFormsCacheWarmer($manager, $formFactory, $withValidatorFactory ? new ContainerConstraintValidatorFactory(new Container()) : null);
+        return new LaunchFormsCacheWarmer(new ProcessConfigurationsManager(new ProcessConfigurationRegistry($configurations, 'stop')));
     }
 
     /**

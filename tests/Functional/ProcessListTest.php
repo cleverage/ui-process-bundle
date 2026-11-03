@@ -147,14 +147,13 @@ class ProcessListTest extends FunctionalTestCase
     }
 
     /**
-     * The launch forms of the test application are built with its form factory, its type extensions and its
-     * constraint validators, each time the container is built.
+     * The launch forms of the test application are resolved on cache:warmup (optional warmer).
      */
-    public function testLaunchFormsAreCheckedWhenTheContainerIsBuilt(): void
+    public function testLaunchFormsAreCheckedOnCacheWarmup(): void
     {
         $warmer = static::getContainer()->get(LaunchFormsCacheWarmer::class);
         self::assertInstanceOf(LaunchFormsCacheWarmer::class, $warmer);
-        self::assertFalse($warmer->isOptional());
+        self::assertTrue($warmer->isOptional());
 
         self::assertSame([], $warmer->warmUp(sys_get_temp_dir()));
     }
