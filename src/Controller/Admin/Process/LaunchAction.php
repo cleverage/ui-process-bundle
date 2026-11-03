@@ -51,6 +51,11 @@ class LaunchAction extends AbstractController
 {
     public const CSRF_TOKEN_ID = 'cleverage_ui_process_launch';
 
+    /**
+     * The context key of the email of the connected user, added to the context of the processes it launches.
+     */
+    public const EXECUTION_USER = 'execution_user';
+
     public function __construct(
         private readonly MessageBusInterface $messageBus,
         private readonly RequestStack $requestStack,
@@ -188,10 +193,8 @@ class LaunchAction extends AbstractController
         $message = new ProcessExecuteMessage(
             $processCode,
             $input,
-            array_merge(
-                ['execution_user' => $this->getUser()?->getEmail()],
-                $context
-            ),
+            // Set last: a context value cannot replace the connected user
+            [self::EXECUTION_USER => $this->getUser()?->getEmail()] + $context,
             $deleteInput
         );
         $this->messageBus->dispatch($message);

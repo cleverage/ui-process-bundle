@@ -93,7 +93,8 @@ the form.
 
 In every mode, the process is not executed by the web request: a message is dispatched to the `execute_process`
 Messenger transport and a worker runs it (see [messenger](08-messenger.md)). The UI adds the email of the connected
-user to the process context, under the `execution_user` key.
+user to the process context, under the `execution_user` key: this key is reserved, it cannot be set by the launch form
+(see [free context pairs](#free-context-pairs)), declared in `form.context` or in `default.context`.
 
 ### Launch form
 
@@ -166,7 +167,7 @@ A field spec (`form.input`, `form.context.<key>`) accepts exactly three keys:
 
 The context keys must be valid form field names (letters, digits, `_`, `-` and `:`, starting with a letter, a digit
 or `_`). A purely numeric key (e.g. `123`, even quoted in YAML) is not supported: PHP casts it to an integer. The
-`extra` key (the free context pairs) is reserved.
+`extra` key (the free context pairs) and the `execution_user` key (the email of the connected user) are reserved.
 
 `type` is the FQCN of a form type: a Symfony core type (`Symfony\Component\Form\Extension\Core\Type\*`), a type of a
 bridge (e.g. `Symfony\Bridge\Doctrine\Form\Type\EntityType`, if installed) or a type of your project. It must implement
@@ -218,7 +219,9 @@ With `allow_extra_context: true`, the free key/value pairs are displayed after t
 added.
 
 A free pair whose key is a declared field is reported as a validation error on its key (`The context key "delimiter"
-is a field of the launch form, use this field instead.`), and the process is not launched.
+is a field of the launch form, use this field instead.`), and the process is not launched. So is a free pair with the
+`execution_user` key (`The context key "execution_user" is reserved: it is set to the email of the connected user.`):
+it cannot replace the connected user.
 
 > **Free pairs and placeholders.** A free pair gives a value to any context key, so to any `{{ key }}` placeholder of
 > the options of the process tasks, not only to the keys declared in `form.context`. As soon as a process declares its
