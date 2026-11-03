@@ -1,6 +1,9 @@
 Latest
 ------
 
+v3.5
+------
+
 ## Changes
 * [#160](https://github.com/cleverage/ui-process-bundle/issues/160) Launch form: full control over the fields of the launch form through the new `form` UI option.
   * `form.input` and `form.context.<key>`: `type` (the FQCN of a form type), `options` (the form type options, with `constraints`) and `default` (the initial value; an enum case given with `!php/enum` for an `EnumType`). The declared context fields are not required by default.
