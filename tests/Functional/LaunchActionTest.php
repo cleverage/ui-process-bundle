@@ -33,6 +33,7 @@ use CleverAge\UiProcessBundle\Form\Type\LaunchType;
 use CleverAge\UiProcessBundle\Form\Type\ProcessContextType;
 use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
 use CleverAge\UiProcessBundle\Manager\ProcessExecutionManager;
+use CleverAge\UiProcessBundle\Manager\UploadedFileManager;
 use CleverAge\UiProcessBundle\Message\ProcessExecuteMessage;
 use CleverAge\UiProcessBundle\Monolog\Handler\DoctrineProcessHandler;
 use CleverAge\UiProcessBundle\Monolog\Handler\ProcessHandler;
@@ -46,6 +47,7 @@ use CleverAge\UiProcessBundle\Twig\Extension\ProcessExtension;
 use CleverAge\UiProcessBundle\Twig\Runtime\ProcessExecutionExtensionRuntime;
 use CleverAge\UiProcessBundle\Twig\Runtime\ProcessExtensionRuntime;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\UsesClass;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
@@ -60,6 +62,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 #[UsesClass(ProcessExecutionRepository::class)]
 #[UsesClass(HttpProcessExecutionAuthenticator::class)]
 #[UsesClass(LogLevelExtension::class)]
+#[UsesClass(UploadedFileManager::class)]
 #[UsesClass(MD5Extension::class)]
 #[UsesClass(ProcessExecutionExtension::class)]
 #[UsesClass(ProcessExtension::class)]
@@ -227,6 +230,46 @@ class LaunchActionTest extends FunctionalTestCase
         // Deleted once executed by the Messenger handler
         self::assertTrue($messages[0]->deleteInput);
         unlink((string) $file);
+    }
+
+    /**
+     * The extension of the client file name is reduced to its letters and digits: a long one made the writing fail (500).
+     */
+    #[DataProvider('provideClientNames')]
+    public function testLaunchWithFileUploadKeepsASafeExtension(string $clientName, string $expectedSuffix): void
+    {
+        $this->login();
+        $file = tempnam(sys_get_temp_dir(), 'upload');
+        file_put_contents((string) $file, 'line1');
+        $crawler = $this->client->request('GET', '/process?routeName=cleverage_ui_process_launch&process=test.upload');
+        $form = $crawler->selectButton('Launch')->form();
+
+        $this->client->request(
+            $form->getMethod(),
+            $form->getUri(),
+            $form->getPhpValues(),
+            ['launch' => ['input' => new UploadedFile((string) $file, $clientName, 'text/csv', null, true)]]
+        );
+        unlink((string) $file);
+
+        self::assertResponseRedirects();
+        $messages = $this->getDispatchedMessages();
+        self::assertCount(1, $messages);
+        self::assertIsString($messages[0]->input);
+        self::assertMatchesRegularExpression('#/[0-9a-f-]{36}'.preg_quote($expectedSuffix, '#').'$#', $messages[0]->input);
+        self::assertSame('line1', file_get_contents($messages[0]->input));
+    }
+
+    /**
+     * @return iterable<string, array{string, string}>
+     */
+    public static function provideClientNames(): iterable
+    {
+        yield 'extension' => ['data.CSV', '.CSV'];
+        yield 'long extension' => ['data.'.str_repeat('x', 300), '.xxxxxxxxxxxxxxxx'];
+        yield 'special characters' => ['data.c"s v', '.csv'];
+        yield 'no extension' => ['data', ''];
+        yield 'no letter or digit' => ['data.é', ''];
     }
 
     /**

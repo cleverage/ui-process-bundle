@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace CleverAge\UiProcessBundle\Http\ValueResolver;
 
 use CleverAge\UiProcessBundle\Http\Model\HttpProcessExecution;
+use CleverAge\UiProcessBundle\Manager\UploadedFileManager;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
@@ -65,7 +66,12 @@ readonly class HttpProcessExecuteValueResolver implements ValueResolverInterface
                 $input ??= $request->files->get('input');
 
                 if ($input instanceof UploadedFile) {
-                    $uploadFileName = $this->storageDir.\DIRECTORY_SEPARATOR.date('YmdHis').'_'.uniqid().'_'.$input->getClientOriginalName();
+                    $prefix = date('YmdHis').'_'.uniqid().'_';
+                    // A client file name too long for the file system made the writing fail
+                    $uploadFileName = $this->storageDir.\DIRECTORY_SEPARATOR.$prefix.UploadedFileManager::getSafeName(
+                        $input,
+                        UploadedFileManager::MAX_FILENAME_LENGTH - \strlen($prefix)
+                    );
                     (new Filesystem())->dumpFile($uploadFileName, $input->getContent());
                     $request->attributes->set(self::UPLOADED_INPUT_ATTRIBUTE, $uploadFileName);
                     $input = $uploadFileName;

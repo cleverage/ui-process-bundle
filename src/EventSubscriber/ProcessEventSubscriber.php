@@ -87,7 +87,13 @@ final readonly class ProcessEventSubscriber
             $this->processExecutionManager->unsetProcessExecution($event->getProcessCode());
             $this->processHandler->close();
         }
-        $this->dispatchEnded($event);
+        try {
+            $this->dispatchEnded($event);
+        } finally {
+            // No longer changed: the entity manager of a process running in a loop (without reset of the services)
+            // would keep every ended process execution
+            $this->processExecutionManager->detachLastProcessExecution();
+        }
     }
 
     /**

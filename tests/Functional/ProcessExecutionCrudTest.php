@@ -50,6 +50,7 @@ use Monolog\Level;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\UsesClass;
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 #[CoversClass(ProcessExecutionCrudController::class)]
 #[UsesClass(ContextField::class)]
@@ -198,9 +199,11 @@ class ProcessExecutionCrudTest extends FunctionalTestCase
         $this->client->request('GET', '/process/process-execution/download-logs?entityId='.$execution->getId());
 
         self::assertResponseIsSuccessful();
+        // Streamed: not loaded in memory
+        self::assertInstanceOf(BinaryFileResponse::class, $this->client->getResponse());
         self::assertSame('log file content', $this->client->getInternalResponse()->getContent());
         self::assertResponseHeaderSame('Content-Type', 'text/plain; charset=utf-8');
-        self::assertResponseHeaderSame('Content-Disposition', 'attachment; filename="'.$execution->logFilename.'"');
+        self::assertResponseHeaderSame('Content-Disposition', 'attachment; filename='.$execution->logFilename);
     }
 
     public function testDownloadMissingLogFile(): void
