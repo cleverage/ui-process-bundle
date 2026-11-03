@@ -33,7 +33,7 @@ Executions are stored in the `process_execution` table (`CleverAge\UiProcessBund
 | `heartbeatAt` | Last sign of life of the running process, see [not responding executions](#not-responding-executions). |
 | `logFilename` | Name of the log file.                                                                               |
 | `report`      | Associative array, see [report](#report).                                                          |
-| `context`     | Process context (including `execution_user` when launched from the UI).                             |
+| `context`     | Process context (including `execution_user` when launched from the UI). Stored as JSON: a context which cannot be encoded (e.g. a value of a multipart request that is not valid UTF-8) is stored as the context of the log records, with its invalid UTF-8 sequences replaced by `U+FFFD` (`�`) and its values which cannot be encoded replaced by `null`; the process itself receives the context unchanged. |
 
 ### Executions list
 

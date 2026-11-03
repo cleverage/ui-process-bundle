@@ -60,6 +60,23 @@ class ProcessExecutionTest extends TestCase
         self::assertSame(['foo' => 'bar'], $execution->getContext());
     }
 
+    /**
+     * Stored as JSON: a context that cannot be encoded made the insertion fail, and the process with it.
+     */
+    public function testInvalidUtf8ContextIsEncodable(): void
+    {
+        $context = ['name' => "Caf\xE9", "k\xE9y" => 1.0, 'valid' => 'été'];
+        $expected = ['name' => "Caf\u{FFFD}", "k\u{FFFD}y" => 1.0, 'valid' => 'été'];
+
+        $execution = new ProcessExecution('demo.process', 'demo.process.log', $context);
+        self::assertSame($expected, $execution->getContext());
+        self::assertNotFalse(json_encode($execution->getContext()));
+
+        $execution = new ProcessExecution('demo.process', 'demo.process.log');
+        $execution->setContext($context);
+        self::assertSame($expected, $execution->getContext());
+    }
+
     public function testToString(): void
     {
         $execution = new ProcessExecution('demo.process', 'demo.process.log');

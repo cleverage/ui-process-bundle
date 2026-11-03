@@ -138,6 +138,20 @@ class HttpProcessExecuteTest extends FunctionalTestCase
     /**
      * Parameters in the query string only, without body (they were ignored: 422 "Process code is required").
      */
+    /**
+     * A context value that is not valid UTF-8 (e.g. Latin-1) made the process fail before it started (500).
+     */
+    public function testSynchronousExecutionWithAContextNotValidUtf8(): void
+    {
+        $this->execute(['code' => 'test.process', 'queue' => '0', 'context' => ['name' => "Caf\xE9"]]);
+
+        self::assertResponseIsSuccessful();
+        self::assertSame('"Process has been proceed well."', $this->client->getResponse()->getContent());
+        $execution = $this->getEntityManager()->getRepository(ProcessExecution::class)->findOneBy(['code' => 'test.process']);
+        self::assertInstanceOf(ProcessExecution::class, $execution);
+        self::assertSame(['name' => "Caf\u{FFFD}"], $execution->getContext());
+    }
+
     public function testQueryStringWithoutBody(): void
     {
         $this->client->request('POST', '/http/process/execute?code=test.process&queue=0', server: ['HTTP_AUTHORIZATION' => 'Bearer '.self::TOKEN]);
