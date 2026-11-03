@@ -179,7 +179,16 @@ combining marks may count several characters. The invalid UTF-8 sequences of the
 by `?` and their NUL characters removed; a context which cannot be encoded in JSON is stored with its invalid UTF-8 sequences replaced by `U+FFFD` (`�`)
 and its values which cannot be encoded (e.g. a resource) replaced by `null`.
 
-Records are buffered and inserted every 500 records, and at the end (or failure) of the process. When the insertion of
+Records are buffered and inserted every 500 records, and at the end (or failure) of the process. A record counted in
+the report of the execution (from `report_increment_level`, warnings by default) is inserted right away with the
+buffered ones, unless changes of the process tasks are pending in the entity manager (they would be written with it, see
+below): it is then inserted with the next ones. After a fatal error (e.g. maximum execution time exceeded), neither the
+end of the process nor the destruction of the handler happen: a shutdown function inserts the buffered records and saves
+the report of the execution, unless changes of the process tasks are pending (the status of the execution stays
+`started`, see [not responding executions](#not-responding-executions)). After the memory limit is exceeded, the limit is raised by 32 MiB
+to do it, but the shutdown function of the Symfony `ErrorHandler`, called first, usually fails too (no memory left), and
+the next ones are not called: only the records counted in the report, inserted right away, are kept in database (the log
+file has all of them). When the insertion of
 the log records fails (e.g. a database error), they are dropped and the failure is logged as an error on the
 `cleverage_process` channel (in the [log file](#log-file), not in database): the process goes on, and the status of its
 execution is saved. The entity manager is shared with the process tasks: when changes of their entities are pending

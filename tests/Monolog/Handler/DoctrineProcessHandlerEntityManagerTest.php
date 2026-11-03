@@ -44,6 +44,7 @@ use Monolog\Logger;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\UsesClass;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Symfony\Component\Process\Process;
 
 /**
  * DoctrineProcessHandler with the entity manager of the test application (SQLite).
@@ -319,6 +320,171 @@ class DoctrineProcessHandlerEntityManagerTest extends KernelTestCase
         self::assertTrue($logger->hasErrorThatContains('1 log record(s) could not be stored in database'));
         $handler->setLogger(null);
         $handler->disable();
+    }
+
+    /**
+     * The log records counted in the report are written right away, with the buffered ones, when no change of the tasks
+     * is pending.
+     */
+    public function testRecordCountedInTheReportIsWrittenRightAway(): void
+    {
+        $handler = $this->createHandlerWithLogger(new TestHandler());
+        $handler->setReportIncrementLevel('Warning');
+        $handler->handle($this->createRecord(Level::Info, 'info'));
+        self::assertSame([], $this->getStoredMessages());
+
+        $handler->handle($this->createRecord(Level::Warning, 'warning'));
+        self::assertSame(['info', 'warning'], $this->getStoredMessages());
+
+        // A managed entity of a task: its changes are not computed, the record waits for the next writing
+        $user = (new User())->setEmail('user@example.com');
+        $this->entityManager->persist($user);
+        $this->entityManager->flush();
+        $handler->handle($this->createRecord(Level::Error, 'error'));
+        self::assertSame(['info', 'warning'], $this->getStoredMessages());
+
+        $this->entityManager->detach($user);
+        $handler->handle($this->createRecord(Level::Error, 'other error'));
+        self::assertSame(['info', 'warning', 'error', 'other error'], $this->getStoredMessages());
+        $handler->disable();
+    }
+
+    /**
+     * Without process execution (e.g. a log record of the process bundle outside of a process), nothing is written.
+     */
+    public function testRecordCountedInTheReportWithoutProcessExecution(): void
+    {
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager->expects(self::never())->method('flush');
+        $handler = new DoctrineProcessHandler();
+        $handler->setEntityManager($entityManager);
+        $handler->setProcessExecutionManager(new ProcessExecutionManager(new ProcessExecutionRepository($this->entityManager)));
+        $handler->setReportIncrementLevel('Warning');
+
+        $handler->handle($this->createRecord(Level::Error, 'error'));
+        $handler->disable();
+    }
+
+    /**
+     * The shutdown function writes the buffered log records and the report of the current process execution (after a
+     * fatal error), unless changes of the tasks are pending.
+     */
+    public function testBufferedRecordsAndReportAreWrittenOnShutdown(): void
+    {
+        /** @var ManagerRegistry $registry */
+        $registry = static::getContainer()->get('doctrine');
+        $manager = new ProcessExecutionManager(new ProcessExecutionRepository($this->entityManager, $registry));
+        $handler = new DoctrineProcessHandler();
+        $handler->setEntityManager($this->entityManager);
+        $handler->setProcessExecutionManager($manager);
+        $handler->onShutdown(); // no process execution: nothing to do
+
+        $manager->setCurrentProcessExecution(new ProcessExecution('test.process', 'test.log'))->save();
+        $handler->handle($this->createRecord(Level::Warning, 'warning'));
+        $manager->increment('Warning');
+        // Persisted by a task, not flushed: neither written nor the log records
+        $user = (new User())->setEmail('user@example.com');
+        $this->entityManager->persist($user);
+        $handler->onShutdown();
+        self::assertSame([], $this->getStoredMessages());
+
+        $this->entityManager->detach($user);
+        $handler->onShutdown();
+        self::assertSame(['warning'], $this->getStoredMessages());
+        self::assertSame('{"Warning":1}', $this->entityManager->getConnection()->fetchOne('SELECT report FROM process_execution'));
+        self::assertSame([], $this->entityManager->getConnection()->fetchFirstColumn('SELECT email FROM process_user'));
+
+        // Its failures are ignored
+        $this->entityManager->getConnection()->executeStatement('DROP TABLE log_record');
+        $handler->handle($this->createRecord(Level::Info, 'info'));
+        $handler->setLogger(null);
+        $handler->onShutdown();
+        $handler->disable();
+        $handler->onShutdown();
+    }
+
+    /**
+     * A process execution ended by a fatal error (maximum execution time exceeded), in a PHP process of its own: its
+     * buffered log records and its report are written on shutdown.
+     */
+    public function testFatalErrorDuringAProcess(): void
+    {
+        $output = $this->runFatalErrorDuringAProcess('time');
+
+        self::assertStringContainsString('Maximum execution time', $output);
+        $connection = $this->entityManager->getConnection();
+        self::assertSame(['before the warning', 'warning', 'after the warning'], $this->getStoredMessages());
+        self::assertSame('{"Warning":1}', $connection->fetchOne('SELECT report FROM process_execution'));
+        // Neither ended nor failed
+        self::assertSame('started', $connection->fetchOne('SELECT status FROM process_execution'));
+    }
+
+    /**
+     * Memory limit exceeded: the shutdown function of the Symfony ErrorHandler, called first, fails too (no memory left
+     * to load a class), the next ones are not called. The warning, counted in the report, was written right away.
+     */
+    public function testMemoryLimitExceededDuringAProcess(): void
+    {
+        $output = $this->runFatalErrorDuringAProcess('memory');
+
+        self::assertStringContainsString('Allowed memory size', $output);
+        self::assertSame(['before the warning', 'warning'], \array_slice($this->getStoredMessages(), 0, 2));
+    }
+
+    /**
+     * The memory limit is raised on shutdown after a fatal error caused by the memory limit, to write the log records.
+     */
+    public function testMemoryLimitIsRaisedOnShutdown(): void
+    {
+        $handler = $this->createHandlerWithLogger(new TestHandler());
+        $memoryLimit = \ini_get('memory_limit');
+        ini_set('memory_limit', '512M');
+        try {
+            $handler->onShutdown();
+            self::assertSame('512M', \ini_get('memory_limit'), 'Only after a fatal error caused by the memory limit');
+
+            @trigger_error('Allowed memory size of 536870912 bytes exhausted (tried to allocate 2097152 bytes)', \E_USER_WARNING);
+            $handler->onShutdown();
+            self::assertGreaterThanOrEqual(memory_get_usage(true) + 30 * 1024 * 1024, (int) \ini_get('memory_limit'));
+
+            ini_set('memory_limit', '-1');
+            $handler->onShutdown();
+            self::assertSame('-1', \ini_get('memory_limit'), 'No limit: unchanged');
+        } finally {
+            ini_set('memory_limit', $memoryLimit);
+            error_clear_last();
+            $handler->setLogger(null);
+            $handler->disable();
+        }
+    }
+
+    private function runFatalErrorDuringAProcess(string $error): string
+    {
+        $process = new Process(
+            [\PHP_BINARY, __DIR__.'/fatal_error_during_a_process.php', $error],
+            null,
+            ['UI_PROCESS_BUNDLE_TESTS_RUN_DIR' => TestKernel::getRunDir(), 'SHELL_VERBOSITY' => '0']
+        );
+        $process->run();
+        self::assertFalse($process->isSuccessful());
+
+        return $process->getOutput().$process->getErrorOutput();
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function getStoredMessages(): array
+    {
+        /** @var list<string> $messages */
+        $messages = $this->entityManager->getConnection()->fetchFirstColumn('SELECT message FROM log_record ORDER BY id');
+
+        return $messages;
+    }
+
+    private function createRecord(Level $level, string $message): \Monolog\LogRecord
+    {
+        return new \Monolog\LogRecord(new \DateTimeImmutable(), 'cleverage_process', $level, $message);
     }
 
     private function createHandlerWithLogger(TestHandler $logger): DoctrineProcessHandler

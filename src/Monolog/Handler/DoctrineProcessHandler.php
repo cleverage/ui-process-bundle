@@ -34,6 +34,8 @@ class DoctrineProcessHandler extends AbstractProcessingHandler
     private bool $enabled = true;
     private ?LoggerInterface $logger = null;
     private bool $reportingFailure = false;
+    private ?Level $reportIncrementLevel = null;
+    private bool $shutdownFunctionRegistered = false;
 
     public function __construct(int|string|Level $level = Level::Debug, bool $bubble = true)
     {
@@ -57,6 +59,18 @@ class DoctrineProcessHandler extends AbstractProcessingHandler
     public function setLogger(?LoggerInterface $logger): void
     {
         $this->logger = $logger;
+    }
+
+    /**
+     * A log record from this level (counted in the report of the process execution) is written right away, with the
+     * buffered ones: they are not lost if the process ends with a fatal error which the shutdown function cannot handle
+     * (e.g. no memory left, process killed).
+     *
+     * @param 'ALERT'|'Alert'|'alert'|'CRITICAL'|'Critical'|'critical'|'DEBUG'|'Debug'|'debug'|'EMERGENCY'|'Emergency'|'emergency'|'ERROR'|'Error'|'error'|'INFO'|'Info'|'info'|'NOTICE'|'Notice'|'notice'|'WARNING'|'Warning'|'warning' $level
+     */
+    public function setReportIncrementLevel(string $level): void
+    {
+        $this->reportIncrementLevel = Level::fromName($level);
     }
 
     public function disable(): void
@@ -146,9 +160,82 @@ class DoctrineProcessHandler extends AbstractProcessingHandler
             // The failure of the writing is not stored in database
             return;
         }
+        $this->registerShutdownFunction();
         $this->records->add($record);
-        if ($this->records->count() >= 500) {
+        if ($this->records->count() >= 500 || $this->isToWriteRightAway($record)) {
             $this->flush();
+        }
+    }
+
+    /**
+     * A log record counted in the report, during a process execution, when no change of the process tasks is pending
+     * (they would be written with it): checked without computing the changes of their managed entities, it is
+     * otherwise written with the next ones.
+     */
+    private function isToWriteRightAway(LogRecord $record): bool
+    {
+        if (!$this->reportIncrementLevel instanceof Level || $record->level->value < $this->reportIncrementLevel->value) {
+            return false;
+        }
+        $currentProcessExecution = $this->processExecutionManager?->getCurrentProcessExecution();
+
+        return $currentProcessExecution instanceof ProcessExecution
+            && (false === $this->em?->isOpen() || $this->hasOnlyLogsToWrite($currentProcessExecution, [], false));
+    }
+
+    /**
+     * The memory used when the memory limit was reached is still allocated on shutdown: the limit is raised by 32 MiB
+     * to write the log records. The shutdown function of the Symfony ErrorHandler, registered before, usually fails too
+     * (no memory left to load a class): the next shutdown functions are then not called.
+     */
+    private function allowMemoryAfterMemoryLimit(): void
+    {
+        $error = error_get_last();
+        if (null === $error || !str_starts_with($error['message'], 'Allowed memory size of') || '-1' === \ini_get('memory_limit')) {
+            return;
+        }
+        ini_set('memory_limit', (string) (memory_get_usage(true) + 32 * 1024 * 1024));
+    }
+
+    /**
+     * Registered once, without keeping the handler alive (it is still destructed, and flushed, when no longer used).
+     */
+    private function registerShutdownFunction(): void
+    {
+        if ($this->shutdownFunctionRegistered) {
+            return;
+        }
+        $this->shutdownFunctionRegistered = true;
+        $handler = \WeakReference::create($this);
+        register_shutdown_function(static function () use ($handler): void {
+            $handler->get()?->onShutdown();
+        });
+    }
+
+    /**
+     * After a fatal error (e.g. memory limit, maximum execution time), neither the end of the process nor the destructor
+     * write the buffered log records and the report of the current process execution: written on shutdown, if no change
+     * of the process tasks is pending (they would be written with them, in an unknown state). Not called after the end
+     * of the process: the current process execution is then unset.
+     *
+     * @internal
+     */
+    public function onShutdown(): void
+    {
+        $processExecutionManager = $this->processExecutionManager;
+        if (!$this->enabled || !$processExecutionManager?->getCurrentProcessExecution() instanceof ProcessExecution) {
+            return;
+        }
+        $this->allowMemoryAfterMemoryLimit();
+        try {
+            if (true === $this->em?->isOpen()
+                && !$this->hasOnlyLogsToWrite($processExecutionManager->getManagedProcessExecution(), [])
+            ) {
+                return;
+            }
+            $this->flush();
+        } catch (\Throwable) {
+            // Nothing more can be done: the log file has the log records
         }
     }
 
@@ -158,8 +245,11 @@ class DoctrineProcessHandler extends AbstractProcessingHandler
      * not persisted, is not caught).
      *
      * @param list<\CleverAge\UiProcessBundle\Entity\LogRecord> $entities
+     * @param bool                                              $computeChanges false: false when entities of the
+     *                                                                          tasks are managed, without computing their
+     *                                                                          changes (cost proportional to their number)
      */
-    private function hasOnlyLogsToWrite(?ProcessExecution $currentProcessExecution, array $entities): bool
+    private function hasOnlyLogsToWrite(?ProcessExecution $currentProcessExecution, array $entities, bool $computeChanges = true): bool
     {
         if (!$this->em instanceof EntityManagerInterface) {
             return true;
@@ -193,6 +283,9 @@ class DoctrineProcessHandler extends AbstractProcessingHandler
         if ($onlyOwnEntitiesManaged) {
             // No entity of the tasks to update
             return true;
+        }
+        if (!$computeChanges) {
+            return false;
         }
         // The updates of the managed entities are known once the changes computed (computed again by the flush)
         $unitOfWork->computeChangeSets();

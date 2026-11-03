@@ -57,7 +57,8 @@ final class CleverAgeUiProcessExtension extends Extension implements PrependExte
             ->addMethodCall('setReportIncrementLevel', [$config['logs']['report_increment_level']])
         ;
         $container->getDefinition('cleverage_ui_process.monolog_handler.doctrine_process')
-            ->setArgument('$level', $config['logs']['database_level']);
+            ->setArgument('$level', $config['logs']['database_level'])
+            ->addMethodCall('setReportIncrementLevel', [$config['logs']['report_increment_level']]);
         if (!$config['logs']['store_in_database']) {
             $container->getDefinition('cleverage_ui_process.monolog_handler.doctrine_process')
                 ->addMethodCall('disable');
