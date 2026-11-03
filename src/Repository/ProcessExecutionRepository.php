@@ -44,6 +44,16 @@ class ProcessExecutionRepository extends EntityRepository
     }
 
     /**
+     * Detach the process execution from the entity manager if it manages it: its pending changes are not written.
+     */
+    public function detach(ProcessExecution $processExecution): void
+    {
+        if ($this->getEntityManager()->isOpen() && $this->getEntityManager()->contains($processExecution)) {
+            $this->getEntityManager()->detach($processExecution);
+        }
+    }
+
+    /**
      * The process execution managed by the entity manager: the given one, or the persisted one, updated with the state
      * of the given one, when it has been detached (e.g. the entity manager, shared with the process tasks, has been
      * cleared). Persisting a detached process execution would insert it again.

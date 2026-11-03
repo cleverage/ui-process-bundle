@@ -277,6 +277,23 @@ class HttpProcessExecuteTest extends FunctionalTestCase
         self::assertFileExists($messages[0]->input);
     }
 
+    /**
+     * A client file name too long for the file system: the file was not written, the request answered 422 as if the
+     * process code was missing.
+     */
+    public function testUploadedFileWithALongName(): void
+    {
+        $this->upload(['code' => 'test.process'], str_repeat('é', 200).'.csv');
+
+        self::assertResponseIsSuccessful();
+        $messages = $this->getDispatchedMessages();
+        self::assertCount(1, $messages);
+        self::assertIsString($messages[0]->input);
+        self::assertStringEndsWith('é.csv', $messages[0]->input);
+        self::assertLessThanOrEqual(255, \strlen(basename($messages[0]->input)));
+        self::assertSame('line1', file_get_contents($messages[0]->input));
+    }
+
     public function testUploadedFileSynchronous(): void
     {
         $this->upload(['code' => 'test.process', 'queue' => '0']);
@@ -358,7 +375,7 @@ class HttpProcessExecuteTest extends FunctionalTestCase
     /**
      * @param array<string, mixed> $parameters
      */
-    private function upload(array $parameters): void
+    private function upload(array $parameters, string $clientName = 'data.csv'): void
     {
         (new Filesystem())->remove($this->getUploadDirectory());
         $file = tempnam(sys_get_temp_dir(), 'upload');
@@ -368,7 +385,7 @@ class HttpProcessExecuteTest extends FunctionalTestCase
             'POST',
             '/http/process/execute',
             $parameters,
-            ['input' => new UploadedFile((string) $file, 'data.csv', 'text/csv', null, true)],
+            ['input' => new UploadedFile((string) $file, $clientName, 'text/csv', null, true)],
             ['HTTP_AUTHORIZATION' => 'Bearer '.self::TOKEN]
         );
         unlink((string) $file);

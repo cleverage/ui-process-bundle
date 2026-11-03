@@ -159,7 +159,7 @@ Each execution writes its own log file:
 %kernel.logs_dir%/<process_code>/<uuid>.log
 ```
 
-It can be downloaded from the executions list.
+It can be downloaded from the executions list (streamed: its size is not limited by the PHP memory limit).
 
 ### Database logs
 

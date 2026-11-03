@@ -31,8 +31,10 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\DateTimeFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -240,15 +242,12 @@ class ProcessExecutionCrudController extends AbstractCrudController
         /** @var ProcessExecution $processExecution */
         $processExecution = $this->getContext()?->getEntity()->getInstance();
         $filepath = $this->getLogFilePath($processExecution);
-        $basename = basename($filepath);
-        // file_get_contents() emits a warning (converted to an exception) before returning false on a missing file
-        $content = is_file($filepath) ? file_get_contents($filepath) : false;
-        if (false === $content) {
+        if (!is_file($filepath) || !is_readable($filepath)) {
             throw new NotFoundHttpException('Log file not found.');
         }
-        $response = new Response($content);
-        $response->headers->set('Content-Type', 'text/plain; charset=utf-8');
-        $response->headers->set('Content-Disposition', "attachment; filename=\"$basename\"");
+        // Streamed: the log file of a long process can be bigger than the memory limit
+        $response = new BinaryFileResponse($filepath, headers: ['Content-Type' => 'text/plain; charset=utf-8']);
+        $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, basename($filepath));
 
         return $response;
     }

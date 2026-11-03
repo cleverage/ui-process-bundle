@@ -17,6 +17,7 @@ use CleverAge\ProcessBundle\Exception\MissingProcessException;
 use CleverAge\UiProcessBundle\Entity\User;
 use CleverAge\UiProcessBundle\Form\Type\LaunchType;
 use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
+use CleverAge\UiProcessBundle\Manager\UploadedFileManager;
 use CleverAge\UiProcessBundle\Message\ProcessExecuteMessage;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Asset;
 use EasyCorp\Bundle\EasyAdminBundle\Contracts\Context\AdminContextInterface;
@@ -116,7 +117,9 @@ class LaunchAction extends AbstractController
             // Only the file written here is deleted once executed, never a file given by its path (text input)
             $deleteInput = false;
             if ($input instanceof UploadedFile) {
-                $filename = \sprintf('%s/%s.%s', $uploadDirectory, Uuid::v4(), $input->getClientOriginalExtension());
+                // The extension sent by the browser is reduced: a long one made the writing fail (500)
+                $extension = UploadedFileManager::getSafeExtension($input);
+                $filename = \sprintf('%s/%s%s', $uploadDirectory, Uuid::v4(), '' === $extension ? '' : '.'.$extension);
                 (new Filesystem())->dumpFile($filename, $input->getContent());
                 $input = $filename;
                 $deleteInput = true;

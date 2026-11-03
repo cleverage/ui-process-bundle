@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace CleverAge\UiProcessBundle\Tests\Manager;
 
+use CleverAge\ProcessBundle\Event\ProcessEvent;
 use CleverAge\UiProcessBundle\CleverAgeUiProcessBundle;
 use CleverAge\UiProcessBundle\DependencyInjection\CleverAgeUiProcessExtension;
 use CleverAge\UiProcessBundle\DependencyInjection\Compiler\CheckDoctrineLazyGhostObjectsPass;
@@ -26,6 +27,7 @@ use CleverAge\UiProcessBundle\Entity\ProcessExecution;
 use CleverAge\UiProcessBundle\EventSubscriber\ProcessEventSubscriber;
 use CleverAge\UiProcessBundle\Manager\ProcessExecutionManager;
 use CleverAge\UiProcessBundle\Monolog\Handler\DoctrineProcessHandler;
+use CleverAge\UiProcessBundle\Monolog\Handler\ProcessHandler;
 use CleverAge\UiProcessBundle\Repository\ProcessExecutionRepository;
 use CleverAge\UiProcessBundle\Routing\DeprecatedEasyAdminRouteAliasLoader;
 use CleverAge\UiProcessBundle\Tests\App\TestKernel;
@@ -53,7 +55,8 @@ use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 #[UsesClass(CleverAgeUiProcessExtension::class)]
 #[UsesClass(DeprecatedEasyAdminRouteAliasLoader::class)]
 #[UsesClass(Configuration::class)]
-#[UsesClass(ProcessEventSubscriber::class)]
+#[CoversClass(ProcessEventSubscriber::class)]
+#[UsesClass(ProcessHandler::class)]
 #[UsesClass(LogRecord::class)]
 #[UsesClass(ProcessExecution::class)]
 class ProcessExecutionManagerEntityManagerTest extends KernelTestCase
@@ -187,6 +190,54 @@ class ProcessExecutionManagerEntityManagerTest extends KernelTestCase
         $this->entityManager->clear();
         $removed = $repository->getManaged($processExecution);
         self::assertSame($processExecution, $removed);
+    }
+
+    /**
+     * A process run in a loop without reset of the services (command, tests, FrankenPHP worker): the ended process
+     * executions are detached, the entity manager does not keep them.
+     */
+    public function testEndedProcessExecutionsAreDetached(): void
+    {
+        $manager = new ProcessExecutionManager(new ProcessExecutionRepository($this->entityManager));
+        $processHandler = new ProcessHandler(sys_get_temp_dir(), $manager);
+        $doctrineProcessHandler = new DoctrineProcessHandler();
+        $doctrineProcessHandler->disable();
+        $subscriber = new ProcessEventSubscriber($processHandler, $doctrineProcessHandler, $manager);
+
+        for ($i = 0; $i < 3; ++$i) {
+            $subscriber->onProcessStart(new ProcessEvent('test.process'));
+            $processExecution = $manager->getCurrentProcessExecution();
+            self::assertInstanceOf(ProcessExecution::class, $processExecution);
+            self::assertTrue($this->entityManager->contains($processExecution));
+            0 === $i % 2
+                ? $subscriber->success(new ProcessEvent('test.process'))
+                : $subscriber->fail(new ProcessEvent('test.process', null, [], null, new \RuntimeException('error')));
+            self::assertFalse($this->entityManager->contains($processExecution));
+            // Still available after the end, e.g. for its id
+            self::assertSame($processExecution, $manager->getLastProcessExecution());
+        }
+
+        self::assertSame([], $this->entityManager->getUnitOfWork()->getIdentityMap()[ProcessExecution::class] ?? []);
+        self::assertSame(
+            ['finish', 'failed', 'finish'],
+            $this->entityManager->getConnection()->fetchFirstColumn('SELECT status FROM process_execution ORDER BY id')
+        );
+    }
+
+    public function testDetach(): void
+    {
+        $repository = new ProcessExecutionRepository($this->entityManager);
+        $processExecution = new ProcessExecution('test.process', 'test.log');
+        // Not managed: nothing to do
+        $repository->detach($processExecution);
+        $repository->save($processExecution);
+
+        $repository->detach($processExecution);
+
+        self::assertFalse($this->entityManager->contains($processExecution));
+        // Already detached
+        $repository->detach($processExecution);
+        self::assertFalse($this->entityManager->contains($processExecution));
     }
 
     private function createRecord(string $message): \Monolog\LogRecord
