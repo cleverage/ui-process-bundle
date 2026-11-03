@@ -723,8 +723,8 @@ class LaunchActionTest extends FunctionalTestCase
         $deprecations = $this->collectDeprecations(fn () => $this->client->request('GET', '/process?routeName=cleverage_ui_process_launch&process=test.form'));
         self::assertResponseIsSuccessful();
         self::assertSame([
-            'Since cleverage/ui-process-bundle 3.4: The "entrypoint_type" UI option of the process "test.form" is deprecated, use "form.input.type" instead.',
-            'Since cleverage/ui-process-bundle 3.4: The "default" UI option of the process "test.form" is deprecated, use "form.input.default" and "form.context.<key>.default" instead.',
+            'Since cleverage/ui-process-bundle 3.5: The "entrypoint_type" UI option of the process "test.form" is deprecated, use "form.input.type" instead.',
+            'Since cleverage/ui-process-bundle 3.5: The "default" UI option of the process "test.form" is deprecated, use "form.input.default" and "form.context.<key>.default" instead.',
         ], $deprecations);
 
         // A process with the "form" UI option triggers no deprecation
