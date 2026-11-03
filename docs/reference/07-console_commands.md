@@ -44,7 +44,8 @@ bin/console cleverage:ui-process:purge-logs [--dry-run]
 | `--dry-run` | Counts the log records and the log files to delete, without deleting them.   |
 
 It displays, for each process with a retention, the retention and the number of log records and log files deleted.
-Without any retention configured, it does nothing.
+Without any retention configured, it does nothing. A process whose configuration is not valid is purged with the
+retention of the bundle configuration, with a warning.
 
 Related commands
 ----------------

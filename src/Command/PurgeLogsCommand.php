@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace CleverAge\UiProcessBundle\Command;
 
 use CleverAge\ProcessBundle\Configuration\ProcessConfiguration;
+use CleverAge\ProcessBundle\Exception\ProcessExceptionInterface;
 use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
 use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Connection;
@@ -31,6 +32,7 @@ use Symfony\Component\Finder\Finder;
 /**
  * Deletes the log records (log_record table) older than "logs.database_max_days" days and the log files older than
  * "logs.file_max_days" days, both overridable by the "logs" option of each process. The process executions are kept.
+ * A process whose configuration is not valid is purged with the retention of the bundle, with a warning.
  *
  * DBAL queries are used: the log records are deleted by batches, without loading them.
  *
@@ -74,7 +76,17 @@ class PurgeLogsCommand extends Command
         $totalRecords = 0;
         $totalFiles = 0;
         foreach ($this->getProcessCodes($connection) as $code) {
-            $options = $this->processConfigurationsManager->getLogsOptions($code);
+            try {
+                $options = $this->processConfigurationsManager->getLogsOptions($code);
+            } catch (ProcessExceptionInterface $exception) {
+                // Configuration not valid (e.g. unknown task reference): the other processes are purged
+                $style->warning(\sprintf(
+                    'The configuration of the process "%s" is not valid, its logs are purged with the retention of the bundle: %s',
+                    $code,
+                    $exception->getMessage()
+                ));
+                $options = null;
+            }
             $databaseMaxDays = $options['database_max_days'] ?? $this->databaseMaxDays;
             $fileMaxDays = $options['file_max_days'] ?? $this->fileMaxDays;
             if (null === $databaseMaxDays && null === $fileMaxDays) {
@@ -116,7 +128,13 @@ class PurgeLogsCommand extends Command
     {
         /** @var list<string> $codes */
         $codes = $connection->fetchFirstColumn('SELECT DISTINCT code FROM process_execution');
-        $configurations = [...$this->processConfigurationsManager->getPublicProcesses(), ...$this->processConfigurationsManager->getPrivateProcesses()];
+        try {
+            $configurations = [...$this->processConfigurationsManager->getPublicProcesses(), ...$this->processConfigurationsManager->getPrivateProcesses()];
+        } catch (ProcessExceptionInterface) {
+            // Before cleverage/process-bundle 5.6, one process whose configuration is not valid makes the listing fail:
+            // the processes having recorded executions are enough, the others have no log to purge
+            $configurations = [];
+        }
         $codes = array_unique([
             ...$codes,
             ...array_map(static fn (ProcessConfiguration $configuration): string => $configuration->getCode(), array_values($configurations)),
