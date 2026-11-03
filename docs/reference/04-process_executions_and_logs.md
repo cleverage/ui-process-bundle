@@ -161,6 +161,11 @@ Each execution writes its own log file:
 
 It can be downloaded from the executions list (streamed: its size is not limited by the PHP memory limit).
 
+The control characters of the messages (e.g. coming from the processed data) are escaped, so that a terminal displaying
+the file (`cat`, `tail -f`) does not interpret them: the C0 characters except the tabulation and the line feed (an ANSI
+escape sequence `ESC[31m` is written `\x1B[31m`), DEL (`\x7F`) and the C1 characters (`\u{9B}`). The context is
+encoded in JSON, where they are escaped too.
+
 ### Database logs
 
 When `store_in_database` is `true` (default), log records are also stored in the `log_record` table
