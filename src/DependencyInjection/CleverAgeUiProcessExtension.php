@@ -26,6 +26,7 @@ use Symfony\Component\DependencyInjection\Exception\LogicException;
 use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
+use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\Notifier\NotifierInterface;
 
 /**
@@ -43,7 +44,7 @@ final class CleverAgeUiProcessExtension extends Extension implements PrependExte
          *     logs: array{store_in_database: bool, database_level: string, file_level: string, report_increment_level: string, database_max_days: ?int, file_max_days: ?int},
          *     design: array{logo_path: string},
          *     notification: array{enabled: bool, ...},
-         *     process_execution: array{heartbeat_interval: int, stale_after: int},
+         *     process_execution: array{heartbeat_interval: int, stale_after: int, entity_manager: ?string},
          * } $config
          */
         $config = $this->processConfiguration($configuration, $configs);
@@ -74,6 +75,9 @@ final class CleverAgeUiProcessExtension extends Extension implements PrependExte
             ->replaceArgument(2, $config['process_execution']['heartbeat_interval']);
         $container->getDefinition(ProcessExecutionCrudController::class)
             ->setArgument('$staleAfter', $config['process_execution']['stale_after']);
+        if (null !== $config['process_execution']['entity_manager']) {
+            $this->configureEntityManager($container, $config['process_execution']['entity_manager']);
+        }
 
         if (interface_exists(NotifierInterface::class)) {
             $container->getDefinition('cleverage_ui_process.notifier.process_execution')
@@ -84,6 +88,28 @@ final class CleverAgeUiProcessExtension extends Extension implements PrependExte
             }
             $container->removeDefinition('cleverage_ui_process.notifier.process_execution');
         }
+    }
+
+    /**
+     * The process executions, their logs and their heartbeat are written with the given entity manager, instead of the
+     * default one, shared with the process tasks.
+     */
+    private function configureEntityManager(ContainerBuilder $container, string $name): void
+    {
+        $entityManager = new Reference(\sprintf('doctrine.orm.%s_entity_manager', $name));
+        $container->getDefinition('cleverage_ui_process.repository.process_execution')
+            ->replaceArgument(0, $entityManager)
+            ->setArgument(2, $name);
+        $handler = $container->getDefinition('cleverage_ui_process.monolog_handler.doctrine_process');
+        $calls = [];
+        /** @var list<array{0: string, 1: array<mixed>, 2?: bool}> $methodCalls */
+        $methodCalls = $handler->getMethodCalls();
+        foreach ($methodCalls as $call) {
+            $calls[] = 'setEntityManager' === $call[0] ? ['setEntityManager', [$entityManager]] : $call;
+        }
+        $handler->setMethodCalls($calls);
+        $container->getDefinition('cleverage_ui_process.stop_checker.process_execution')
+            ->replaceArgument(1, $entityManager);
     }
 
     /**

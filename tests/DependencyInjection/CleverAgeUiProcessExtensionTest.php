@@ -39,6 +39,7 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\DependencyInjection\ParameterBag\EnvPlaceholderParameterBag;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
+use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\Messenger\Event\WorkerMessageFailedEvent;
 use Symfony\Component\Messenger\Event\WorkerMessageHandledEvent;
 use Symfony\Component\Messenger\Event\WorkerMessageReceivedEvent;
@@ -175,6 +176,11 @@ class CleverAgeUiProcessExtensionTest extends TestCase
         self::assertFalse($databaseHandler->hasMethodCall('disable'));
         // The log records counted in the report are written right away
         self::assertContains(['setReportIncrementLevel', ['Warning']], $databaseHandler->getMethodCalls());
+        // The default entity manager, shared with the process tasks
+        self::assertEquals(
+            [new Reference('doctrine.orm.entity_manager'), new Reference('doctrine')],
+            $container->getDefinition('cleverage_ui_process.repository.process_execution')->getArguments()
+        );
         // Failures to store the logs reported on the channel of the process logs (logger set by the MonologBundle)
         self::assertTrue($databaseHandler->hasMethodCall('setLogger'));
         self::assertSame([['channel' => 'cleverage_process']], $databaseHandler->getTag('monolog.logger'));
@@ -345,7 +351,7 @@ class CleverAgeUiProcessExtensionTest extends TestCase
                     'file_max_days' => 180,
                 ],
                 'design' => ['logo_path' => 'images/my-logo.png'],
-                'process_execution' => ['heartbeat_interval' => 10, 'stale_after' => 3600],
+                'process_execution' => ['heartbeat_interval' => 10, 'stale_after' => 3600, 'entity_manager' => 'process_ui'],
             ],
         ], $container);
 
@@ -376,6 +382,16 @@ class CleverAgeUiProcessExtensionTest extends TestCase
 
         self::assertSame(10, $container->getDefinition('cleverage_ui_process.stop_checker.process_execution')->getArgument(2));
         self::assertSame(3600, $container->getDefinition(ProcessExecutionCrudController::class)->getArgument('$staleAfter'));
+
+        // The process executions, their logs and their heartbeat are written with the "process_ui" entity manager
+        $repository = $container->getDefinition('cleverage_ui_process.repository.process_execution');
+        self::assertEquals(new Reference('doctrine.orm.process_ui_entity_manager'), $repository->getArgument(0));
+        self::assertSame('process_ui', $repository->getArgument(2));
+        self::assertEquals(['setEntityManager', [new Reference('doctrine.orm.process_ui_entity_manager')]], $calls[0]);
+        self::assertEquals(
+            new Reference('doctrine.orm.process_ui_entity_manager'),
+            $container->getDefinition('cleverage_ui_process.stop_checker.process_execution')->getArgument(1)
+        );
     }
 
     public function testPrepend(): void

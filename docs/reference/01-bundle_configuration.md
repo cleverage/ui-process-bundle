@@ -31,6 +31,7 @@ clever_age_ui_process:
     process_execution:
         heartbeat_interval: 5
         stale_after: 900
+        entity_manager: ~
 ```
 
 Options
@@ -90,6 +91,7 @@ See [stopping a process execution](04-process_executions_and_logs.md#stopping-a-
 |----------------------|-------|---------|------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `heartbeat_interval` | `int` | `5`     | Seconds between two updates of the heartbeat of a running process execution, which also read its stop request (minimum `1`).                     |
 | `stale_after`        | `int` | `900`   | Seconds without heartbeat after which a started process execution is displayed as not responding, and can be marked as failed (minimum `1`). Keep it above the longest task call of your processes. |
+| `entity_manager`     | `?string` | `null` | Name of the Doctrine entity manager writing the process executions, their logs and their heartbeat (`null`: the default one, shared with the process tasks). See [entity manager of the process executions](04-process_executions_and_logs.md#entity-manager-of-the-process-executions). |
 
 Container parameters
 --------------------

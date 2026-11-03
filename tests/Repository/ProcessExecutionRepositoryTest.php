@@ -29,6 +29,7 @@ use CleverAge\UiProcessBundle\Tests\App\TestKernel;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\SchemaTool;
+use Doctrine\Persistence\ManagerRegistry;
 use Monolog\Level;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\UsesClass;
@@ -145,5 +146,22 @@ class ProcessExecutionRepositoryTest extends KernelTestCase
         );
 
         return $id;
+    }
+
+    /**
+     * A closed entity manager is reset by its name in the registry (process_execution.entity_manager).
+     */
+    public function testClosedEntityManagerIsResetByItsName(): void
+    {
+        $entityManager = $this->createStub(EntityManagerInterface::class);
+        $entityManager->method('getClassMetadata')->willReturn($this->entityManager->getClassMetadata(ProcessExecution::class));
+        $entityManager->method('isOpen')->willReturn(false);
+        $registry = $this->createMock(ManagerRegistry::class);
+        $registry->expects(self::once())->method('resetManager')->with('process_ui');
+        $processExecution = new ProcessExecution('test.process', 'test.log');
+
+        $repository = new ProcessExecutionRepository($entityManager, $registry, 'process_ui');
+
+        self::assertSame($processExecution, $repository->getManaged($processExecution));
     }
 }

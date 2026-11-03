@@ -32,8 +32,15 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class ProcessExecutionRepository extends EntityRepository
 {
-    public function __construct(EntityManagerInterface $em, private readonly ?ManagerRegistry $registry = null)
-    {
+    /**
+     * @param string|null $managerName name of the entity manager $em in the registry, reset when it is closed (the default
+     *                                 one if null)
+     */
+    public function __construct(
+        EntityManagerInterface $em,
+        private readonly ?ManagerRegistry $registry = null,
+        private readonly ?string $managerName = null,
+    ) {
         parent::__construct($em, $em->getClassMetadata(ProcessExecution::class));
     }
 
@@ -65,7 +72,7 @@ class ProcessExecutionRepository extends EntityRepository
     {
         if (!$this->getEntityManager()->isOpen()) {
             // Reset in place (lazy service): the services holding the entity manager get an open one
-            $this->registry?->resetManager();
+            $this->registry?->resetManager($this->managerName);
         }
         $id = $processExecution->getId();
         if (null === $id || $this->getEntityManager()->contains($processExecution)) {
