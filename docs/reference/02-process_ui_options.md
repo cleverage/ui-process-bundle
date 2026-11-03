@@ -106,7 +106,9 @@ The launch form (`/process/launch?process=<process_code>`) contains:
 The input can be of any type, but only a single uploaded file is saved: when the input is a `FileType` field, the
 uploaded file is saved to the `cleverage_ui_process.upload_directory` directory (see
 [bundle configuration](01-bundle_configuration.md#container-parameters)) with a random name keeping the original
-extension, and its absolute path is passed as process input. The file is not removed after the execution.
+extension (its letters and digits only, at most 16), and its absolute path is passed as process input. The file is deleted once the process has been executed,
+unless `cleverage_ui_process.delete_uploaded_files` is `false`. When `entrypoint_type` is `text`, a file path given as
+input is never deleted.
 
 Form fields
 -----------

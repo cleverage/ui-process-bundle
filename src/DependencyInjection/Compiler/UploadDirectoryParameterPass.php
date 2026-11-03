@@ -18,8 +18,9 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 /**
  * The "upload_directory" parameter is deprecated since 3.3 for "cleverage_ui_process.upload_directory": when the
- * application still overrides it, its value is used (unless the new parameter is also set), with a deprecation.
- * Reading it is deprecated too.
+ * application still overrides it, its value is used, with a deprecation. Reading it is deprecated too. When the
+ * application also sets "cleverage_ui_process.upload_directory", its "upload_directory" parameter is its own (e.g. for
+ * another bundle): it is left alone, without deprecation.
  *
  * @internal
  */
@@ -40,9 +41,13 @@ final readonly class UploadDirectoryParameterPass implements CompilerPassInterfa
         }
 
         $value = $parameters[self::DEPRECATED_PARAMETER];
+        if (self::DEPRECATED_DEFAULT_VALUE !== $value && self::DEFAULT_VALUE !== ($parameters[self::PARAMETER] ?? null)) {
+            // Both parameters are set: "upload_directory" is a parameter of the application, unrelated to the bundle
+            return;
+        }
         if (self::DEPRECATED_DEFAULT_VALUE !== $value) {
             trigger_deprecation('cleverage/ui-process-bundle', '3.3', 'Setting the "%s" parameter is deprecated, set "%s" instead. It will be ignored in 4.0.', self::DEPRECATED_PARAMETER, self::PARAMETER);
-            if (\is_string($value) && self::DEFAULT_VALUE === ($parameters[self::PARAMETER] ?? null)) {
+            if (\is_string($value)) {
                 $container->setParameter(self::PARAMETER, $value);
             }
         }

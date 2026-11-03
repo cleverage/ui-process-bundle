@@ -84,6 +84,16 @@ class ProcessExecutionManager implements ResetInterface
         return $this;
     }
 
+    /**
+     * Detach the last process execution, which has ended, from the entity manager.
+     */
+    public function detachLastProcessExecution(): void
+    {
+        if ($this->lastProcessExecution instanceof ProcessExecution) {
+            $this->processExecutionRepository->detach($this->lastProcessExecution);
+        }
+    }
+
     public function save(): self
     {
         if (($processExecution = $this->getManagedProcessExecution()) instanceof ProcessExecution) {

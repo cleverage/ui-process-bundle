@@ -23,7 +23,9 @@ use CleverAge\UiProcessBundle\Controller\Admin\ProcessScheduleCrudController;
 use CleverAge\UiProcessBundle\Controller\Admin\UserCrudController;
 use CleverAge\UiProcessBundle\DependencyInjection\CleverAgeUiProcessExtension;
 use CleverAge\UiProcessBundle\DependencyInjection\Compiler\CheckDoctrineLazyGhostObjectsPass;
+use CleverAge\UiProcessBundle\DependencyInjection\Compiler\LoginThrottlingPass;
 use CleverAge\UiProcessBundle\DependencyInjection\Compiler\UploadDirectoryParameterPass;
+use CleverAge\UiProcessBundle\DependencyInjection\Compiler\UploadedFileSubscriberPass;
 use CleverAge\UiProcessBundle\DependencyInjection\Configuration;
 use CleverAge\UiProcessBundle\Entity\User;
 use CleverAge\UiProcessBundle\EventSubscriber\ProcessEventSubscriber;
@@ -31,6 +33,7 @@ use CleverAge\UiProcessBundle\Form\LaunchFormOptionsResolver;
 use CleverAge\UiProcessBundle\Form\Type\LaunchType;
 use CleverAge\UiProcessBundle\Form\Type\ProcessContextType;
 use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
+use CleverAge\UiProcessBundle\Manager\ProcessExecutionManager;
 use CleverAge\UiProcessBundle\Monolog\Handler\DoctrineProcessHandler;
 use CleverAge\UiProcessBundle\Monolog\Handler\ProcessHandler;
 use CleverAge\UiProcessBundle\Repository\ProcessExecutionRepository;
@@ -66,6 +69,8 @@ use PHPUnit\Framework\Attributes\UsesClass;
 #[UsesClass(LaunchType::class)]
 #[UsesClass(LaunchFormsCacheWarmer::class)]
 #[UsesClass(UploadDirectoryParameterPass::class)]
+#[UsesClass(LoginThrottlingPass::class)]
+#[UsesClass(UploadedFileSubscriberPass::class)]
 #[UsesClass(LogRecordCrudController::class)]
 #[UsesClass(ProcessExecutionCrudController::class)]
 #[UsesClass(ProcessScheduleCrudController::class)]
@@ -74,6 +79,7 @@ use PHPUnit\Framework\Attributes\UsesClass;
 #[UsesClass(DeprecatedEasyAdminRouteAliasLoader::class)]
 #[UsesClass(Configuration::class)]
 #[UsesClass(ProcessEventSubscriber::class)]
+#[UsesClass(ProcessExecutionManager::class)]
 class ProcessListTest extends FunctionalTestCase
 {
     public function testDashboardRedirectsToTheExecutions(): void

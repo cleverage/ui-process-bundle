@@ -48,6 +48,7 @@ Tested on `main` (`<commit>`), cleverage/process-bundle x.y, PHP x.y, Symfony x.
 
 * Documentation updates
   - [ ] Reference
+  - [ ] Cookbooks
   - [ ] Changelog
 * [ ] Unit tests
 

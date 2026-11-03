@@ -23,10 +23,13 @@ use Monolog\Level;
 enum NotificationTrigger: string
 {
     case Failed = 'failed';
-    /** Finished with log levels counted in its report (see the "logs.report_increment_level" configuration) */
+    /**
+     * Finished with log levels counted in its report (see the "logs.report_increment_level" configuration), or stopped
+     * on purpose by a StopTask with such log levels.
+     */
     case FinishWithReport = 'finish_with_report';
     case Finish = 'finish';
-    /** Stopped on a stop request from the UI */
+    /** Stopped on a stop request from the UI, or on purpose by a StopTask without log levels counted in its report */
     case Stopped = 'stopped';
 
     public static function fromProcessExecution(ProcessExecution $processExecution): ?self
@@ -34,7 +37,8 @@ enum NotificationTrigger: string
         return match ($processExecution->status) {
             ProcessExecutionStatus::Failed => self::Failed,
             ProcessExecutionStatus::Finish => [] === self::getReportedLevels($processExecution) ? self::Finish : self::FinishWithReport,
-            ProcessExecutionStatus::Stopped => self::Stopped,
+            // A stop request ends with a process failure, counted in the report: only the StopTask reports matter
+            ProcessExecutionStatus::Stopped => $processExecution->isStopRequested() || [] === self::getReportedLevels($processExecution) ? self::Stopped : self::FinishWithReport,
             ProcessExecutionStatus::Started => null,
         };
     }

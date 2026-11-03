@@ -23,7 +23,9 @@ use CleverAge\UiProcessBundle\Controller\Admin\ProcessScheduleCrudController;
 use CleverAge\UiProcessBundle\Controller\Admin\UserCrudController;
 use CleverAge\UiProcessBundle\DependencyInjection\CleverAgeUiProcessExtension;
 use CleverAge\UiProcessBundle\DependencyInjection\Compiler\CheckDoctrineLazyGhostObjectsPass;
+use CleverAge\UiProcessBundle\DependencyInjection\Compiler\LoginThrottlingPass;
 use CleverAge\UiProcessBundle\DependencyInjection\Compiler\UploadDirectoryParameterPass;
+use CleverAge\UiProcessBundle\DependencyInjection\Compiler\UploadedFileSubscriberPass;
 use CleverAge\UiProcessBundle\DependencyInjection\Configuration;
 use CleverAge\UiProcessBundle\Entity\Enum\ProcessScheduleType;
 use CleverAge\UiProcessBundle\Entity\ProcessSchedule;
@@ -33,6 +35,7 @@ use CleverAge\UiProcessBundle\Form\LaunchFormOptionsResolver;
 use CleverAge\UiProcessBundle\Form\Type\LaunchType;
 use CleverAge\UiProcessBundle\Form\Type\ProcessContextType;
 use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
+use CleverAge\UiProcessBundle\Manager\ProcessExecutionManager;
 use CleverAge\UiProcessBundle\Monolog\Handler\DoctrineProcessHandler;
 use CleverAge\UiProcessBundle\Monolog\Handler\ProcessHandler;
 use CleverAge\UiProcessBundle\Repository\ProcessExecutionRepository;
@@ -72,6 +75,8 @@ use PHPUnit\Framework\Attributes\UsesClass;
 #[UsesClass(LaunchType::class)]
 #[UsesClass(LaunchFormsCacheWarmer::class)]
 #[UsesClass(UploadDirectoryParameterPass::class)]
+#[UsesClass(LoginThrottlingPass::class)]
+#[UsesClass(UploadedFileSubscriberPass::class)]
 #[UsesClass(LogRecordCrudController::class)]
 #[UsesClass(ProcessExecutionCrudController::class)]
 #[UsesClass(UserCrudController::class)]
@@ -82,6 +87,7 @@ use PHPUnit\Framework\Attributes\UsesClass;
 #[UsesClass(ProcessExecutionRepository::class)]
 #[UsesClass(DoctrineProcessHandler::class)]
 #[UsesClass(ProcessHandler::class)]
+#[UsesClass(ProcessExecutionManager::class)]
 class ProcessScheduleCrudTest extends FunctionalTestCase
 {
     public function testIndexWarnsWhenNoWorkerIsRunning(): void

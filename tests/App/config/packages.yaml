@@ -39,7 +39,11 @@ security:
     password_hashers:
         Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface:
             algorithm: plaintext
+    # As in the Symfony recipe: another firewall than "main" must still be declarable (#222)
     firewalls:
+        dev:
+            pattern: ^/(_profiler|_wdt)/
+            security: false
         main:
             lazy: true
 

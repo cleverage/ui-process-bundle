@@ -15,6 +15,7 @@ namespace CleverAge\UiProcessBundle\Tests\Http\ValueResolver;
 
 use CleverAge\UiProcessBundle\Http\Model\HttpProcessExecution;
 use CleverAge\UiProcessBundle\Http\ValueResolver\HttpProcessExecuteValueResolver;
+use CleverAge\UiProcessBundle\Manager\UploadedFileManager;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
@@ -28,6 +29,7 @@ use Symfony\Component\Serializer\Serializer;
 
 #[CoversClass(HttpProcessExecuteValueResolver::class)]
 #[UsesClass(HttpProcessExecution::class)]
+#[UsesClass(UploadedFileManager::class)]
 class HttpProcessExecuteValueResolverTest extends TestCase
 {
     private string $storageDir;

@@ -21,7 +21,7 @@ enum ProcessExecutionStatus: string implements TranslatableInterface
     case Started = 'started';
     case Finish = 'finish';
     case Failed = 'failed';
-    /** Stopped on a stop request (see ProcessExecution::requestStop()) */
+    /** Stopped on a stop request (see ProcessExecution::requestStop()), or on purpose by a StopTask */
     case Stopped = 'stopped';
 
     public function trans(TranslatorInterface $translator, ?string $locale = null): string

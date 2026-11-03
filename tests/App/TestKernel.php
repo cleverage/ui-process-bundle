@@ -50,6 +50,14 @@ class TestKernel extends Kernel
 
     private static ?string $runDir = null;
 
+    /**
+     * @param array<string, array<mixed>> $config Additional configuration, by extension alias
+     */
+    public function __construct(string $environment, bool $debug, private readonly array $config = [])
+    {
+        parent::__construct($environment, $debug);
+    }
+
     public function registerBundles(): iterable
     {
         yield new FrameworkBundle();
@@ -72,7 +80,10 @@ class TestKernel extends Kernel
 
     public function getCacheDir(): string
     {
-        return self::getRunDir().'/cache/'.$this->environment;
+        $cacheDir = self::getRunDir().'/cache/'.$this->environment;
+
+        // A container of its own for an additional configuration
+        return [] === $this->config ? $cacheDir : $cacheDir.'_'.md5(serialize($this->config));
     }
 
     public function getLogDir(): string
@@ -90,6 +101,9 @@ class TestKernel extends Kernel
         } else {
             // Symfony 6.4 calls User::eraseCredentials(), marked #[\Deprecated] for Symfony 7.3 (deprecation since PHP 8.4)
             $container->extension('security', ['erase_credentials' => false]);
+        }
+        foreach ($this->config as $alias => $config) {
+            $container->extension($alias, $config);
         }
         // Doctrine ORM 2 (lowest dependencies): lazy ghost proxies, as configured by the Symfony recipe, the legacy
         // proxies cannot unset the readonly properties of the entities (ProcessExecution::$code...), see
@@ -132,6 +146,9 @@ class TestKernel extends Kernel
 
     public static function getRunDir(): string
     {
-        return self::$runDir ??= sys_get_temp_dir().'/ui_process_bundle_tests_'.getmypid();
+        // Given to a PHP process started by a test, to use the same container and database
+        $runDir = getenv('UI_PROCESS_BUNDLE_TESTS_RUN_DIR');
+
+        return self::$runDir ??= \is_string($runDir) && '' !== $runDir ? $runDir : sys_get_temp_dir().'/ui_process_bundle_tests_'.getmypid();
     }
 }

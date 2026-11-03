@@ -21,14 +21,13 @@ use CleverAge\UiProcessBundle\Event\ProcessExecutionEndedEvent;
 use CleverAge\UiProcessBundle\Manager\ProcessExecutionManager;
 use CleverAge\UiProcessBundle\Monolog\Handler\DoctrineProcessHandler;
 use CleverAge\UiProcessBundle\Monolog\Handler\ProcessHandler;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Uid\Uuid;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**
  * @internal
  */
-final readonly class ProcessEventSubscriber implements EventSubscriberInterface
+final readonly class ProcessEventSubscriber
 {
     public function __construct(
         private ProcessHandler $processHandler,
@@ -56,7 +55,10 @@ final readonly class ProcessEventSubscriber implements EventSubscriberInterface
     public function success(ProcessEvent $event): void
     {
         if ($event->getProcessCode() === $this->processExecutionManager->getCurrentProcessExecution()?->getCode()) {
-            $this->processExecutionManager->getCurrentProcessExecution()->setStatus(ProcessExecutionStatus::Finish);
+            $this->processExecutionManager->getCurrentProcessExecution()->setStatus(
+                // Stopped on purpose by a StopTask: ended normally, flagged as stopped
+                $event->isProcessStopped() ? ProcessExecutionStatus::Stopped : ProcessExecutionStatus::Finish
+            );
             $this->processExecutionManager->getCurrentProcessExecution()->end();
             $this->endProcessExecution($event);
         }
@@ -85,7 +87,13 @@ final readonly class ProcessEventSubscriber implements EventSubscriberInterface
             $this->processExecutionManager->unsetProcessExecution($event->getProcessCode());
             $this->processHandler->close();
         }
-        $this->dispatchEnded($event);
+        try {
+            $this->dispatchEnded($event);
+        } finally {
+            // No longer changed: the entity manager of a process running in a loop (without reset of the services)
+            // would keep every ended process execution
+            $this->processExecutionManager->detachLastProcessExecution();
+        }
     }
 
     /**
@@ -111,23 +119,8 @@ final readonly class ProcessEventSubscriber implements EventSubscriberInterface
         }
     }
 
-    public function flushDoctrineLogs(ProcessEvent $event): void
+    public function flushDoctrineLogs(): void
     {
         $this->doctrineProcessHandler->flush();
-    }
-
-    public static function getSubscribedEvents(): array
-    {
-        return [
-            ProcessEvent::EVENT_PROCESS_STARTED => 'onProcessStart',
-            ProcessEvent::EVENT_PROCESS_ENDED => [
-                ['flushDoctrineLogs', 100],
-                ['success', 100],
-            ],
-            ProcessEvent::EVENT_PROCESS_FAILED => [
-                ['flushDoctrineLogs', 100],
-                ['fail', 100],
-            ],
-        ];
     }
 }

@@ -17,7 +17,9 @@ use CleverAge\UiProcessBundle\CacheWarmer\LaunchFormsCacheWarmer;
 use CleverAge\UiProcessBundle\CleverAgeUiProcessBundle;
 use CleverAge\UiProcessBundle\DependencyInjection\CleverAgeUiProcessExtension;
 use CleverAge\UiProcessBundle\DependencyInjection\Compiler\CheckDoctrineLazyGhostObjectsPass;
+use CleverAge\UiProcessBundle\DependencyInjection\Compiler\LoginThrottlingPass;
 use CleverAge\UiProcessBundle\DependencyInjection\Compiler\UploadDirectoryParameterPass;
+use CleverAge\UiProcessBundle\DependencyInjection\Compiler\UploadedFileSubscriberPass;
 use CleverAge\UiProcessBundle\DependencyInjection\Configuration;
 use CleverAge\UiProcessBundle\Entity\LogRecord;
 use CleverAge\UiProcessBundle\Entity\ProcessExecution;
@@ -32,6 +34,7 @@ use CleverAge\UiProcessBundle\Tests\App\TestKernel;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\SchemaTool;
+use Doctrine\Persistence\ManagerRegistry;
 use Monolog\Level;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\UsesClass;
@@ -46,6 +49,8 @@ use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 #[UsesClass(LaunchType::class)]
 #[UsesClass(LaunchFormsCacheWarmer::class)]
 #[UsesClass(UploadDirectoryParameterPass::class)]
+#[UsesClass(LoginThrottlingPass::class)]
+#[UsesClass(UploadedFileSubscriberPass::class)]
 #[UsesClass(CleverAgeUiProcessExtension::class)]
 #[UsesClass(DeprecatedEasyAdminRouteAliasLoader::class)]
 #[UsesClass(Configuration::class)]
@@ -151,5 +156,22 @@ class ProcessExecutionRepositoryTest extends KernelTestCase
         );
 
         return $id;
+    }
+
+    /**
+     * A closed entity manager is reset by its name in the registry (process_execution.entity_manager).
+     */
+    public function testClosedEntityManagerIsResetByItsName(): void
+    {
+        $entityManager = $this->createStub(EntityManagerInterface::class);
+        $entityManager->method('getClassMetadata')->willReturn($this->entityManager->getClassMetadata(ProcessExecution::class));
+        $entityManager->method('isOpen')->willReturn(false);
+        $registry = $this->createMock(ManagerRegistry::class);
+        $registry->expects(self::once())->method('resetManager')->with('process_ui');
+        $processExecution = new ProcessExecution('test.process', 'test.log');
+
+        $repository = new ProcessExecutionRepository($entityManager, $registry, 'process_ui');
+
+        self::assertSame($processExecution, $repository->getManaged($processExecution));
     }
 }

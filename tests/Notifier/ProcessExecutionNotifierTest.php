@@ -61,14 +61,6 @@ class ProcessExecutionNotifierTest extends TestCase
         $this->logs = new \ArrayObject();
     }
 
-    public function testSubscribedEvents(): void
-    {
-        self::assertSame(
-            [ProcessExecutionEndedEvent::class => 'onProcessExecutionEnded'],
-            ProcessExecutionNotifier::getSubscribedEvents()
-        );
-    }
-
     /**
      * @return iterable<string, array{ProcessExecutionStatus, array<string, int>, bool}>
      */

@@ -6,6 +6,7 @@
 
 * Documentation updates
   - [ ] Reference
+  - [ ] Cookbooks
   - [ ] Changelog
 * [ ] Unit tests 
 

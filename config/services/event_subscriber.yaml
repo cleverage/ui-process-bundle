@@ -3,9 +3,25 @@ services:
         class: CleverAge\UiProcessBundle\EventSubscriber\ProcessEventSubscriber
         public: false
         tags:
-            - { name: 'kernel.event_subscriber' }
+            - { name: 'kernel.event_listener', event: 'cleverage_process.start', method: 'onProcessStart' }
+            # The logs are saved before the end of the process execution (success / fail)
+            - { name: 'kernel.event_listener', event: 'cleverage_process.end', method: 'flushDoctrineLogs', priority: 101 }
+            - { name: 'kernel.event_listener', event: 'cleverage_process.end', method: 'success', priority: 100 }
+            - { name: 'kernel.event_listener', event: 'cleverage_process.fail', method: 'flushDoctrineLogs', priority: 101 }
+            - { name: 'kernel.event_listener', event: 'cleverage_process.fail', method: 'fail', priority: 100 }
         arguments:
             - '@cleverage_ui_process.monolog_handler.process'
             - '@cleverage_ui_process.monolog_handler.doctrine_process'
             - '@cleverage_ui_process.manager.process_execution'
             - '@event_dispatcher'
+
+    cleverage_ui_process.event_subscriber.uploaded_file:
+        class: CleverAge\UiProcessBundle\EventSubscriber\UploadedFileSubscriber
+        public: false
+        tags:
+            - { name: 'kernel.event_listener', event: 'Symfony\Component\Messenger\Event\WorkerMessageReceivedEvent', method: 'onMessageReceived' }
+            - { name: 'kernel.event_listener', event: 'Symfony\Component\Messenger\Event\WorkerMessageHandledEvent', method: 'onMessageHandled' }
+            - { name: 'kernel.event_listener', event: 'Symfony\Component\Messenger\Event\WorkerMessageFailedEvent', method: 'onMessageFailed' }
+        arguments:
+            - '@cleverage_ui_process.manager.uploaded_file'
+            # Failure transports: set by the UploadedFileSubscriberPass

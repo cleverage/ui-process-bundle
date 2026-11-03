@@ -16,7 +16,9 @@ namespace CleverAge\UiProcessBundle\Tests;
 use CleverAge\UiProcessBundle\CleverAgeUiProcessBundle;
 use CleverAge\UiProcessBundle\DependencyInjection\CleverAgeUiProcessExtension;
 use CleverAge\UiProcessBundle\DependencyInjection\Compiler\CheckDoctrineLazyGhostObjectsPass;
+use CleverAge\UiProcessBundle\DependencyInjection\Compiler\LoginThrottlingPass;
 use CleverAge\UiProcessBundle\DependencyInjection\Compiler\UploadDirectoryParameterPass;
+use CleverAge\UiProcessBundle\DependencyInjection\Compiler\UploadedFileSubscriberPass;
 use CleverAge\UiProcessBundle\Routing\DeprecatedEasyAdminRouteAliasLoader;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\UsesClass;
@@ -28,6 +30,8 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 #[UsesClass(DeprecatedEasyAdminRouteAliasLoader::class)]
 #[UsesClass(CheckDoctrineLazyGhostObjectsPass::class)]
 #[UsesClass(UploadDirectoryParameterPass::class)]
+#[UsesClass(LoginThrottlingPass::class)]
+#[UsesClass(UploadedFileSubscriberPass::class)]
 class CleverAgeUiProcessBundleTest extends TestCase
 {
     public function testPathIsTheBundleRootDirectory(): void
@@ -67,6 +71,30 @@ class CleverAgeUiProcessBundleTest extends TestCase
         $passes = array_filter(
             $container->getCompilerPassConfig()->getPasses(),
             static fn (object $pass): bool => $pass instanceof UploadDirectoryParameterPass,
+        );
+        self::assertCount(1, $passes);
+    }
+
+    public function testLoginThrottlingPassIsRegistered(): void
+    {
+        $container = new ContainerBuilder();
+        (new CleverAgeUiProcessBundle())->build($container);
+
+        $passes = array_filter(
+            $container->getCompilerPassConfig()->getPasses(),
+            static fn (object $pass): bool => $pass instanceof LoginThrottlingPass,
+        );
+        self::assertCount(1, $passes);
+    }
+
+    public function testUploadedFileSubscriberPassIsRegistered(): void
+    {
+        $container = new ContainerBuilder();
+        (new CleverAgeUiProcessBundle())->build($container);
+
+        $passes = array_filter(
+            $container->getCompilerPassConfig()->getPasses(),
+            static fn (object $pass): bool => $pass instanceof UploadedFileSubscriberPass,
         );
         self::assertCount(1, $passes);
     }

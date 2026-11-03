@@ -13,12 +13,14 @@ declare(strict_types=1);
 
 namespace CleverAge\UiProcessBundle\Tests\DependencyInjection;
 
+use CleverAge\ProcessBundle\Event\ProcessEvent;
 use CleverAge\UiProcessBundle\Controller\Admin\ProcessDashboardController;
 use CleverAge\UiProcessBundle\Controller\Admin\ProcessExecutionCrudController;
 use CleverAge\UiProcessBundle\Controller\Admin\UserCrudController;
 use CleverAge\UiProcessBundle\DependencyInjection\CleverAgeUiProcessExtension;
 use CleverAge\UiProcessBundle\DependencyInjection\Configuration;
 use CleverAge\UiProcessBundle\Entity\User;
+use CleverAge\UiProcessBundle\Event\ProcessExecutionEndedEvent;
 use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
 use CleverAge\UiProcessBundle\Manager\ProcessExecutionManager;
 use CleverAge\UiProcessBundle\Message\ProcessExecuteMessage;
@@ -37,6 +39,10 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\DependencyInjection\ParameterBag\EnvPlaceholderParameterBag;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
+use Symfony\Component\DependencyInjection\Reference;
+use Symfony\Component\Messenger\Event\WorkerMessageFailedEvent;
+use Symfony\Component\Messenger\Event\WorkerMessageHandledEvent;
+use Symfony\Component\Messenger\Event\WorkerMessageReceivedEvent;
 use Symfony\Component\Yaml\Yaml;
 
 #[CoversClass(CleverAgeUiProcessExtension::class)]
@@ -97,6 +103,29 @@ class CleverAgeUiProcessExtensionTest extends TestCase
         self::assertTrue($resolver->hasTag('controller.argument_value_resolver'));
     }
 
+    public function testEventListeners(): void
+    {
+        $container = $this->createContainer('prod');
+        (new CleverAgeUiProcessExtension())->load([], $container);
+
+        self::assertSame([
+            ['event' => ProcessEvent::EVENT_PROCESS_STARTED, 'method' => 'onProcessStart'],
+            // The logs are saved before the end of the process execution
+            ['event' => ProcessEvent::EVENT_PROCESS_ENDED, 'method' => 'flushDoctrineLogs', 'priority' => 101],
+            ['event' => ProcessEvent::EVENT_PROCESS_ENDED, 'method' => 'success', 'priority' => 100],
+            ['event' => ProcessEvent::EVENT_PROCESS_FAILED, 'method' => 'flushDoctrineLogs', 'priority' => 101],
+            ['event' => ProcessEvent::EVENT_PROCESS_FAILED, 'method' => 'fail', 'priority' => 100],
+        ], $container->getDefinition('cleverage_ui_process.event_subscriber.process')->getTag('kernel.event_listener'));
+        self::assertSame([
+            ['event' => WorkerMessageReceivedEvent::class, 'method' => 'onMessageReceived'],
+            ['event' => WorkerMessageHandledEvent::class, 'method' => 'onMessageHandled'],
+            ['event' => WorkerMessageFailedEvent::class, 'method' => 'onMessageFailed'],
+        ], $container->getDefinition('cleverage_ui_process.event_subscriber.uploaded_file')->getTag('kernel.event_listener'));
+        self::assertSame([
+            ['event' => ProcessExecutionEndedEvent::class, 'method' => 'onProcessExecutionEnded'],
+        ], $container->getDefinition('cleverage_ui_process.notifier.process_execution')->getTag('kernel.event_listener'));
+    }
+
     public function testEveryControllerIsRegistered(): void
     {
         $container = $this->createContainer('prod');
@@ -145,6 +174,16 @@ class CleverAgeUiProcessExtensionTest extends TestCase
         $databaseHandler = $container->getDefinition('cleverage_ui_process.monolog_handler.doctrine_process');
         self::assertSame('Info', $databaseHandler->getArgument('$level'));
         self::assertFalse($databaseHandler->hasMethodCall('disable'));
+        // The log records counted in the report are written right away
+        self::assertContains(['setReportIncrementLevel', ['Warning']], $databaseHandler->getMethodCalls());
+        // The default entity manager, shared with the process tasks
+        self::assertEquals(
+            [new Reference('doctrine.orm.entity_manager'), new Reference('doctrine')],
+            $container->getDefinition('cleverage_ui_process.repository.process_execution')->getArguments()
+        );
+        // Failures to store the logs reported on the channel of the process logs (logger set by the MonologBundle)
+        self::assertTrue($databaseHandler->hasMethodCall('setLogger'));
+        self::assertSame([['channel' => 'cleverage_process']], $databaseHandler->getTag('monolog.logger'));
 
         $purgeLogsCommand = $container->getDefinition('cleverage_ui_process.command.purge_logs');
         self::assertNull($purgeLogsCommand->getArgument('$databaseMaxDays'));
@@ -312,7 +351,7 @@ class CleverAgeUiProcessExtensionTest extends TestCase
                     'file_max_days' => 180,
                 ],
                 'design' => ['logo_path' => 'images/my-logo.png'],
-                'process_execution' => ['heartbeat_interval' => 10, 'stale_after' => 3600],
+                'process_execution' => ['heartbeat_interval' => 10, 'stale_after' => 3600, 'entity_manager' => 'process_ui'],
             ],
         ], $container);
 
@@ -329,6 +368,7 @@ class CleverAgeUiProcessExtensionTest extends TestCase
         self::assertSame('Error', $databaseHandler->getArgument('$level'));
         self::assertTrue($databaseHandler->hasMethodCall('disable'));
         $calls = $databaseHandler->getMethodCalls();
+        self::assertContains(['setReportIncrementLevel', ['Critical']], $calls);
         self::assertSame(['disable', []], array_last($calls));
 
         $purgeLogsCommand = $container->getDefinition('cleverage_ui_process.command.purge_logs');
@@ -342,6 +382,16 @@ class CleverAgeUiProcessExtensionTest extends TestCase
 
         self::assertSame(10, $container->getDefinition('cleverage_ui_process.stop_checker.process_execution')->getArgument(2));
         self::assertSame(3600, $container->getDefinition(ProcessExecutionCrudController::class)->getArgument('$staleAfter'));
+
+        // The process executions, their logs and their heartbeat are written with the "process_ui" entity manager
+        $repository = $container->getDefinition('cleverage_ui_process.repository.process_execution');
+        self::assertEquals(new Reference('doctrine.orm.process_ui_entity_manager'), $repository->getArgument(0));
+        self::assertSame('process_ui', $repository->getArgument(2));
+        self::assertEquals(['setEntityManager', [new Reference('doctrine.orm.process_ui_entity_manager')]], $calls[0]);
+        self::assertEquals(
+            new Reference('doctrine.orm.process_ui_entity_manager'),
+            $container->getDefinition('cleverage_ui_process.stop_checker.process_execution')->getArgument(1)
+        );
     }
 
     public function testPrepend(): void
@@ -403,6 +453,7 @@ class CleverAgeUiProcessExtensionTest extends TestCase
         );
 
         $security = $container->getExtensionConfig('security');
+        // Only appended: a prepended firewall would prevent the application from declaring its other firewalls
         self::assertCount(1, $security);
         self::assertSame(
             ['process_user_provider' => ['entity' => ['class' => User::class, 'property' => 'email']]],
@@ -414,6 +465,7 @@ class CleverAgeUiProcessExtensionTest extends TestCase
                     'provider' => 'process_user_provider',
                     'custom_authenticator' => ['cleverage_ui_process.security.http_process_execution_authenticator'],
                     'form_login' => ['login_path' => 'cleverage_ui_process_login', 'check_path' => 'cleverage_ui_process_login'],
+                    'login_throttling' => [],
                     'logout' => ['path' => 'cleverage_ui_process_logout', 'target' => 'cleverage_ui_process_login', 'clear_site_data' => '*'],
                 ],
             ],
@@ -441,6 +493,55 @@ class CleverAgeUiProcessExtensionTest extends TestCase
         );
         self::assertCount(1, $container->getExtensionConfig('monolog'));
         self::assertCount(1, $container->getExtensionConfig('doctrine_migrations'));
+    }
+
+    /**
+     * @return iterable<string, array{list<mixed>, bool}>
+     */
+    public static function provideApplicationLoginThrottling(): iterable
+    {
+        yield 'not configured' => [[], true];
+        yield 'disabled' => [[false], false];
+        // "~" enables it with the default settings
+        yield 'null' => [[null], true];
+        yield 'settings' => [[['max_attempts' => 3]], true];
+        yield 'disabled, then enabled' => [[false, ['max_attempts' => 3]], true];
+        yield 'enabled, then disabled' => [[['max_attempts' => 3], false], false];
+        // Normalized to "login_throttling" by the Config component, e.g. in XML
+        yield 'disabled with a dash' => [[['login-throttling' => false]], false];
+        yield 'enabled with a dash' => [[['login-throttling' => null]], true];
+        yield 'both keys: the underscore one wins' => [[['login_throttling' => null, 'login-throttling' => false]], true];
+        // Not resolved before the security configuration is processed
+        yield 'parameter' => [['%throttle%'], true];
+    }
+
+    /**
+     * @param list<mixed> $applicationValues "login_throttling" values of the application "main" firewall
+     */
+    #[DataProvider('provideApplicationLoginThrottling')]
+    public function testPrependLoginThrottling(array $applicationValues, bool $enabled): void
+    {
+        $container = $this->createContainer('prod');
+        $container->registerExtension($this->createExtension('security'));
+        $container->loadFromExtension('security', ['firewalls' => ['dev' => ['security' => false]]]);
+        foreach ($applicationValues as $value) {
+            // A whole firewall configuration (to test the keys) or the "login_throttling" value
+            $firewall = \is_array($value) && [] !== array_intersect(['login_throttling', 'login-throttling'], array_keys($value)) ? $value : ['login_throttling' => $value];
+            $container->loadFromExtension('security', ['firewalls' => ['main' => $firewall]]);
+        }
+
+        (new CleverAgeUiProcessExtension())->prepend($container);
+
+        $security = $container->getExtensionConfig('security');
+        self::assertCount(\count($applicationValues) + 2, $security);
+        $bundleFirewalls = end($security)['firewalls'] ?? null;
+        self::assertIsArray($bundleFirewalls);
+        $bundleFirewall = $bundleFirewalls['main'] ?? null;
+        self::assertIsArray($bundleFirewall);
+        self::assertSame($enabled, \array_key_exists('login_throttling', $bundleFirewall));
+        if ($enabled) {
+            self::assertSame([], $bundleFirewall['login_throttling']);
+        }
     }
 
     public function testPrependWithAParameterAsFirewallConfiguration(): void

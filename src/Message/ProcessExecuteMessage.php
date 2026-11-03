@@ -20,8 +20,15 @@ readonly class ProcessExecuteMessage
 {
     /**
      * @param array<string, mixed> $context
+     * @param bool                 $deleteInput whether the input is a file written in the upload directory for this
+     *                                          execution, deleted once the process has been executed (uninitialized
+     *                                          in a message serialized by a previous version: read it with ?? false)
      */
-    public function __construct(public string $code, public mixed $input, public array $context = [])
-    {
+    public function __construct(
+        public string $code,
+        public mixed $input,
+        public array $context = [],
+        public bool $deleteInput = false,
+    ) {
     }
 }

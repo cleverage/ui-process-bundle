@@ -20,6 +20,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\SchemaTool;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Transport\InMemory\InMemoryTransport;
 
@@ -32,8 +33,17 @@ abstract class FunctionalTestCase extends WebTestCase
 
     protected function setUp(): void
     {
+        $this->createTestClient();
+    }
+
+    /**
+     * @param array<string, array<mixed>> $config Additional configuration of the test application, by extension alias
+     */
+    protected function createTestClient(array $config = []): void
+    {
+        self::ensureKernelShutdown();
         // Without debug: less memory (the whole test suite runs with the default 128M memory_limit)
-        $this->client = static::createClient(['debug' => false]);
+        $this->client = static::createClient(['debug' => false, 'config' => $config]);
         $this->client->disableReboot();
 
         $entityManager = $this->getEntityManager();
@@ -46,6 +56,14 @@ abstract class FunctionalTestCase extends WebTestCase
     protected static function getKernelClass(): string
     {
         return TestKernel::class;
+    }
+
+    /**
+     * @param array{environment?: string, debug?: bool, config?: array<string, array<mixed>>} $options
+     */
+    protected static function createKernel(array $options = []): KernelInterface
+    {
+        return new TestKernel($options['environment'] ?? 'test', $options['debug'] ?? true, $options['config'] ?? []);
     }
 
     protected function getEntityManager(): EntityManagerInterface

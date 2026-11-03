@@ -4,7 +4,7 @@ services:
         class: CleverAge\UiProcessBundle\Notifier\ProcessExecutionNotifier
         public: false
         tags:
-            - { name: 'kernel.event_subscriber' }
+            - { name: 'kernel.event_listener', event: 'CleverAge\UiProcessBundle\Event\ProcessExecutionEndedEvent', method: 'onProcessExecutionEnded' }
             - { name: 'monolog.logger', channel: 'cleverage_ui_process' }
         arguments:
             $processConfigurationsManager: '@cleverage_ui_process.manager.process_configuration'

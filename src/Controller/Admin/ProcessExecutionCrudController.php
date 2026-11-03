@@ -31,8 +31,10 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\DateTimeFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -46,17 +48,20 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 class ProcessExecutionCrudController extends AbstractCrudController
 {
     /**
-     * @param TranslatorInterface $translator deprecated, no longer used (the duration format is defined in the
-     *                                        admin/field/duration.html.twig template), will be removed in 4.0
-     * @param int                 $staleAfter seconds without heartbeat after which a started execution is considered
-     *                                        as not responding
+     * @param TranslatorInterface|null $translator deprecated since 3.3, no longer used (the duration format is defined in
+     *                                             the admin/field/duration.html.twig template), will be removed in 4.0
+     * @param int                      $staleAfter seconds without heartbeat after which a started execution is
+     *                                             considered as not responding
      */
-    public function __construct(// @phpstan-ignore constructor.unusedParameter ($translator deprecated, kept for BC)
+    public function __construct(
         private readonly ProcessExecutionRepository $processExecutionRepository,
         private readonly string $logDirectory,
-        TranslatorInterface $translator,
+        ?TranslatorInterface $translator = null,
         private readonly int $staleAfter = 900,
     ) {
+        if ($translator instanceof TranslatorInterface) {
+            trigger_deprecation('cleverage/ui-process-bundle', '3.3', 'Passing a translator to "%s::__construct()" is deprecated, it is not used. The argument will be removed in 4.0.', self::class);
+        }
     }
 
     public static function getEntityFqcn(): string
@@ -237,15 +242,12 @@ class ProcessExecutionCrudController extends AbstractCrudController
         /** @var ProcessExecution $processExecution */
         $processExecution = $this->getContext()?->getEntity()->getInstance();
         $filepath = $this->getLogFilePath($processExecution);
-        $basename = basename($filepath);
-        // file_get_contents() emits a warning (converted to an exception) before returning false on a missing file
-        $content = is_file($filepath) ? file_get_contents($filepath) : false;
-        if (false === $content) {
+        if (!is_file($filepath) || !is_readable($filepath)) {
             throw new NotFoundHttpException('Log file not found.');
         }
-        $response = new Response($content);
-        $response->headers->set('Content-Type', 'text/plain; charset=utf-8');
-        $response->headers->set('Content-Disposition', "attachment; filename=\"$basename\"");
+        // Streamed: the log file of a long process can be bigger than the memory limit
+        $response = new BinaryFileResponse($filepath, headers: ['Content-Type' => 'text/plain; charset=utf-8']);
+        $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, basename($filepath));
 
         return $response;
     }

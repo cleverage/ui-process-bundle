@@ -31,6 +31,7 @@ clever_age_ui_process:
     process_execution:
         heartbeat_interval: 5
         stale_after: 900
+        entity_manager: ~
 ```
 
 Options
@@ -52,7 +53,7 @@ See [process executions & logs](04-process_executions_and_logs.md) for the whole
 | `store_in_database`      | `bool`   | `true`                                    | Enable/disable the storage of process logs in database (`log_record` table). The log file is always written.                               |
 | `database_level`         | `string` | `Debug` on `dev` environment, else `Info` | Minimum Monolog level of the log records stored in database.                                                                                 |
 | `file_level`             | `string` | `Debug` on `dev` environment, else `Info` | Minimum Monolog level of the log records written in the execution log file.                                                                  |
-| `report_increment_level` | `string` | `Warning`                                 | Minimum Monolog level from which a log record increments the execution report (one counter per level, e.g. `Warning: 3`, `Error: 1`). Only records passing `file_level` are counted. |
+| `report_increment_level` | `string` | `Warning`                                 | Minimum Monolog level from which a log record increments the execution report (one counter per level, e.g. `Warning: 3`, `Error: 1`). Only records passing `file_level` are counted. These records are also inserted in database right away (see [database logs](04-process_executions_and_logs.md#database-logs)). |
 | `database_max_days`      | `int`, `null` | `null`                               | Days after which the log records are deleted from database by the [`cleverage:ui-process:purge-logs`](07-console_commands.md#cleverageui-processpurge-logs) command. `null`: kept. Can be overridden by process. |
 | `file_max_days`          | `int`, `null` | `null`                               | Days after which the log files are deleted by the [`cleverage:ui-process:purge-logs`](07-console_commands.md#cleverageui-processpurge-logs) command. `null`: kept. Can be overridden by process. |
 
@@ -77,7 +78,7 @@ Notification of the end of the process executions, with [symfony/notifier](https
 | Key          | Type       | Default                          | Description                                                                                                                         |
 |--------------|------------|----------------------------------|-------------------------------------------------------------------------------------------------------------------------------------|
 | `enabled`    | `bool`     | `false`                          | Notify the end of the process executions. `true` requires `symfony/notifier`.                                                       |
-| `statuses`   | `string[]` | `[failed, finish_with_report]`   | Ends of process executions to notify: `failed`, `finish_with_report` (finished with log levels counted in its report), `finish` (finished without them), `stopped` (stopped from the UI). |
+| `statuses`   | `string[]` | `[failed, finish_with_report]`   | Ends of process executions to notify: `failed`, `finish_with_report` (finished, or stopped by a `StopTask`, with log levels counted in its report), `finish` (finished without them), `stopped` (stopped from the UI, or by a `StopTask` without them). |
 | `channels`   | `string[]` | `[]`                             | Notifier channels, e.g. `chat/slack`, `email`. Empty: the `channel_policy` of the notifier, by importance.                           |
 | `recipients` | `array[]`  | `[]`                             | Recipients, with an `email` and/or a `phone`. Empty: the `admin_recipients` of the notifier.                                         |
 
@@ -90,6 +91,7 @@ See [stopping a process execution](04-process_executions_and_logs.md#stopping-a-
 |----------------------|-------|---------|------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `heartbeat_interval` | `int` | `5`     | Seconds between two updates of the heartbeat of a running process execution, which also read its stop request (minimum `1`).                     |
 | `stale_after`        | `int` | `900`   | Seconds without heartbeat after which a started process execution is displayed as not responding, and can be marked as failed (minimum `1`). Keep it above the longest task call of your processes. |
+| `entity_manager`     | `?string` | `null` | Name of the Doctrine entity manager writing the process executions, their logs and their heartbeat (`null`: the default one, shared with the process tasks). See [entity manager of the process executions](04-process_executions_and_logs.md#entity-manager-of-the-process-executions). |
 
 Container parameters
 --------------------
@@ -97,7 +99,8 @@ Container parameters
 | Parameter                               | Default                                   | Description |
 |-----------------------------------------|-------------------------------------------|-------------|
 | `cleverage_ui_process.upload_directory` | `%kernel.project_dir%/var/storage/uploads` | Directory where files uploaded from the launch form or the [HTTP API](06-http_api.md) are stored before being passed as process input. |
-| `upload_directory`                      | `%cleverage_ui_process.upload_directory%` | Deprecated since 3.3, removed in 4.0: use `cleverage_ui_process.upload_directory`. When your application still sets it, its value is used (unless `cleverage_ui_process.upload_directory` is also set), with a deprecation. |
+| `cleverage_ui_process.delete_uploaded_files` | `true` | Delete the uploaded file once the process has been executed (successfully or not), by the Messenger handler or by the HTTP API when the process is not queued; the file of a request rejected by the HTTP API is also deleted. Only the files written by the bundle for the execution are deleted, never a file given by its path, even in `cleverage_ui_process.upload_directory`. A message failing in a Messenger worker keeps its file while it will be retried, or when it is sent to a failure transport (see [messenger](08-messenger.md#uploaded-files)). Set it to `false` to keep them, e.g. when a process stores the path of its input. |
+| `upload_directory`                      | `%cleverage_ui_process.upload_directory%` | Deprecated since 3.3, removed in 4.0: use `cleverage_ui_process.upload_directory`. When your application still sets it, its value is used, with a deprecation. If your application has its own `upload_directory` parameter (e.g. for another bundle), also set `cleverage_ui_process.upload_directory`: the bundle then leaves `upload_directory` alone, without deprecation. |
 
 It can be overridden in your application:
 

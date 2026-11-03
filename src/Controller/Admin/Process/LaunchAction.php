@@ -18,6 +18,7 @@ use CleverAge\UiProcessBundle\Entity\User;
 use CleverAge\UiProcessBundle\Form\ContextValueNormalizer;
 use CleverAge\UiProcessBundle\Form\Type\LaunchType;
 use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
+use CleverAge\UiProcessBundle\Manager\UploadedFileManager;
 use CleverAge\UiProcessBundle\Message\ProcessExecuteMessage;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Asset;
 use EasyCorp\Bundle\EasyAdminBundle\Contracts\Context\AdminContextInterface;
@@ -113,14 +114,19 @@ class LaunchAction extends AbstractController
         // Normalized after the validation: the constraints apply to the typed values
         if ($form->isSubmitted() && $form->isValid() && null !== $values = $this->normalizeValues($form)) {
             [$input, $context] = $values;
+            // Only the file written here is deleted once executed, never a file given by its path (text input)
+            $deleteInput = false;
             if ($input instanceof UploadedFile) {
-                $filename = \sprintf('%s/%s.%s', $uploadDirectory, Uuid::v4(), $input->getClientOriginalExtension());
+                // The extension sent by the browser is reduced: a long one made the writing fail (500)
+                $extension = UploadedFileManager::getSafeExtension($input);
+                $filename = \sprintf('%s/%s%s', $uploadDirectory, Uuid::v4(), '' === $extension ? '' : '.'.$extension);
                 (new Filesystem())->dumpFile($filename, $input->getContent());
                 $input = $filename;
+                $deleteInput = true;
             }
             /** @var string $processCode */
             $processCode = $form->getConfig()->getOption('process_code');
-            $this->dispatch($processCode, $input, $context);
+            $this->dispatch($processCode, $input, $context, $deleteInput);
             $this->addFlash(
                 'success',
                 'Process has been added to queue. It will start as soon as possible'
@@ -177,7 +183,7 @@ class LaunchAction extends AbstractController
     /**
      * @param array<string, mixed> $context
      */
-    protected function dispatch(string $processCode, mixed $input = null, array $context = []): void
+    protected function dispatch(string $processCode, mixed $input = null, array $context = [], bool $deleteInput = false): void
     {
         $message = new ProcessExecuteMessage(
             $processCode,
@@ -185,7 +191,8 @@ class LaunchAction extends AbstractController
             array_merge(
                 ['execution_user' => $this->getUser()?->getEmail()],
                 $context
-            )
+            ),
+            $deleteInput
         );
         $this->messageBus->dispatch($message);
     }

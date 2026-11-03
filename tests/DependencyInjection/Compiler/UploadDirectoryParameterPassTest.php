@@ -33,11 +33,6 @@ class UploadDirectoryParameterPassTest extends TestCase
         yield 'defaults' => [[], '/app/var/storage/uploads', []];
         yield 'new parameter set' => [['cleverage_ui_process.upload_directory' => '/app/var/imports'], '/app/var/imports', []];
         yield 'deprecated parameter set' => [['upload_directory' => '/app/var/legacy'], '/app/var/legacy', [self::SETTING_DEPRECATION]];
-        yield 'both set: the new one wins' => [
-            ['upload_directory' => '/app/var/legacy', 'cleverage_ui_process.upload_directory' => '/app/var/imports'],
-            '/app/var/imports',
-            [self::SETTING_DEPRECATION],
-        ];
     }
 
     /**
@@ -68,6 +63,23 @@ class UploadDirectoryParameterPassTest extends TestCase
             $container->getParameter(UploadDirectoryParameterPass::DEPRECATED_PARAMETER);
         });
         self::assertSame([self::READING_DEPRECATION], $deprecations);
+    }
+
+    public function testAnApplicationParameterIsLeftAloneWhenBothAreSet(): void
+    {
+        $container = new ContainerBuilder();
+        $container->setParameter(UploadDirectoryParameterPass::PARAMETER, '/app/var/imports');
+        // e.g. a parameter of another bundle
+        $container->setParameter(UploadDirectoryParameterPass::DEPRECATED_PARAMETER, '/app/var/other');
+
+        $deprecations = $this->collectDeprecations(static function () use ($container): void {
+            (new UploadDirectoryParameterPass())->process($container);
+            $container->getParameter(UploadDirectoryParameterPass::DEPRECATED_PARAMETER);
+        });
+
+        self::assertSame([], $deprecations);
+        self::assertSame('/app/var/imports', $container->getParameter(UploadDirectoryParameterPass::PARAMETER));
+        self::assertSame('/app/var/other', $container->getParameter(UploadDirectoryParameterPass::DEPRECATED_PARAMETER));
     }
 
     public function testWithoutDeprecatedParameter(): void

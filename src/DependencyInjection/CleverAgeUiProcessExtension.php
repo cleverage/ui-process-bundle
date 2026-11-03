@@ -26,6 +26,7 @@ use Symfony\Component\DependencyInjection\Exception\LogicException;
 use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
+use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\Notifier\NotifierInterface;
 
 /**
@@ -43,7 +44,7 @@ final class CleverAgeUiProcessExtension extends Extension implements PrependExte
          *     logs: array{store_in_database: bool, database_level: string, file_level: string, report_increment_level: string, database_max_days: ?int, file_max_days: ?int},
          *     design: array{logo_path: string},
          *     notification: array{enabled: bool, ...},
-         *     process_execution: array{heartbeat_interval: int, stale_after: int},
+         *     process_execution: array{heartbeat_interval: int, stale_after: int, entity_manager: ?string},
          * } $config
          */
         $config = $this->processConfiguration($configuration, $configs);
@@ -57,7 +58,8 @@ final class CleverAgeUiProcessExtension extends Extension implements PrependExte
             ->addMethodCall('setReportIncrementLevel', [$config['logs']['report_increment_level']])
         ;
         $container->getDefinition('cleverage_ui_process.monolog_handler.doctrine_process')
-            ->setArgument('$level', $config['logs']['database_level']);
+            ->setArgument('$level', $config['logs']['database_level'])
+            ->addMethodCall('setReportIncrementLevel', [$config['logs']['report_increment_level']]);
         if (!$config['logs']['store_in_database']) {
             $container->getDefinition('cleverage_ui_process.monolog_handler.doctrine_process')
                 ->addMethodCall('disable');
@@ -73,6 +75,9 @@ final class CleverAgeUiProcessExtension extends Extension implements PrependExte
             ->replaceArgument(2, $config['process_execution']['heartbeat_interval']);
         $container->getDefinition(ProcessExecutionCrudController::class)
             ->setArgument('$staleAfter', $config['process_execution']['stale_after']);
+        if (null !== $config['process_execution']['entity_manager']) {
+            $this->configureEntityManager($container, $config['process_execution']['entity_manager']);
+        }
 
         if (interface_exists(NotifierInterface::class)) {
             $container->getDefinition('cleverage_ui_process.notifier.process_execution')
@@ -83,6 +88,28 @@ final class CleverAgeUiProcessExtension extends Extension implements PrependExte
             }
             $container->removeDefinition('cleverage_ui_process.notifier.process_execution');
         }
+    }
+
+    /**
+     * The process executions, their logs and their heartbeat are written with the given entity manager, instead of the
+     * default one, shared with the process tasks.
+     */
+    private function configureEntityManager(ContainerBuilder $container, string $name): void
+    {
+        $entityManager = new Reference(\sprintf('doctrine.orm.%s_entity_manager', $name));
+        $container->getDefinition('cleverage_ui_process.repository.process_execution')
+            ->replaceArgument(0, $entityManager)
+            ->setArgument(2, $name);
+        $handler = $container->getDefinition('cleverage_ui_process.monolog_handler.doctrine_process');
+        $calls = [];
+        /** @var list<array{0: string, 1: array<mixed>, 2?: bool}> $methodCalls */
+        $methodCalls = $handler->getMethodCalls();
+        foreach ($methodCalls as $call) {
+            $calls[] = 'setEntityManager' === $call[0] ? ['setEntityManager', [$entityManager]] : $call;
+        }
+        $handler->setMethodCalls($calls);
+        $container->getDefinition('cleverage_ui_process.stop_checker.process_execution')
+            ->replaceArgument(1, $entityManager);
     }
 
     /**
@@ -137,8 +164,8 @@ final class CleverAgeUiProcessExtension extends Extension implements PrependExte
      * Configure the other bundles: Monolog handlers, migrations path, Messenger transport and security.
      *
      * The Messenger configuration is prepended (the application configuration wins). The other ones are appended, so
-     * they override the application configuration: in particular the security one replaces the provider, login form
-     * and logout of the application "main" firewall, unless the "security.configure_firewall" option is false.
+     * they override the application configuration: in particular the security one replaces the provider, login form and
+     * logout of the application "main" firewall, unless the "security.configure_firewall" option is false.
      */
     public function prepend(ContainerBuilder $container): void
     {
@@ -226,6 +253,28 @@ final class CleverAgeUiProcessExtension extends Extension implements PrependExte
 
     private function configureSecurity(ContainerBuilder $container): void
     {
+        $firewall = [
+            'provider' => 'process_user_provider',
+            'custom_authenticator' => ['cleverage_ui_process.security.http_process_execution_authenticator'],
+            'form_login' => [
+                'login_path' => 'cleverage_ui_process_login',
+                'check_path' => 'cleverage_ui_process_login',
+            ],
+            // Not prepended: a prepended firewall would be the first definition of the "firewalls" node, the other
+            // firewalls of the application (e.g. "dev") could no longer be declared. Merged after the application
+            // configuration, it keeps its settings (max_attempts, interval...), but would enable it again when the
+            // application disables it
+            'login_throttling' => [],
+            'logout' => [
+                'path' => 'cleverage_ui_process_logout',
+                'target' => 'cleverage_ui_process_login',
+                'clear_site_data' => '*',
+            ],
+        ];
+        if ($this->isLoginThrottlingDisabled($container)) {
+            unset($firewall['login_throttling']);
+        }
+
         $container->loadFromExtension(
             'security',
             [
@@ -238,22 +287,35 @@ final class CleverAgeUiProcessExtension extends Extension implements PrependExte
                     ],
                 ],
                 'firewalls' => [
-                    'main' => [
-                        'provider' => 'process_user_provider',
-                        'custom_authenticator' => ['cleverage_ui_process.security.http_process_execution_authenticator'],
-                        'form_login' => [
-                            'login_path' => 'cleverage_ui_process_login',
-                            'check_path' => 'cleverage_ui_process_login',
-                        ],
-                        'logout' => [
-                            'path' => 'cleverage_ui_process_logout',
-                            'target' => 'cleverage_ui_process_login',
-                            'clear_site_data' => '*',
-                        ],
-                    ],
+                    'main' => $firewall,
                 ],
             ]
         );
+    }
+
+    /**
+     * Whether the application disables the login throttling of its "main" firewall ("login_throttling: false"): the
+     * last value defined wins, as when the security configuration is processed. A null value ("login_throttling: ~")
+     * enables it with the default settings. Only a literal false is recognized: parameters are not resolved yet.
+     */
+    private function isLoginThrottlingDisabled(ContainerBuilder $container): bool
+    {
+        $disabled = false;
+        foreach ($container->getExtensionConfig('security') as $config) {
+            $firewall = \is_array($config['firewalls'] ?? null) ? ($config['firewalls']['main'] ?? null) : null;
+            if (!\is_array($firewall)) {
+                continue;
+            }
+            // "login-throttling" is normalized to "login_throttling", unless both are defined
+            foreach (['login_throttling', 'login-throttling'] as $key) {
+                if (\array_key_exists($key, $firewall)) {
+                    $disabled = false === $firewall[$key];
+                    break;
+                }
+            }
+        }
+
+        return $disabled;
     }
 
     /**

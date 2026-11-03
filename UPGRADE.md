@@ -71,6 +71,58 @@ options:
 - A process using a deprecated option triggers its deprecations each time its launch form is displayed: expect them
   in the deprecation logs until the process is migrated.
 
+## v3.4.1
+
+### Processes stopped by a `stop` task
+
+A process stopped on purpose by a `stop` task with log levels counted in its report (`logs.report_increment_level`) is
+notified as `finish_with_report` (notified by default) instead of `stopped`. If you added `stopped` to the notified
+`statuses` after upgrading to 3.4, you can remove it: only the stops without such log levels are left.
+
+## v3.4
+
+No deprecation in this version (the `$translator` argument of `ProcessExecutionCrudController::__construct()` triggers
+its notice since this version, see v3.3).
+
+### Login throttling
+
+The `main` firewall configured by the bundle (`security.configure_firewall`, enabled by default) limits the login
+attempts (Symfony `login_throttling`: 5 failed attempts per minute for a username and an IP address, 25 for an IP
+address). `symfony/rate-limiter` is now required. The settings can be changed in the `main` firewall of your
+application:
+
+```yaml
+# config/packages/security.yaml
+security:
+    firewalls:
+        main:
+            login_throttling:
+                max_attempts: 3
+```
+
+### Uploaded files
+
+The files sent as input of a process (launch form, HTTP API) are deleted from the upload directory once the process
+has been executed, successfully or not (they were kept forever). To keep them, e.g. when a process stores the path of
+its input:
+
+```yaml
+# config/services.yaml
+parameters:
+    cleverage_ui_process.delete_uploaded_files: false
+```
+
+### Process bundle 5.5
+
+`cleverage/process-bundle` `^5.5` is required: follow its
+[upgrade guide](https://github.com/cleverage/process-bundle/blob/main/UPGRADE.md#v55).
+
+### Processes stopped by a `stop` task
+
+A process stopped on purpose by a `stop` task is recorded with the `stopped` status (it was `finish`), and notified as
+`stopped`: the `stopped` executions are not notified by default, add `stopped` to the notified `statuses` to keep a
+notification.
+
 ## v3.3
 
 ### Route names
@@ -122,6 +174,12 @@ removed in 4.0: update your templates (e.g. overridden templates of the bundle).
 | `get_process_target()`           | `cleverage_ui_process_get_process_target()`           |
 | `resolve_ui_options()`           | `cleverage_ui_process_resolve_ui_options()`           |
 | `md5` (filter)                   | `cleverage_ui_process_md5` (filter)                   |
+
+### Process executions controller
+
+The `$translator` argument of `ProcessExecutionCrudController::__construct()` is deprecated (it is not used since 3.3,
+the duration format being defined in the `admin/field/duration.html.twig` template): passing it triggers a deprecation,
+it will be removed in 4.0. Only an application that redefines this controller service is concerned.
 
 ### Process bundle 5.4
 

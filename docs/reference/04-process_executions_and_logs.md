@@ -11,7 +11,9 @@ Process executions
 An event subscriber listens to the process bundle events:
 - on process start, a `ProcessExecution` is created with the `started` status, the process code, the context and the
   name of the log file,
-- on process end, its status becomes `finish` and its end date is set,
+- on process end, its status becomes `finish` and its end date is set, or `stopped` when the process has been stopped
+  on purpose by a [StopTask](https://github.com/cleverage/process-bundle/blob/main/docs/reference/tasks/stop_task.md)
+  (e.g. not going on when the source file does not exist),
 - on process failure, its status becomes `failed` and its end date is set, or `stopped` when the process has been
   [stopped from the UI](#stopping-a-process-execution).
 
@@ -157,7 +159,12 @@ Each execution writes its own log file:
 %kernel.logs_dir%/<process_code>/<uuid>.log
 ```
 
-It can be downloaded from the executions list.
+It can be downloaded from the executions list (streamed: its size is not limited by the PHP memory limit).
+
+The control characters of the messages (e.g. coming from the processed data) are escaped, so that a terminal displaying
+the file (`cat`, `tail -f`) does not interpret them: the C0 characters except the tabulation and the line feed (an ANSI
+escape sequence `ESC[31m` is written `\x1B[31m`), DEL (`\x7F`) and the C1 characters (`\u{9B}`). The context is
+encoded in JSON, where they are escaped too.
 
 ### Database logs
 
@@ -172,7 +179,29 @@ When `store_in_database` is `true` (default), log records are also stored in the
 | `context`   | Log record context.                           |
 | `createdAt` | Date of the log record.                       |
 
-Records are buffered and inserted every 500 records, and at the end (or failure) of the process.
+The lengths are counted in characters (Unicode code points, as MySQL and PostgreSQL do): an emoji or a letter with
+combining marks may count several characters. The invalid UTF-8 sequences of the message and the channel are replaced
+by `?` and their NUL characters removed; a context which cannot be encoded in JSON is stored with its invalid UTF-8 sequences replaced by `U+FFFD` (`�`)
+and its values which cannot be encoded (e.g. a resource) replaced by `null`.
+
+Records are buffered and inserted every 500 records, and at the end (or failure) of the process. A record counted in
+the report of the execution (from `report_increment_level`, warnings by default) is inserted right away with the
+buffered ones, unless changes of the process tasks are pending in the entity manager (they would be written with it, see
+below): it is then inserted with the next ones. After a fatal error (e.g. maximum execution time exceeded), neither the
+end of the process nor the destruction of the handler happen: a shutdown function inserts the buffered records and saves
+the report of the execution, unless changes of the process tasks are pending (the status of the execution stays
+`started`, see [not responding executions](#not-responding-executions)). After the memory limit is exceeded, the limit is raised by 32 MiB
+to do it, but the shutdown function of the Symfony `ErrorHandler`, called first, usually fails too (no memory left), and
+the next ones are not called: only the records counted in the report, inserted right away, are kept in database (the log
+file has all of them). When the insertion of
+the log records fails (e.g. a database error), they are dropped and the failure is logged as an error on the
+`cleverage_process` channel (in the [log file](#log-file), not in database): the process goes on, and the status of its
+execution is saved. The entity manager is shared with the process tasks (unless [another one is
+configured](#entity-manager-of-the-process-executions)): when changes of their entities are pending
+(e.g. persisted by a task, not flushed yet), they are written with the log records, and a failure is not caught, as any
+error of the tasks. To know it, when entities of the tasks are managed by the entity manager, their changes are computed
+before each insertion of the log records (and again by the flush): a cost proportional to the number of managed
+entities, every 500 log records.
 
 On processes logging a lot, storing logs in database may be slow and memory consuming: raise `database_level`, or
 disable `store_in_database` and rely on the log file (see [troubleshooting](../troubleshooting.md)).
@@ -186,6 +215,57 @@ clever_age_ui_process:
         file_level: Debug # Everything in the log file
         report_increment_level: Error
 ```
+
+### Entity manager of the process executions
+
+By default, the process executions, their logs and their heartbeat are written with the default entity manager
+(`doctrine.orm.entity_manager`), so on the connection of the process tasks:
+
+- a task reading with an unbuffered query (e.g. `PDO::MYSQL_ATTR_USE_BUFFERED_QUERY` set to `false` for a large
+  export) fails as soon as the log records are inserted during its read ("Cannot execute queries while other
+  unbuffered queries are active"), while the same process works without the UI;
+- a transaction rolled back by a task also rolls back the log records and the state of the execution written meanwhile;
+- the pending changes of the entities of the tasks are written with the log records (see above).
+
+To isolate them, give the name of an entity manager on a connection of its own, mapping the entities of the bundle, in
+the `process_execution.entity_manager` option:
+
+```yaml
+# config/packages/doctrine.yaml
+doctrine:
+    dbal:
+        default_connection: default
+        connections:
+            default:
+                url: '%env(resolve:DATABASE_URL)%'
+            # Same database, another connection
+            process_ui:
+                url: '%env(resolve:DATABASE_URL)%'
+    orm:
+        default_entity_manager: default
+        entity_managers:
+            default:
+                connection: default
+                auto_mapping: true # also maps the entities of the bundle, read by the UI
+                # mappings of your application...
+            process_ui:
+                connection: process_ui
+                mappings:
+                    CleverAgeUiProcessBundle:
+                        type: attribute
+                        is_bundle: true
+
+# config/packages/clever_age_ui_process.yaml
+clever_age_ui_process:
+    process_execution:
+        entity_manager: process_ui
+```
+
+The entity manager is the `doctrine.orm.<name>_entity_manager` service. The `ProcessExecutionRepository` service of the
+bundle uses it too (reset by its name when it has been closed); the pages of the UI read the entities with the entity
+manager managing their class (the default one in this example). Each running process then opens one more connection to
+the database. The migrations of the bundle are still executed on the connection of Doctrine Migrations (the same
+database). With SQLite, two connections writing to the same file may wait for each other's lock: keep the default.
 
 ### Log retention
 

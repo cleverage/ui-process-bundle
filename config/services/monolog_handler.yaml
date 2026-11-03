@@ -5,8 +5,10 @@ services:
         calls:
             - [ setEntityManager, [ '@doctrine.orm.entity_manager' ] ]
             - [ setProcessExecutionManager, [ '@cleverage_ui_process.manager.process_execution' ] ]
+            - [ setLogger, [ '@?logger' ] ]
         tags:
             - { name: kernel.reset, method: reset }
+            - { name: 'monolog.logger', channel: 'cleverage_process' }
     CleverAge\UiProcessBundle\Monolog\Handler\DoctrineProcessHandler:
         alias: cleverage_ui_process.monolog_handler.doctrine_process
 

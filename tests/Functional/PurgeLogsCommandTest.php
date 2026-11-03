@@ -19,7 +19,9 @@ use CleverAge\UiProcessBundle\CleverAgeUiProcessBundle;
 use CleverAge\UiProcessBundle\Command\PurgeLogsCommand;
 use CleverAge\UiProcessBundle\DependencyInjection\CleverAgeUiProcessExtension;
 use CleverAge\UiProcessBundle\DependencyInjection\Compiler\CheckDoctrineLazyGhostObjectsPass;
+use CleverAge\UiProcessBundle\DependencyInjection\Compiler\LoginThrottlingPass;
 use CleverAge\UiProcessBundle\DependencyInjection\Compiler\UploadDirectoryParameterPass;
+use CleverAge\UiProcessBundle\DependencyInjection\Compiler\UploadedFileSubscriberPass;
 use CleverAge\UiProcessBundle\DependencyInjection\Configuration;
 use CleverAge\UiProcessBundle\Entity\LogRecord;
 use CleverAge\UiProcessBundle\Entity\ProcessExecution;
@@ -28,7 +30,11 @@ use CleverAge\UiProcessBundle\Form\LaunchFormOptionsResolver;
 use CleverAge\UiProcessBundle\Form\Type\LaunchType;
 use CleverAge\UiProcessBundle\Form\Type\ProcessContextType;
 use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
+use CleverAge\UiProcessBundle\Manager\ProcessExecutionManager;
+use CleverAge\UiProcessBundle\Monolog\Handler\DoctrineProcessHandler;
+use CleverAge\UiProcessBundle\Monolog\Handler\ProcessHandler;
 use CleverAge\UiProcessBundle\Notifier\NotificationTrigger;
+use CleverAge\UiProcessBundle\Repository\ProcessExecutionRepository;
 use CleverAge\UiProcessBundle\Routing\DeprecatedEasyAdminRouteAliasLoader;
 use Monolog\Level;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -45,6 +51,8 @@ use Symfony\Component\Uid\Uuid;
 #[UsesClass(LaunchType::class)]
 #[UsesClass(LaunchFormsCacheWarmer::class)]
 #[UsesClass(UploadDirectoryParameterPass::class)]
+#[UsesClass(LoginThrottlingPass::class)]
+#[UsesClass(UploadedFileSubscriberPass::class)]
 #[UsesClass(CleverAgeUiProcessExtension::class)]
 #[UsesClass(DeprecatedEasyAdminRouteAliasLoader::class)]
 #[UsesClass(Configuration::class)]
@@ -53,6 +61,10 @@ use Symfony\Component\Uid\Uuid;
 #[UsesClass(User::class)]
 #[UsesClass(ProcessConfigurationsManager::class)]
 #[UsesClass(NotificationTrigger::class)]
+#[UsesClass(ProcessExecutionManager::class)]
+#[UsesClass(DoctrineProcessHandler::class)]
+#[UsesClass(ProcessHandler::class)]
+#[UsesClass(ProcessExecutionRepository::class)]
 class PurgeLogsCommandTest extends FunctionalTestCase
 {
     /** @var list<string> */

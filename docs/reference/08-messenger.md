@@ -10,7 +10,7 @@ Messages
 
 | Message                                                | Transport         | Handler                                                                                                         |
 |--------------------------------------------------------|-------------------|-----------------------------------------------------------------------------------------------------------------|
-| `CleverAge\UiProcessBundle\Message\ProcessExecuteMessage` (`code`, `input`, `context`) | `execute_process` | Executes the process with the process manager, like `cleverage:process:execute`.                                |
+| `CleverAge\UiProcessBundle\Message\ProcessExecuteMessage` (`code`, `input`, `context`, `deleteInput`) | `execute_process` | Executes the process with the process manager, like `cleverage:process:execute`.                                |
 | `CleverAge\UiProcessBundle\Message\CronProcessMessage` (`processSchedule`)             | `scheduler_cron`  | Reads the schedule again, and dispatches a `ProcessExecuteMessage` with its current input and context, unless it has been disabled or deleted. |
 
 You can dispatch a `ProcessExecuteMessage` yourself to queue a process from your code:
@@ -26,6 +26,22 @@ public function importProducts(string $filePath): void
     $this->bus->dispatch(new ProcessExecuteMessage('app.import_products', $filePath, ['delimiter' => ';']));
 }
 ```
+
+Uploaded files
+--------------
+
+The launch form and the HTTP API set `deleteInput` (`false` by default) when the input is the file they have just
+written in the upload directory: the file is deleted once the process has been executed, successfully or not (see the
+`cleverage_ui_process.delete_uploaded_files` [parameter](01-bundle_configuration.md#container-parameters)). In a
+worker, the file of a failed message is kept while the message will be retried (retry strategy of the transport), or
+when it is sent to a failure transport, so that `messenger:failed:retry` executes it with its file. It is deleted once
+the message no longer fails, or when it fails again from the failure transport and Symfony drops it (not sent again to
+the failure transport it has been received from). A file of a message removed from the failure transport
+(`messenger:failed:remove`) is kept. With Symfony 6.4.0 to 6.4.4, which sends a message failing again from the failure
+transport back to it, its file is deleted anyway.
+
+The messages queued by the version 3.4 of the bundle have no `deleteInput`: their file is not deleted, you may have to
+remove it from the upload directory.
 
 Transports
 ----------

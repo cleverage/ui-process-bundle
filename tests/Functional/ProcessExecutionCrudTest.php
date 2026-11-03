@@ -25,7 +25,9 @@ use CleverAge\UiProcessBundle\Controller\Admin\ProcessScheduleCrudController;
 use CleverAge\UiProcessBundle\Controller\Admin\UserCrudController;
 use CleverAge\UiProcessBundle\DependencyInjection\CleverAgeUiProcessExtension;
 use CleverAge\UiProcessBundle\DependencyInjection\Compiler\CheckDoctrineLazyGhostObjectsPass;
+use CleverAge\UiProcessBundle\DependencyInjection\Compiler\LoginThrottlingPass;
 use CleverAge\UiProcessBundle\DependencyInjection\Compiler\UploadDirectoryParameterPass;
+use CleverAge\UiProcessBundle\DependencyInjection\Compiler\UploadedFileSubscriberPass;
 use CleverAge\UiProcessBundle\DependencyInjection\Configuration;
 use CleverAge\UiProcessBundle\Entity\Enum\ProcessExecutionStatus;
 use CleverAge\UiProcessBundle\Entity\LogRecord;
@@ -36,6 +38,7 @@ use CleverAge\UiProcessBundle\Form\LaunchFormOptionsResolver;
 use CleverAge\UiProcessBundle\Form\Type\LaunchType;
 use CleverAge\UiProcessBundle\Form\Type\ProcessContextType;
 use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
+use CleverAge\UiProcessBundle\Manager\ProcessExecutionManager;
 use CleverAge\UiProcessBundle\Monolog\Handler\DoctrineProcessHandler;
 use CleverAge\UiProcessBundle\Monolog\Handler\ProcessHandler;
 use CleverAge\UiProcessBundle\Repository\ProcessExecutionRepository;
@@ -51,6 +54,7 @@ use Monolog\Level;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\UsesClass;
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 #[CoversClass(ProcessExecutionCrudController::class)]
 #[UsesClass(ContextField::class)]
@@ -77,6 +81,8 @@ use Symfony\Component\Filesystem\Filesystem;
 #[UsesClass(LaunchType::class)]
 #[UsesClass(LaunchFormsCacheWarmer::class)]
 #[UsesClass(UploadDirectoryParameterPass::class)]
+#[UsesClass(LoginThrottlingPass::class)]
+#[UsesClass(UploadedFileSubscriberPass::class)]
 #[UsesClass(LogRecordCrudController::class)]
 #[UsesClass(ProcessScheduleCrudController::class)]
 #[UsesClass(UserCrudController::class)]
@@ -86,6 +92,7 @@ use Symfony\Component\Filesystem\Filesystem;
 #[UsesClass(ProcessEventSubscriber::class)]
 #[UsesClass(DoctrineProcessHandler::class)]
 #[UsesClass(ProcessHandler::class)]
+#[UsesClass(ProcessExecutionManager::class)]
 class ProcessExecutionCrudTest extends FunctionalTestCase
 {
     public function testIndex(): void
@@ -200,9 +207,11 @@ class ProcessExecutionCrudTest extends FunctionalTestCase
         $this->client->request('GET', '/process/process-execution/download-logs?entityId='.$execution->getId());
 
         self::assertResponseIsSuccessful();
+        // Streamed: not loaded in memory
+        self::assertInstanceOf(BinaryFileResponse::class, $this->client->getResponse());
         self::assertSame('log file content', $this->client->getInternalResponse()->getContent());
         self::assertResponseHeaderSame('Content-Type', 'text/plain; charset=utf-8');
-        self::assertResponseHeaderSame('Content-Disposition', 'attachment; filename="'.$execution->logFilename.'"');
+        self::assertResponseHeaderSame('Content-Disposition', 'attachment; filename='.$execution->logFilename);
     }
 
     public function testDownloadMissingLogFile(): void
