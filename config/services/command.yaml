@@ -18,3 +18,12 @@ services:
             $entityManager: '@doctrine.orm.entity_manager'
             $processConfigurationsManager: '@cleverage_ui_process.manager.process_configuration'
             $logDirectory: '%kernel.logs_dir%'
+
+    cleverage_ui_process.command.purge_uploaded_files:
+        class: CleverAge\UiProcessBundle\Command\PurgeUploadedFilesCommand
+        public: false
+        tags:
+            - { name: console.command }
+        arguments:
+            $uploadDirectory: '%cleverage_ui_process.upload_directory%'
+            $maxDays: '%cleverage_ui_process.uploaded_files_max_days%'

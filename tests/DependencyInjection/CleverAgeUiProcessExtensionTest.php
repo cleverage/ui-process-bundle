@@ -188,6 +188,12 @@ class CleverAgeUiProcessExtensionTest extends TestCase
         $purgeLogsCommand = $container->getDefinition('cleverage_ui_process.command.purge_logs');
         self::assertNull($purgeLogsCommand->getArgument('$databaseMaxDays'));
         self::assertNull($purgeLogsCommand->getArgument('$fileMaxDays'));
+        // Files left in the upload directory kept by default
+        self::assertNull($container->getParameter('cleverage_ui_process.uploaded_files_max_days'));
+        $purgeUploadedFilesCommand = $container->getDefinition('cleverage_ui_process.command.purge_uploaded_files');
+        self::assertSame('%cleverage_ui_process.upload_directory%', $purgeUploadedFilesCommand->getArgument('$uploadDirectory'));
+        self::assertSame('%cleverage_ui_process.uploaded_files_max_days%', $purgeUploadedFilesCommand->getArgument('$maxDays'));
+        self::assertTrue($purgeUploadedFilesCommand->hasTag('console.command'));
 
         self::assertSame(
             'bundles/cleverageuiprocess/logo.jpg',
