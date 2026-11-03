@@ -43,6 +43,11 @@ transport back to it, its file is deleted anyway.
 The messages queued by the version 3.4 of the bundle have no `deleteInput`: their file is not deleted, you may have to
 remove it from the upload directory.
 
+The files left in the upload directory (message removed from the failure transport, dispatch failure, worker killed
+during the execution...) can be deleted after a retention by the
+[`cleverage:ui-process:purge-uploaded-files`](07-console_commands.md#cleverageui-processpurge-uploaded-files) command:
+choose a retention longer than the time a message may wait in a transport, its file being deleted too.
+
 Transports
 ----------
 

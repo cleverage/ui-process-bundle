@@ -280,7 +280,8 @@ Neither the log records stored in database nor the log files are deleted by defa
 Both default to `null` (kept), in the [bundle configuration](01-bundle_configuration.md#logs), and can be overridden
 by process under the `logs` key of its options (next to the [`ui` options](02-process_ui_options.md)). A key missing
 (or `null`) in the process options is inherited from the bundle configuration; the executions of a process no longer
-defined use the bundle configuration.
+defined use the bundle configuration, as those of a process whose configuration is not valid (e.g. an unknown task in
+its `outputs`), with a warning naming it: the other processes are still purged.
 
 ```yaml
 # config/packages/clever_age_ui_process.yaml

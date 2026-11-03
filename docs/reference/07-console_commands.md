@@ -44,7 +44,37 @@ bin/console cleverage:ui-process:purge-logs [--dry-run]
 | `--dry-run` | Counts the log records and the log files to delete, without deleting them.   |
 
 It displays, for each process with a retention, the retention and the number of log records and log files deleted.
-Without any retention configured, it does nothing.
+Without any retention configured, it does nothing. A process whose configuration is not valid is purged with the
+retention of the bundle configuration, with a warning.
+
+cleverage:ui-process:purge-uploaded-files
+-----------------------------------------
+
+Deletes the files sent as input of a process (launch form, [HTTP API](06-http_api.md)) left in the upload directory,
+older than the retention in days of the `cleverage_ui_process.uploaded_files_max_days`
+[parameter](01-bundle_configuration.md#container-parameters) (`null` by default: nothing is deleted). These files are
+usually deleted once the process has been executed, but some are left: dispatch failure, worker killed during the
+execution, message removed from the failure transport (see [messenger](08-messenger.md#uploaded-files)), or
+`cleverage_ui_process.delete_uploaded_files` set to `false`.
+
+```bash
+bin/console cleverage:ui-process:purge-uploaded-files [--dry-run]
+```
+
+| Option      | Description                                                    |
+|-------------|----------------------------------------------------------------|
+| `--dry-run` | Counts the files to delete, without deleting them.             |
+
+Only the files directly in the upload directory and named as the bundle names them are deleted (`<uuid>.<extension>`
+from the launch form, `<date>_<id>_<file name>` from the HTTP API): a file put there by your application (e.g. given by
+its path to a schedule) and the subdirectories are kept. Choose a retention longer than the time a message may wait in a
+transport, its file being deleted too. Schedule it as `purge-logs`, e.g. once a day:
+
+```bash
+# Delete the uploaded files left for more than 7 days
+# config/services.yaml: parameters: { cleverage_ui_process.uploaded_files_max_days: 7 }
+0 3 * * * cd /path/to/project && bin/console cleverage:ui-process:purge-uploaded-files --no-debug
+```
 
 Related commands
 ----------------
