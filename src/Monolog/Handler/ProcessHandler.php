@@ -74,9 +74,33 @@ class ProcessHandler extends StreamHandler
             // Skip writing if no filename has been set yet
             return;
         }
+        if (\is_string($record->formatted)) {
+            $record->formatted = $this->escapeControlCharacters($record->formatted);
+        }
         parent::write($record);
         if ($record->level->value >= $this->reportIncrementLevel->value) {
             $this->processExecutionManager->increment($record->level->name);
         }
+    }
+
+    /**
+     * The control characters of the processed data (e.g. a CSV cell logged by a task) must not be interpreted by the
+     * terminal displaying the log file (cat, tail -f): ANSI escape sequences change the display, hide or forge lines.
+     * The C0 characters (except the tabulation and the line feed), DEL and the C1 characters (encoded in UTF-8) are
+     * escaped as "\x1B" and "\u{9B}".
+     */
+    private function escapeControlCharacters(string $line): string
+    {
+        $line = preg_replace_callback(
+            '/[\x00-\x08\x0B-\x1F\x7F]/',
+            static fn (array $matches): string => \sprintf('\\x%02X', \ord($matches[0])),
+            $line
+        ) ?? $line;
+
+        return preg_replace_callback(
+            '/\xC2([\x80-\x9F])/',
+            static fn (array $matches): string => \sprintf('\\u{%X}', \ord($matches[1])),
+            $line
+        ) ?? $line;
     }
 }

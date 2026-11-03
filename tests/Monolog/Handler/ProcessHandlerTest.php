@@ -89,6 +89,31 @@ class ProcessHandlerTest extends TestCase
         self::assertNull($handler->getFilename());
     }
 
+    public function testControlCharactersAreEscaped(): void
+    {
+        $handler = new ProcessHandler($this->directory, $this->createStub(ProcessExecutionManager::class));
+        $handler->setFilename('process.log');
+        $handler->handle(new LogRecord(
+            new \DateTimeImmutable(),
+            'cleverage_process',
+            Level::Info,
+            "red \e[31mcell\e[0m, cleared\r\e[2K, title \e]0;title\x07, tab\tDEL\x7F NUL\x00 CSI \u{9B}2J NEL \u{85} é ✓",
+            ['value' => "\e[31m"]
+        ));
+        $handler->close();
+
+        $line = (string) file_get_contents($this->directory.'/process.log');
+        self::assertStringContainsString(
+            'red \x1B[31mcell\x1B[0m, cleared \x1B[2K, title \x1B]0;title\x07, tab'."\t".'DEL\x7F NUL\x00 CSI \u{9B}2J NEL \u{85} é ✓',
+            $line
+        );
+        // The carriage return is replaced by a space by the formatter, the context is escaped in JSON
+        self::assertStringContainsString('{"value":"\\u001b[31m"}', $line);
+        self::assertStringEndsWith("\n", $line);
+        self::assertSame(1, substr_count($line, "\n"));
+        self::assertDoesNotMatchRegularExpression('/[\x00-\x08\x0B-\x1F\x7F]|\xC2[\x80-\x9F]/', $line);
+    }
+
     private function createRecord(Level $level): LogRecord
     {
         return new LogRecord(new \DateTimeImmutable(), 'cleverage_process', $level, strtolower($level->name).' message');
