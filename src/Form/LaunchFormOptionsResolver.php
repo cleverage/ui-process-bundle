@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace CleverAge\UiProcessBundle\Form;
 
 use CleverAge\ProcessBundle\Validator\ConstraintLoader;
+use CleverAge\UiProcessBundle\Controller\Admin\Process\LaunchAction;
 use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
 use Symfony\Component\Form\ButtonTypeInterface;
 use Symfony\Component\Form\Extension\Core\Type\EnumType;
@@ -125,6 +126,9 @@ final class LaunchFormOptionsResolver
                 // "extra" is the child of the free context pairs
                 if ('extra' === $key) {
                     throw new InvalidOptionsException(\sprintf('The context key "%s" of "form.context" of the process "%s" is reserved.', $key, $processCode));
+                }
+                if (LaunchAction::EXECUTION_USER === $key) {
+                    throw new InvalidOptionsException(\sprintf('The context key "%s" of "form.context" of the process "%s" is reserved: it is set to the email of the connected user.', $key, $processCode));
                 }
                 if (null !== $spec && !\is_array($spec)) {
                     throw new InvalidOptionsException(\sprintf('The launch form field "form.context.%s" of the process "%s" must be an array or null, "%s" given.', $key, $processCode, get_debug_type($spec)));
@@ -270,6 +274,9 @@ final class LaunchFormOptionsResolver
         $defaultContext = array_column($uiOptions['default']['context'], 'value', 'key');
         foreach (array_keys($defaultContext) as $key) {
             $key = (string) $key;
+            if (LaunchAction::EXECUTION_USER === $key) {
+                throw new InvalidOptionsException(\sprintf('The context key "%s" of "default.context" of the process "%s" is reserved: it is set to the email of the connected user.', $key, $processCode));
+            }
             if (\array_key_exists($key, $form['context'])) {
                 if (\array_key_exists('default', $rawContext[$key] ?? [])) {
                     throw new InvalidOptionsException(\sprintf('The default value of the context key "%1$s" of the process "%2$s" is set both in "default.context" and in "form.context.%1$s.default", use "form.context.%1$s.default" only.', $key, $processCode));

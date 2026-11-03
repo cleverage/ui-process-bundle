@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace CleverAge\UiProcessBundle\Form\Type;
 
+use CleverAge\UiProcessBundle\Controller\Admin\Process\LaunchAction;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -35,6 +36,13 @@ class ProcessContextType extends AbstractType
             $keyConstraints[] = new Choice(
                 choices: $reservedKeys,
                 message: 'The context key {{ value }} is a field of the launch form, use this field instead.',
+                match: false
+            );
+        }
+        if ($options['reserve_execution_user']) {
+            $keyConstraints[] = new Choice(
+                choices: [LaunchAction::EXECUTION_USER],
+                message: 'The context key {{ value }} is reserved: it is set to the email of the connected user.',
                 match: false
             );
         }
@@ -61,5 +69,8 @@ class ProcessContextType extends AbstractType
     {
         $resolver->setDefault('reserved_keys', []);
         $resolver->setAllowedTypes('reserved_keys', 'string[]');
+        // The launch form sets the "execution_user" context key
+        $resolver->setDefault('reserve_execution_user', false);
+        $resolver->setAllowedTypes('reserve_execution_user', 'bool');
     }
 }

@@ -262,6 +262,18 @@ class LaunchFormOptionsResolverTest extends TestCase
     }
 
     /**
+     * The key is reserved whether the free context is allowed or not: it is set to the email of the connected user.
+     */
+    #[TestWith([true])]
+    #[TestWith([false])]
+    public function testExecutionUserContextKey(bool $allowExtraContext): void
+    {
+        $this->expectException(InvalidOptionsException::class);
+        $this->expectExceptionMessage('The context key "execution_user" of "form.context" of the process "test.process" is reserved: it is set to the email of the connected user.');
+        $this->resolveLaunchForm(['form' => ['allow_extra_context' => $allowExtraContext, 'context' => ['execution_user' => null]]]);
+    }
+
+    /**
      * @param array<string, mixed> $form
      */
     #[DataProvider('provideInvalidFileFields')]
@@ -480,6 +492,15 @@ class LaunchFormOptionsResolverTest extends TestCase
         $this->expectException(InvalidOptionsException::class);
         $this->expectExceptionMessage('The default value of the input of the process "test.process" is set both in "default.input" and in "form.input.default", use "form.input.default" only.');
         $this->resolveLaunchForm(['form' => ['input' => ['default' => 'a.csv']], 'default' => ['input' => 'b.csv']]);
+    }
+
+    public function testExecutionUserDefaultContextKey(): void
+    {
+        $this->expectException(InvalidOptionsException::class);
+        $this->expectExceptionMessage('The context key "execution_user" of "default.context" of the process "test.process" is reserved: it is set to the email of the connected user.');
+        $this->resolveLaunchForm([
+            'default' => ['context' => [['key' => 'execution_user', 'value' => 'someone@example.com']]],
+        ]);
     }
 
     public function testExtraContextKeyNotAllowed(): void
