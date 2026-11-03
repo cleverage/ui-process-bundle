@@ -17,10 +17,13 @@ use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
 use Symfony\Component\HttpKernel\CacheWarmer\CacheWarmerInterface;
 
 /**
- * Resolves the launch form of the processes declaring the "form" UI option on cache:clear / cache:warmup, so that a
- * launch form with an invalid structure (types, keys, file fields, default values of the enum fields, constraints,
- * conflicts with the deprecated options, checked by LaunchFormOptionsResolver) fails there instead of on the launch
- * page.
+ * Checks the "ui", "notification" and "logs" options of every process on cache:clear / cache:warmup, so that an invalid
+ * option fails there instead of where it is used (process list, launch page, notification, purge of the logs), each of
+ * them being resolved on its own (ProcessConfigurationsManager).
+ *
+ * Resolves the launch form of the processes declaring the "form" UI option too, so that a launch form with an invalid
+ * structure (types, keys, file fields, default values of the enum fields, constraints, conflicts with the deprecated
+ * options, checked by LaunchFormOptionsResolver) fails there instead of on the launch page.
  *
  * The form itself is not built here: building it may depend on the runtime (database, current user, request), so the
  * options of the form types, the default values and the constraint validators are checked when the launch form is
@@ -45,6 +48,7 @@ final readonly class LaunchFormsCacheWarmer implements CacheWarmerInterface
     {
         $configurations = [...$this->processConfigurationsManager->getPublicProcesses(), ...$this->processConfigurationsManager->getPrivateProcesses()];
         foreach ($configurations as $configuration) {
+            $this->checkOptions($configuration->getCode());
             $ui = $configuration->getOptions()['ui'] ?? null;
             if (\is_array($ui) && \array_key_exists('form', $ui)) {
                 $this->checkLaunchForm($configuration->getCode());
@@ -52,6 +56,15 @@ final readonly class LaunchFormsCacheWarmer implements CacheWarmerInterface
         }
 
         return [];
+    }
+
+    private function checkOptions(string $processCode): void
+    {
+        try {
+            $this->processConfigurationsManager->checkOptions($processCode);
+        } catch (\Throwable $e) {
+            throw new \LogicException(\sprintf('The options of the process "%s" are invalid: %s', $processCode, $e->getMessage()), 0, $e);
+        }
     }
 
     private function checkLaunchForm(string $processCode): void

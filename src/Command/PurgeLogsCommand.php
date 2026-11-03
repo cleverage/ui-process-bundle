@@ -28,6 +28,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
+use Symfony\Component\OptionsResolver\Exception\ExceptionInterface as OptionsResolverException;
 
 /**
  * Deletes the log records (log_record table) older than "logs.database_max_days" days and the log files older than
@@ -78,8 +79,9 @@ class PurgeLogsCommand extends Command
         foreach ($this->getProcessCodes($connection) as $code) {
             try {
                 $options = $this->processConfigurationsManager->getLogsOptions($code);
-            } catch (ProcessExceptionInterface $exception) {
-                // Configuration not valid (e.g. unknown task reference): the other processes are purged
+            } catch (ProcessExceptionInterface|OptionsResolverException $exception) {
+                // Configuration not valid (e.g. unknown task reference, invalid "logs" option): the other processes
+                // are purged
                 $style->warning(\sprintf(
                     'The configuration of the process "%s" is not valid, its logs are purged with the retention of the bundle: %s',
                     $code,

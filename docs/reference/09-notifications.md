@@ -76,8 +76,10 @@ clever_age_process:
 | `channels`   | `string[]` | Notifier channels, e.g. `chat/slack`, `email`. Empty: the `channel_policy` of the notifier, by importance.                   |
 | `recipients` | `array[]`  | Recipients, with an `email` and/or a `phone` (required by the `email` and `sms` channels). Empty: the `admin_recipients` of the notifier. |
 
-A key missing (or `null`) in the process options is inherited from the bundle configuration. Invalid process options
-raise an options resolver error.
+A key missing (or `null`) in the process options is inherited from the bundle configuration. An invalid `notification`
+option is reported by the [cache warmer](02-process_ui_options.md#yaml-configuration) of the process options; at the
+end of an execution, the notification is not sent and the error is logged (`cleverage_ui_process` Monolog channel),
+without changing the result of the process. An invalid `ui` or `logs` option does not prevent the notification.
 
 Statuses
 --------

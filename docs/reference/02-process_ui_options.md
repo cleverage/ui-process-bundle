@@ -41,12 +41,17 @@ clever_age_process:
 ```
 
 Every key is optional: a process without `options.ui` is displayed and launched with a confirmation modal. Unknown
-keys, or invalid values, raise an options resolver error when the process list is displayed. The `form` option (and
-its interaction with the deprecated options) is not resolved by the process list. Its structure is checked by an
-optional cache warmer on `cache:clear` and `cache:warmup`, with a message naming the process: types, keys, file fields,
-default values of the enum fields, constraints, conflicts with the deprecated options. The warmer does not run on the
-automatic rebuild of the container in debug mode, and `cache:warmup --no-optional-warmers` skips it (e.g. when the
-environment variables used by the process options are not available at build time).
+keys, or invalid values, raise an options resolver error when the process list is displayed. The `ui`, `notification`
+and `logs` options are resolved separately: an invalid one does not break the others (e.g. an invalid `ui` option does
+not prevent the notification of the executions nor the purge of the logs). The `form` option (and its interaction with
+the deprecated options) is not resolved by the process list.
+
+An optional cache warmer checks these options on `cache:clear` and `cache:warmup`, with a message naming the process:
+the `ui` (except `form`), `notification` and `logs` options of every process, and no other key next to them; the
+structure of the `form` option: types, keys, file fields, default values of the enum fields, constraints, conflicts
+with the deprecated options. The warmer does not run on the automatic rebuild of the container in debug mode, and
+`cache:warmup --no-optional-warmers` skips it (e.g. when the environment variables used by the process options are not
+available at build time).
 
 The form itself is only built when the launch form of the process is displayed, since building it may depend on the
 runtime (a form type querying the database, the current user, the request): the options of the form types, the default

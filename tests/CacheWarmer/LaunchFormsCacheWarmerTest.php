@@ -17,6 +17,7 @@ use CleverAge\ProcessBundle\Registry\ProcessConfigurationRegistry;
 use CleverAge\UiProcessBundle\CacheWarmer\LaunchFormsCacheWarmer;
 use CleverAge\UiProcessBundle\Form\LaunchFormOptionsResolver;
 use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
+use CleverAge\UiProcessBundle\Notifier\NotificationTrigger;
 use CleverAge\UiProcessBundle\Tests\App\Validator\Even;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -28,11 +29,13 @@ use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\OptionsResolver\Exception\ExceptionInterface as OptionsResolverException;
 use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
 
 #[CoversClass(LaunchFormsCacheWarmer::class)]
 #[UsesClass(LaunchFormOptionsResolver::class)]
 #[UsesClass(ProcessConfigurationsManager::class)]
+#[UsesClass(NotificationTrigger::class)]
 class LaunchFormsCacheWarmerTest extends TestCase
 {
     public function testIsOptional(): void
@@ -116,6 +119,39 @@ class LaunchFormsCacheWarmerTest extends TestCase
             InvalidOptionsException::class,
             'is not a valid form field name',
         ];
+    }
+
+    /**
+     * The "ui", "notification" and "logs" options of every process are checked, with or without launch form.
+     *
+     * @param array<string, mixed> $options
+     */
+    #[DataProvider('provideInvalidOptions')]
+    public function testInvalidOptions(array $options, string $message): void
+    {
+        $process = $this->rawProcess();
+        $process['options'] = $options;
+        $warmer = $this->createWarmer(['valid.process' => $this->rawProcess(), 'test.process' => $process]);
+
+        try {
+            $warmer->warmUp(sys_get_temp_dir());
+            self::fail('An invalid option is expected to fail the warmup.');
+        } catch (\LogicException $e) {
+            self::assertStringStartsWith('The options of the process "test.process" are invalid: ', $e->getMessage());
+            self::assertStringContainsString($message, $e->getMessage());
+            self::assertInstanceOf(OptionsResolverException::class, $e->getPrevious());
+        }
+    }
+
+    /**
+     * @return iterable<string, array{array<string, mixed>, string}>
+     */
+    public static function provideInvalidOptions(): iterable
+    {
+        yield 'ui' => [['ui' => ['ui_launch_mode' => 'unknown']], 'ui_launch_mode'];
+        yield 'notification' => [['notification' => ['statuses' => ['unknown']]], 'statuses'];
+        yield 'logs' => [['logs' => ['database_max_days' => 0]], 'database_max_days'];
+        yield 'unknown option' => [['notifications' => ['enabled' => true]], 'notifications'];
     }
 
     /**

@@ -184,6 +184,35 @@ class ProcessExecutionNotifierTest extends TestCase
     }
 
     /**
+     * An invalid "notification" option does not change the result of the process: the error is logged.
+     */
+    public function testInvalidNotificationOptionIsLogged(): void
+    {
+        $this->createNotifier(processOptions: ['test.process' => ['notification' => ['statuses' => ['unknown']]]])->onProcessExecutionEnded(
+            new ProcessExecutionEndedEvent($this->createProcessExecution('test.process', ProcessExecutionStatus::Failed))
+        );
+
+        self::assertCount(0, $this->sent);
+        self::assertCount(1, $this->logs);
+        self::assertSame('error', $this->getLogs()[0][0]);
+        self::assertStringContainsString('its "notification" option is invalid', (string) $this->getLogs()[0][1]);
+        self::assertSame('test.process', $this->getLogs()[0][2]['process']);
+    }
+
+    /**
+     * An invalid "ui" option does not prevent the notification.
+     */
+    public function testInvalidUiOptionDoesNotPreventTheNotification(): void
+    {
+        $this->createNotifier(processOptions: ['test.process' => ['ui' => ['ui_launch_mode' => 'unknown']]])->onProcessExecutionEnded(
+            new ProcessExecutionEndedEvent($this->createProcessExecution('test.process', ProcessExecutionStatus::Failed))
+        );
+
+        self::assertCount(1, $this->sent);
+        self::assertCount(0, $this->logs);
+    }
+
+    /**
      * @param array{'enabled': bool, 'statuses': string[], 'channels': list<string>, 'recipients': array<array{'email': ?string, 'phone': ?string}>} $defaultOptions
      * @param array<string, array<string, mixed>>                                                                                                    $processOptions
      * @param RecipientInterface[]                                                                                                                   $adminRecipients
