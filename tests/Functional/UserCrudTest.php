@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace CleverAge\UiProcessBundle\Tests\Functional;
 
+use CleverAge\UiProcessBundle\CacheWarmer\LaunchFormsCacheWarmer;
 use CleverAge\UiProcessBundle\CleverAgeUiProcessBundle;
 use CleverAge\UiProcessBundle\Controller\Admin\LogRecordCrudController;
 use CleverAge\UiProcessBundle\Controller\Admin\ProcessDashboardController;
@@ -27,6 +28,9 @@ use CleverAge\UiProcessBundle\DependencyInjection\Compiler\UploadedFileSubscribe
 use CleverAge\UiProcessBundle\DependencyInjection\Configuration;
 use CleverAge\UiProcessBundle\Entity\User;
 use CleverAge\UiProcessBundle\EventSubscriber\ProcessEventSubscriber;
+use CleverAge\UiProcessBundle\Form\LaunchFormOptionsResolver;
+use CleverAge\UiProcessBundle\Form\Type\LaunchType;
+use CleverAge\UiProcessBundle\Form\Type\ProcessContextType;
 use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
 use CleverAge\UiProcessBundle\Monolog\Handler\DoctrineProcessHandler;
 use CleverAge\UiProcessBundle\Monolog\Handler\ProcessHandler;
@@ -51,6 +55,10 @@ use Symfony\Component\PasswordHasher\Hasher\Pbkdf2PasswordHasher;
 #[UsesClass(ProcessExtension::class)]
 #[UsesClass(CleverAgeUiProcessBundle::class)]
 #[UsesClass(CheckDoctrineLazyGhostObjectsPass::class)]
+#[UsesClass(LaunchFormOptionsResolver::class)]
+#[UsesClass(ProcessContextType::class)]
+#[UsesClass(LaunchType::class)]
+#[UsesClass(LaunchFormsCacheWarmer::class)]
 #[UsesClass(UploadDirectoryParameterPass::class)]
 #[UsesClass(LoginThrottlingPass::class)]
 #[UsesClass(UploadedFileSubscriberPass::class)]

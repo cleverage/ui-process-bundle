@@ -17,6 +17,7 @@ use CleverAge\UiProcessBundle\Admin\Field\ContextField;
 use CleverAge\UiProcessBundle\Admin\Field\EnumField;
 use CleverAge\UiProcessBundle\Admin\Filter\LogProcessFilter;
 use CleverAge\UiProcessBundle\Admin\Filter\ProcessExecutionDurationFilter;
+use CleverAge\UiProcessBundle\CacheWarmer\LaunchFormsCacheWarmer;
 use CleverAge\UiProcessBundle\CleverAgeUiProcessBundle;
 use CleverAge\UiProcessBundle\Controller\Admin\LogRecordCrudController;
 use CleverAge\UiProcessBundle\Controller\Admin\ProcessDashboardController;
@@ -73,6 +74,7 @@ use Symfony\Component\PasswordHasher\Hasher\Pbkdf2PasswordHasher;
 #[CoversClass(HttpProcessExecutionRequestRateLimiter::class)]
 #[CoversClass(PeekableHttpProcessExecutionRequestRateLimiter::class)]
 #[CoversClass(CleverAgeUiProcessExtension::class)]
+#[UsesClass(LaunchFormsCacheWarmer::class)]
 #[UsesClass(HttpProcessExecutionAuthenticator::class)]
 #[UsesClass(LoginController::class)]
 #[UsesClass(ProcessExecuteController::class)]

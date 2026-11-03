@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace CleverAge\UiProcessBundle\Tests\Functional;
 
+use CleverAge\UiProcessBundle\CacheWarmer\LaunchFormsCacheWarmer;
 use CleverAge\UiProcessBundle\CleverAgeUiProcessBundle;
 use CleverAge\UiProcessBundle\Controller\Admin\LogRecordCrudController;
 use CleverAge\UiProcessBundle\Controller\Admin\ProcessDashboardController;
@@ -70,6 +71,7 @@ use Symfony\Component\Messenger\Worker;
  * ProcessExecuteMessage consumed by a Messenger worker: the uploaded input is kept while the message will be retried.
  */
 #[CoversClass(ProcessExecuteHandler::class)]
+#[UsesClass(LaunchFormsCacheWarmer::class)]
 #[UsesClass(UploadedFileManager::class)]
 #[CoversClass(UploadedFileSubscriber::class)]
 #[UsesClass(UploadedFileSubscriberPass::class)]

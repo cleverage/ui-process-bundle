@@ -20,6 +20,7 @@ use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\Form\Extension\Validator\ValidatorExtension;
 use Symfony\Component\Form\FormExtensionInterface;
 use Symfony\Component\Form\Test\TypeTestCase;
+use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Validation;
 
@@ -51,9 +52,10 @@ class ProcessContextTypeTest extends TypeTestCase
             self::assertSame(['placeholder' => $name], $config->getOption('attr'));
             $constraints = $config->getOption('constraints');
             self::assertIsArray($constraints);
-            self::assertCount(1, $constraints);
             self::assertInstanceOf(NotBlank::class, $constraints[0]);
         }
+        self::assertCount(1, (array) $form->get('key')->getConfig()->getOption('constraints'));
+        self::assertCount(1, (array) $form->get('value')->getConfig()->getOption('constraints'));
     }
 
     public function testSubmitValidData(): void
@@ -75,5 +77,51 @@ class ProcessContextTypeTest extends TypeTestCase
 
         self::assertFalse($form->isValid());
         self::assertCount(1, $form->get($invalidField)->getErrors());
+    }
+
+    public function testNoReservedKeysByDefault(): void
+    {
+        $form = $this->factory->create(ProcessContextType::class);
+        $form->submit(['key' => 'delimiter', 'value' => ';']);
+
+        self::assertSame([], $form->getConfig()->getOption('reserved_keys'));
+        self::assertTrue($form->isValid());
+    }
+
+    public function testReservedKey(): void
+    {
+        $form = $this->factory->create(ProcessContextType::class, null, ['reserved_keys' => ['delimiter']]);
+        $form->submit(['key' => 'delimiter', 'value' => ';']);
+
+        self::assertFalse($form->isValid());
+        $errors = $form->get('key')->getErrors();
+        self::assertCount(1, $errors);
+        self::assertSame('The context key "delimiter" is a field of the launch form, use this field instead.', $errors[0]->getMessage());
+        self::assertCount(0, $form->get('value')->getErrors());
+    }
+
+    #[TestWith(['other'])]
+    #[TestWith(['Delimiter'])]
+    public function testKeyIsNotReserved(string $key): void
+    {
+        $form = $this->factory->create(ProcessContextType::class, null, ['reserved_keys' => ['delimiter']]);
+        $form->submit(['key' => $key, 'value' => ';']);
+
+        self::assertTrue($form->isValid());
+    }
+
+    public function testReservedKeysMustBeAnArray(): void
+    {
+        $this->expectException(InvalidOptionsException::class);
+        $this->factory->create(ProcessContextType::class, null, ['reserved_keys' => 'delimiter']);
+    }
+
+    public function testEmptyKey(): void
+    {
+        $form = $this->factory->create(ProcessContextType::class);
+        $form->submit(['key' => '', 'value' => 'bar']);
+
+        self::assertFalse($form->isValid());
+        self::assertCount(1, $form->get('key')->getErrors());
     }
 }

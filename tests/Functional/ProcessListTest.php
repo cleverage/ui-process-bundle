@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace CleverAge\UiProcessBundle\Tests\Functional;
 
+use CleverAge\UiProcessBundle\CacheWarmer\LaunchFormsCacheWarmer;
 use CleverAge\UiProcessBundle\CleverAgeUiProcessBundle;
 use CleverAge\UiProcessBundle\Controller\Admin\LogRecordCrudController;
 use CleverAge\UiProcessBundle\Controller\Admin\Process\ListAction;
@@ -28,6 +29,9 @@ use CleverAge\UiProcessBundle\DependencyInjection\Compiler\UploadedFileSubscribe
 use CleverAge\UiProcessBundle\DependencyInjection\Configuration;
 use CleverAge\UiProcessBundle\Entity\User;
 use CleverAge\UiProcessBundle\EventSubscriber\ProcessEventSubscriber;
+use CleverAge\UiProcessBundle\Form\LaunchFormOptionsResolver;
+use CleverAge\UiProcessBundle\Form\Type\LaunchType;
+use CleverAge\UiProcessBundle\Form\Type\ProcessContextType;
 use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
 use CleverAge\UiProcessBundle\Manager\ProcessExecutionManager;
 use CleverAge\UiProcessBundle\Monolog\Handler\DoctrineProcessHandler;
@@ -60,6 +64,10 @@ use PHPUnit\Framework\Attributes\UsesClass;
 #[UsesClass(ProcessExtensionRuntime::class)]
 #[UsesClass(CleverAgeUiProcessBundle::class)]
 #[UsesClass(CheckDoctrineLazyGhostObjectsPass::class)]
+#[UsesClass(LaunchFormOptionsResolver::class)]
+#[UsesClass(ProcessContextType::class)]
+#[UsesClass(LaunchType::class)]
+#[UsesClass(LaunchFormsCacheWarmer::class)]
 #[UsesClass(UploadDirectoryParameterPass::class)]
 #[UsesClass(LoginThrottlingPass::class)]
 #[UsesClass(UploadedFileSubscriberPass::class)]
@@ -122,6 +130,32 @@ class ProcessListTest extends FunctionalTestCase
             'Since cleverage/ui-process-bundle 3.3: The "process_list" route alias is deprecated, use the "cleverage_ui_process_list" route instead. It will be removed in 4.0.',
             $deprecations
         );
+    }
+
+    /**
+     * The launch form is only resolved by the launch page: the deprecated launch form options of the listed processes
+     * (e.g. "test.form") trigger no deprecation on the list.
+     */
+    public function testListDoesNotResolveTheLaunchForms(): void
+    {
+        $this->login();
+
+        $deprecations = $this->collectDeprecations(fn () => $this->client->request('GET', '/process?routeName=cleverage_ui_process_list'));
+
+        self::assertResponseIsSuccessful();
+        self::assertSame([], $deprecations);
+    }
+
+    /**
+     * The launch forms of the test application are resolved on cache:warmup (optional warmer).
+     */
+    public function testLaunchFormsAreCheckedOnCacheWarmup(): void
+    {
+        $warmer = static::getContainer()->get(LaunchFormsCacheWarmer::class);
+        self::assertInstanceOf(LaunchFormsCacheWarmer::class, $warmer);
+        self::assertTrue($warmer->isOptional());
+
+        self::assertSame([], $warmer->warmUp(sys_get_temp_dir()));
     }
 
     public function testUsersMenuIsReservedToAdmins(): void

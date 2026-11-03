@@ -47,6 +47,7 @@ class ProcessExtensionRuntimeTest extends TestCase
             'ui_launch_mode' => 'modal',
             'constraints' => [],
             'run' => null,
+            'form' => [],
         ], $options);
         self::assertSame([], $runtime->getUiOptions('demo.unknown'));
     }
