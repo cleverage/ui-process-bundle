@@ -18,6 +18,7 @@ use CleverAge\ProcessBundle\Registry\ProcessConfigurationRegistryInterface;
 use CleverAge\ProcessBundle\Validator\ConstraintLoader;
 use CleverAge\UiProcessBundle\Form\LaunchFormOptionsResolver;
 use CleverAge\UiProcessBundle\Notifier\NotificationTrigger;
+use Symfony\Component\OptionsResolver\Exception\ExceptionInterface as OptionsResolverException;
 use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
 use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -81,7 +82,10 @@ final readonly class ProcessConfigurationsManager
 
         $configuration = $this->registry->getProcessConfiguration($processCode);
 
-        return $this->resolveOptions($configuration->getOptions())['ui'];
+        /** @var UiOptions $options */
+        $options = $this->resolveOption($configuration->getOptions(), 'ui');
+
+        return $options;
     }
 
     /**
@@ -117,7 +121,10 @@ final readonly class ProcessConfigurationsManager
 
         $configuration = $this->registry->getProcessConfiguration($processCode);
 
-        return $this->resolveOptions($configuration->getOptions())['notification'];
+        /** @var NotificationOptions $options */
+        $options = $this->resolveOption($configuration->getOptions(), 'notification');
+
+        return $options;
     }
 
     /**
@@ -133,17 +140,67 @@ final readonly class ProcessConfigurationsManager
 
         $configuration = $this->registry->getProcessConfiguration($processCode);
 
-        return $this->resolveOptions($configuration->getOptions())['logs'];
+        /** @var LogsOptions $options */
+        $options = $this->resolveOption($configuration->getOptions(), 'logs');
+
+        return $options;
     }
 
     /**
-     * @param array<int|string, mixed> $options
+     * Checks the options of the process as a whole: the "ui" (except "form", see getLaunchFormOptions()),
+     * "notification" and "logs" options, and no other option. The getters resolve their own option only, so that an
+     * invalid option does not break the others: this check reports any invalid option before it is used.
      *
-     * @return array{'ui': UiOptions, 'notification': NotificationOptions, 'logs': LogsOptions}
+     * @internal
+     *
+     * @throws OptionsResolverException
      */
-    private function resolveOptions(array $options): array
+    public function checkOptions(string $processCode): void
+    {
+        if (false === $this->registry->hasProcessConfiguration($processCode)) {
+            return;
+        }
+
+        $this->createResolver(['ui', 'notification', 'logs'])->resolve($this->registry->getProcessConfiguration($processCode)->getOptions());
+    }
+
+    /**
+     * Resolves one option of the process only, the other ones are ignored.
+     *
+     * @param array<int|string, mixed>   $options
+     * @param 'ui'|'notification'|'logs' $name
+     *
+     * @return array<string, mixed>
+     */
+    private function resolveOption(array $options, string $name): array
+    {
+        /** @var array<string, array<string, mixed>> $resolved */
+        $resolved = $this->createResolver([$name])->resolve(array_intersect_key($options, [$name => true]));
+
+        return $resolved[$name];
+    }
+
+    /**
+     * @param list<'ui'|'notification'|'logs'> $names
+     */
+    private function createResolver(array $names): OptionsResolver
     {
         $resolver = new OptionsResolver();
+        if (\in_array('notification', $names, true)) {
+            $this->configureNotification($resolver);
+        }
+        if (\in_array('logs', $names, true)) {
+            $this->configureLogs($resolver);
+        }
+        if (\in_array('ui', $names, true)) {
+            $this->configureUi($resolver);
+        }
+
+        return $resolver;
+    }
+
+    private function configureNotification(OptionsResolver $resolver): void
+    {
         $resolver->setDefault('notification', []);
         $resolver->setAllowedTypes('notification', 'array');
         $resolver->setNormalizer('notification', static function (Options $options, array $notification): array {
@@ -184,6 +241,10 @@ final readonly class ProcessConfigurationsManager
 
             return $notificationResolver->resolve($notification);
         });
+    }
+
+    private function configureLogs(OptionsResolver $resolver): void
+    {
         $resolver->setDefault('logs', []);
         $resolver->setAllowedTypes('logs', 'array');
         $resolver->setNormalizer('logs', static function (Options $options, array $logs): array {
@@ -196,6 +257,10 @@ final readonly class ProcessConfigurationsManager
 
             return $logsResolver->resolve($logs);
         });
+    }
+
+    private function configureUi(OptionsResolver $resolver): void
+    {
         $resolver->setDefault('ui', []);
         $resolver->setAllowedTypes('ui', 'array');
         $resolver->setNormalizer('ui', static function (Options $options, array $ui): array {
@@ -238,12 +303,6 @@ final readonly class ProcessConfigurationsManager
 
             return $uiResolver->resolve($ui);
         });
-        /**
-         * @var array{'ui': UiOptions, 'notification': NotificationOptions, 'logs': LogsOptions} $options
-         */
-        $options = $resolver->resolve($options);
-
-        return $options;
     }
 
     /** @return ProcessConfiguration[] */

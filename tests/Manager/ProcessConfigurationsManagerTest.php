@@ -324,6 +324,71 @@ class ProcessConfigurationsManagerTest extends TestCase
     }
 
     /**
+     * Each getter resolves its own option: an invalid option does not break the getters of the other options.
+     */
+    public function testInvalidOptionDoesNotBreakTheOtherOptions(): void
+    {
+        $manager = $this->createManager([
+            'invalid.ui' => $this->rawProcess(['ui' => ['ui_launch_mode' => 'unknown'], 'notification' => ['enabled' => true], 'logs' => ['database_max_days' => 30]]),
+            'invalid.notification' => $this->rawProcess(['ui' => ['source' => 'Foo'], 'notification' => ['statuses' => ['unknown']], 'logs' => ['file_max_days' => 7]]),
+            'invalid.logs' => $this->rawProcess(['ui' => ['source' => 'Foo'], 'notification' => ['enabled' => false], 'logs' => ['database_max_days' => 0]]),
+            'unknown.option' => $this->rawProcess(['notifications' => ['enabled' => true], 'logs' => ['database_max_days' => 30]]),
+        ]);
+
+        self::assertSame(['enabled' => true, 'statuses' => null, 'channels' => null, 'recipients' => null], $manager->getNotificationOptions('invalid.ui'));
+        self::assertSame(['database_max_days' => 30, 'file_max_days' => null], $manager->getLogsOptions('invalid.ui'));
+        self::assertSame('Foo', $manager->getUiOptions('invalid.notification')['source'] ?? null);
+        self::assertSame(['database_max_days' => null, 'file_max_days' => 7], $manager->getLogsOptions('invalid.notification'));
+        self::assertSame('Foo', $manager->getUiOptions('invalid.logs')['source'] ?? null);
+        self::assertSame(['enabled' => false, 'statuses' => null, 'channels' => null, 'recipients' => null], $manager->getNotificationOptions('invalid.logs'));
+        // An unknown option is ignored by the getters, it is reported by checkOptions()
+        self::assertSame(['database_max_days' => 30, 'file_max_days' => null], $manager->getLogsOptions('unknown.option'));
+        self::assertSame('modal', $manager->getUiOptions('unknown.option')['ui_launch_mode'] ?? null);
+
+        $this->expectException(InvalidOptionsException::class);
+        $manager->getUiOptions('invalid.ui');
+    }
+
+    #[\PHPUnit\Framework\Attributes\DoesNotPerformAssertions]
+    public function testCheckValidOptions(): void
+    {
+        $manager = $this->createManager([
+            'test.process' => $this->rawProcess(['ui' => ['source' => 'Foo', 'form' => ['unknown' => true]], 'notification' => ['enabled' => true], 'logs' => ['database_max_days' => 30]]),
+            'no.options' => $this->rawProcess(),
+        ]);
+
+        // The "form" UI option is not checked (see getLaunchFormOptions())
+        $manager->checkOptions('test.process');
+        $manager->checkOptions('no.options');
+        $manager->checkOptions('unknown.process');
+    }
+
+    /**
+     * @param array<string, mixed>                   $options
+     * @param class-string<OptionsResolverException> $exception
+     */
+    #[DataProvider('provideInvalidOptionsToCheck')]
+    public function testCheckInvalidOptions(array $options, string $exception, string $message): void
+    {
+        $manager = $this->createManager(['test.process' => $this->rawProcess($options)]);
+
+        $this->expectException($exception);
+        $this->expectExceptionMessage($message);
+        $manager->checkOptions('test.process');
+    }
+
+    /**
+     * @return iterable<string, array{array<string, mixed>, class-string<OptionsResolverException>, string}>
+     */
+    public static function provideInvalidOptionsToCheck(): iterable
+    {
+        yield 'ui' => [['ui' => ['ui_launch_mode' => 'unknown']], InvalidOptionsException::class, 'ui_launch_mode'];
+        yield 'notification' => [['notification' => ['statuses' => ['unknown']]], InvalidOptionsException::class, 'statuses'];
+        yield 'logs' => [['logs' => ['database_max_days' => 0]], InvalidOptionsException::class, 'database_max_days'];
+        yield 'unknown option' => [['notifications' => []], UndefinedOptionsException::class, 'notifications'];
+    }
+
+    /**
      * @param array<string, array<string, mixed>> $rawConfiguration
      */
     private function createManager(array $rawConfiguration): ProcessConfigurationsManager

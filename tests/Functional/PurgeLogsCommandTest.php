@@ -172,6 +172,34 @@ class PurgeLogsCommandTest extends FunctionalTestCase
     }
 
     /**
+     * An invalid "logs" option is purged with the retention of the bundle, an invalid "ui" option does not affect the
+     * "logs" option of its process.
+     */
+    public function testInvalidOptions(): void
+    {
+        $invalidUi = $this->createExecution('test.invalid_ui');
+        $this->createLogRecord($invalidUi, 40);
+        $this->createLogRecord($invalidUi, 1);
+        $invalidLogs = $this->createExecution('test.invalid_logs');
+        $this->createLogRecord($invalidLogs, 40);
+        $this->createLogRecord($invalidLogs, 1);
+        $registry = new ProcessConfigurationRegistry([
+            'test.invalid_ui' => $this->rawProcess(['ui' => ['ui_launch_mode' => 'unknown'], 'logs' => ['database_max_days' => 10]]),
+            'test.invalid_logs' => $this->rawProcess(['logs' => ['database_max_days' => 0]]),
+        ], 'stop');
+
+        $tester = $this->execute(30, null, [], new ProcessConfigurationsManager($registry));
+
+        $tester->assertCommandIsSuccessful();
+        $display = (string) preg_replace('/\s+/', ' ', $tester->getDisplay());
+        self::assertStringContainsString('The configuration of the process "test.invalid_logs" is not valid, its logs are purged with the retention of the bundle:', $display);
+        self::assertStringNotContainsString('"test.invalid_ui" is not valid', $display);
+        // Retention of the process (10 days) despite its invalid "ui" option, of the bundle (30 days) for the invalid "logs" option
+        self::assertSame(1, $this->countLogRecords($invalidUi));
+        self::assertSame(1, $this->countLogRecords($invalidLogs));
+    }
+
+    /**
      * Before cleverage/process-bundle 5.6, an invalid process makes the listing fail.
      */
     public function testProcessListingFailureFallsBackOnTheRecordedExecutions(): void

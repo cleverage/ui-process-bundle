@@ -20,6 +20,7 @@ use Symfony\Component\Notifier\Notifier;
 use Symfony\Component\Notifier\NotifierInterface;
 use Symfony\Component\Notifier\Recipient\Recipient;
 use Symfony\Component\Notifier\Recipient\RecipientInterface;
+use Symfony\Component\OptionsResolver\Exception\ExceptionInterface as OptionsResolverException;
 
 /**
  * Sends a notification at the end of a process execution, according to the "notification" configuration of the
@@ -50,7 +51,18 @@ final readonly class ProcessExecutionNotifier
     public function onProcessExecutionEnded(ProcessExecutionEndedEvent $event): void
     {
         $processExecution = $event->processExecution;
-        $options = $this->getOptions($processExecution->code);
+        try {
+            $options = $this->getOptions($processExecution->code);
+        } catch (OptionsResolverException $exception) {
+            // An invalid "notification" option must not change the result of the process
+            $this->logger?->error('Unable to send the notification of the process execution, its "notification" option is invalid: {error}', [
+                'process' => $processExecution->code,
+                'error' => $exception->getMessage(),
+                'exception' => $exception,
+            ]);
+
+            return;
+        }
         if (!$options['enabled']) {
             return;
         }

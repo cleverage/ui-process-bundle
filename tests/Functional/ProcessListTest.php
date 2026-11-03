@@ -36,6 +36,7 @@ use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
 use CleverAge\UiProcessBundle\Manager\ProcessExecutionManager;
 use CleverAge\UiProcessBundle\Monolog\Handler\DoctrineProcessHandler;
 use CleverAge\UiProcessBundle\Monolog\Handler\ProcessHandler;
+use CleverAge\UiProcessBundle\Notifier\NotificationTrigger;
 use CleverAge\UiProcessBundle\Repository\ProcessExecutionRepository;
 use CleverAge\UiProcessBundle\Routing\DeprecatedEasyAdminRouteAliasLoader;
 use CleverAge\UiProcessBundle\Security\HttpProcessExecutionAuthenticator;
@@ -80,6 +81,7 @@ use PHPUnit\Framework\Attributes\UsesClass;
 #[UsesClass(Configuration::class)]
 #[UsesClass(ProcessEventSubscriber::class)]
 #[UsesClass(ProcessExecutionManager::class)]
+#[UsesClass(NotificationTrigger::class)]
 class ProcessListTest extends FunctionalTestCase
 {
     public function testDashboardRedirectsToTheExecutions(): void
