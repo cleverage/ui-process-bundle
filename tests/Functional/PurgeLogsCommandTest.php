@@ -13,7 +13,9 @@ declare(strict_types=1);
 
 namespace CleverAge\UiProcessBundle\Tests\Functional;
 
+use CleverAge\ProcessBundle\Exception\MissingTaskConfigurationException;
 use CleverAge\ProcessBundle\Registry\ProcessConfigurationRegistry;
+use CleverAge\ProcessBundle\Registry\ProcessConfigurationRegistryInterface;
 use CleverAge\UiProcessBundle\CleverAgeUiProcessBundle;
 use CleverAge\UiProcessBundle\Command\PurgeLogsCommand;
 use CleverAge\UiProcessBundle\DependencyInjection\CleverAgeUiProcessExtension;
@@ -134,6 +136,52 @@ class PurgeLogsCommandTest extends FunctionalTestCase
         self::assertSame(3, $this->getEntityManager()->getRepository(ProcessExecution::class)->count([]));
     }
 
+    public function testInvalidProcessConfigurationIsPurgedWithTheBundleRetention(): void
+    {
+        $valid = $this->createExecution('test.valid');
+        $this->createLogRecord($valid, 40);
+        $validFile = $this->createLogFile('test.valid', 70);
+        $invalid = $this->createExecution('test.invalid');
+        $this->createLogRecord($invalid, 40);
+        $this->createLogRecord($invalid, 1);
+        $invalidFile = $this->createLogFile('test.invalid', 70);
+        // "test.invalid" refers to an unknown task: its configuration cannot be resolved
+        $registry = new ProcessConfigurationRegistry([
+            'test.valid' => $this->rawProcess(['logs' => ['database_max_days' => 90]]),
+            'test.invalid' => $this->rawProcess(['logs' => ['database_max_days' => 90]], ['missing']),
+        ], 'stop');
+
+        $tester = $this->execute(30, 60, [], new ProcessConfigurationsManager($registry));
+
+        $tester->assertCommandIsSuccessful();
+        $display = (string) preg_replace('/\s+/', ' ', $tester->getDisplay());
+        self::assertStringContainsString('The configuration of the process "test.invalid" is not valid, its logs are purged with the retention of the bundle:', $display);
+        // Retention of the process for the valid one, of the bundle for the invalid one
+        self::assertSame(1, $this->countLogRecords($valid));
+        self::assertSame(1, $this->countLogRecords($invalid));
+        self::assertFileDoesNotExist($validFile);
+        self::assertFileDoesNotExist($invalidFile);
+    }
+
+    /**
+     * Before cleverage/process-bundle 5.6, an invalid process makes the listing fail.
+     */
+    public function testProcessListingFailureFallsBackOnTheRecordedExecutions(): void
+    {
+        $execution = $this->createExecution('test.invalid');
+        $this->createLogRecord($execution, 40);
+        $registry = $this->createStub(ProcessConfigurationRegistryInterface::class);
+        $registry->method('getProcessConfigurations')->willThrowException(MissingTaskConfigurationException::create('missing'));
+        $registry->method('hasProcessConfiguration')->willReturn(true);
+        $registry->method('getProcessConfiguration')->willThrowException(MissingTaskConfigurationException::create('missing'));
+
+        $tester = $this->execute(30, null, [], new ProcessConfigurationsManager($registry));
+
+        $tester->assertCommandIsSuccessful();
+        self::assertStringContainsString('"test.invalid" is not valid', $tester->getDisplay());
+        self::assertSame(0, $this->countLogRecords($execution));
+    }
+
     public function testDryRun(): void
     {
         $execution = $this->createExecution('test.process');
@@ -228,6 +276,39 @@ class PurgeLogsCommandTest extends FunctionalTestCase
         $tester->execute($input);
 
         return $tester;
+    }
+
+    /**
+     * Raw configuration of a process with a single task, as the process bundle configuration would give it.
+     *
+     * @param array<string, mixed> $options
+     * @param list<string>         $outputs
+     *
+     * @return array<string, mixed>
+     */
+    private function rawProcess(array $options = [], array $outputs = []): array
+    {
+        return [
+            'options' => $options,
+            'entry_point' => null,
+            'end_point' => null,
+            'description' => '',
+            'help' => '',
+            'public' => true,
+            'tasks' => [
+                'data' => [
+                    'service' => '@CleverAge\ProcessBundle\Task\DummyTask',
+                    'options' => [],
+                    'description' => '',
+                    'help' => '',
+                    'outputs' => $outputs,
+                    'errors' => [],
+                    'error_outputs' => [],
+                    'error_strategy' => null,
+                    'log_level' => null,
+                ],
+            ],
+        ];
     }
 
     private function getProcessConfigurationsManager(): ProcessConfigurationsManager
