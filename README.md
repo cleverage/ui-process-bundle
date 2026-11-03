@@ -16,6 +16,9 @@ Compatible with [Symfony stable version and latest Long-Term Support (LTS) relea
 composer require cleverage/ui-process-bundle
 ```
 
+In a non-interactive install (CI, Docker, `-n`), Symfony Flex skips the recipes (from `recipes-contrib`) unless
+`extra.symfony.allow-contrib` is `true`: see the [installation](docs/index.md#installation).
+
 Without Symfony Flex, register the bundle in `config/bundles.php`:
 
 ```php

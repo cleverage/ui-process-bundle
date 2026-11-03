@@ -57,6 +57,16 @@ imports its routes (`config/routes/clever_age_ui_process.yaml`) and creates its 
 configure the security password hasher and the Doctrine naming strategy expected below: go straight to the
 [database](#database) step.
 
+The recipe comes from the `recipes-contrib` repository: Flex asks before applying it. In a non-interactive install (CI,
+Docker, `composer require -n`), it is skipped unless the contrib recipes are allowed, and the bundle is then not
+registered (no `/process` route, no `cleverage:ui-process:*` command). The recipe of `cleverage/process-bundle` is
+skipped too. Allow them and install the recipes:
+
+```bash
+composer config extra.symfony.allow-contrib true
+composer recipes:install cleverage/process-bundle cleverage/ui-process-bundle --force -v
+```
+
 Without Flex, add the following line to `config/bundles.php`, then follow the quick setup:
 
 ```php
