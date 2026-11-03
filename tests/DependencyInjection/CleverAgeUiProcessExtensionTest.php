@@ -173,6 +173,8 @@ class CleverAgeUiProcessExtensionTest extends TestCase
         $databaseHandler = $container->getDefinition('cleverage_ui_process.monolog_handler.doctrine_process');
         self::assertSame('Info', $databaseHandler->getArgument('$level'));
         self::assertFalse($databaseHandler->hasMethodCall('disable'));
+        // The log records counted in the report are written right away
+        self::assertContains(['setReportIncrementLevel', ['Warning']], $databaseHandler->getMethodCalls());
         // Failures to store the logs reported on the channel of the process logs (logger set by the MonologBundle)
         self::assertTrue($databaseHandler->hasMethodCall('setLogger'));
         self::assertSame([['channel' => 'cleverage_process']], $databaseHandler->getTag('monolog.logger'));
@@ -360,6 +362,7 @@ class CleverAgeUiProcessExtensionTest extends TestCase
         self::assertSame('Error', $databaseHandler->getArgument('$level'));
         self::assertTrue($databaseHandler->hasMethodCall('disable'));
         $calls = $databaseHandler->getMethodCalls();
+        self::assertContains(['setReportIncrementLevel', ['Critical']], $calls);
         self::assertSame(['disable', []], array_last($calls));
 
         $purgeLogsCommand = $container->getDefinition('cleverage_ui_process.command.purge_logs');

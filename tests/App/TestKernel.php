@@ -145,6 +145,9 @@ class TestKernel extends Kernel
 
     public static function getRunDir(): string
     {
-        return self::$runDir ??= sys_get_temp_dir().'/ui_process_bundle_tests_'.getmypid();
+        // Given to a PHP process started by a test, to use the same container and database
+        $runDir = getenv('UI_PROCESS_BUNDLE_TESTS_RUN_DIR');
+
+        return self::$runDir ??= \is_string($runDir) && '' !== $runDir ? $runDir : sys_get_temp_dir().'/ui_process_bundle_tests_'.getmypid();
     }
 }
