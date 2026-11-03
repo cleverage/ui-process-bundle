@@ -24,6 +24,8 @@ use Symfony\Component\String\UnicodeString;
 #[ORM\Index(name: 'idx_process_execution_start_date', columns: ['start_date'])]
 class ProcessExecution implements \Stringable
 {
+    use EncodableContextTrait;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(name: 'id')]
@@ -80,7 +82,8 @@ class ProcessExecution implements \Stringable
     ) {
         $this->code = (string) (new UnicodeString($code))->truncate(255);
         $this->startDate = \DateTimeImmutable::createFromMutable(new \DateTime());
-        $this->context = $context ?? [];
+        // Stored as JSON: the context of the process may come from a request or a file (e.g. invalid UTF-8)
+        $this->context = $this->encodableContext($context ?? []);
     }
 
     public function __toString(): string
@@ -180,6 +183,6 @@ class ProcessExecution implements \Stringable
      */
     public function setContext(array $context): void
     {
-        $this->context = $context;
+        $this->context = $this->encodableContext($context);
     }
 }

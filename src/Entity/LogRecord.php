@@ -22,6 +22,8 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Index(name: 'idx_log_record_created_at', columns: ['created_at'])]
 class LogRecord
 {
+    use EncodableContextTrait;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(name: 'id')]
@@ -69,26 +71,6 @@ class LogRecord
     private function truncate(string $value, int $length): string
     {
         return mb_substr(str_replace("\0", '', mb_scrub($value, 'UTF-8')), 0, $length, 'UTF-8');
-    }
-
-    /**
-     * The context, stored as JSON: unchanged when it can be encoded, otherwise its JSON representation where the
-     * invalid UTF-8 sequences are replaced (by U+FFFD) and the values which cannot be encoded (e.g. a resource) are
-     * replaced by null: the insertion of the log record, and of the other ones of the batch, would fail.
-     *
-     * @param array<mixed> $context
-     *
-     * @return array<mixed>
-     */
-    private function encodableContext(array $context): array
-    {
-        if (false !== json_encode($context, \JSON_PRESERVE_ZERO_FRACTION)) {
-            return $context;
-        }
-        $json = json_encode($context, \JSON_PRESERVE_ZERO_FRACTION | \JSON_INVALID_UTF8_SUBSTITUTE | \JSON_PARTIAL_OUTPUT_ON_ERROR);
-        $encodable = false === $json ? null : json_decode($json, true);
-
-        return \is_array($encodable) ? $encodable : [];
     }
 
     /**
