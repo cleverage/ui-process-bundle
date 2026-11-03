@@ -1,6 +1,9 @@
 Latest
 ------
 
+## Changes
+* [#242](https://github.com/cleverage/ui-process-bundle/issues/242) Documentation: non-interactive install with Symfony Flex, the recipes of the bundle and of `cleverage/process-bundle` being in `recipes-contrib` (`allow-contrib`, `recipes:install`).
+
 ## Fixes
 * [#240](https://github.com/cleverage/ui-process-bundle/issues/240) `ProcessExecutionCrudController::downloadLogFile()` streams the log file (`BinaryFileResponse`) instead of loading it in memory: a log file bigger than the memory limit can be downloaded. The extension of a file uploaded with the launch form is reduced to its letters and digits (at most 16), and the client file name of a file uploaded with the HTTP API is truncated to keep the written file name under 255 bytes: a long name could not be written (500 for the launch form, 422 for the HTTP API as if the process code was missing). `ProcessEventSubscriber` detaches the ended process execution from the entity manager (new `ProcessExecutionManager::detachLastProcessExecution()` and `ProcessExecutionRepository::detach()`): without a reset of the services (processes executed in a loop, tests, FrankenPHP worker mode), the entity manager kept every ended execution. Update documentation, add tests.
 
