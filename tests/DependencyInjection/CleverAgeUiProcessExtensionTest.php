@@ -29,6 +29,8 @@ use CleverAge\UiProcessBundle\Monolog\Handler\ProcessHandler;
 use CleverAge\UiProcessBundle\Notifier\NotificationTrigger;
 use CleverAge\UiProcessBundle\Repository\ProcessExecutionRepository;
 use CleverAge\UiProcessBundle\Repository\ProcessScheduleRepository;
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\Persistence\ManagerRegistry;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\UsesClass;
@@ -48,6 +50,7 @@ use Symfony\Component\Yaml\Yaml;
 #[CoversClass(CleverAgeUiProcessExtension::class)]
 #[UsesClass(Configuration::class)]
 #[UsesClass(NotificationTrigger::class)]
+#[UsesClass(ProcessExecutionManager::class)]
 class CleverAgeUiProcessExtensionTest extends TestCase
 {
     public function testEveryServiceDefinitionFileIsLoaded(): void
@@ -146,6 +149,24 @@ class CleverAgeUiProcessExtensionTest extends TestCase
             self::assertTrue($definition->hasTag('container.service_subscriber'));
             self::assertTrue($definition->hasMethodCall('setContainer'));
         }
+    }
+
+    /**
+     * The Monolog handlers of the bundle depend on the process execution manager, created when the kernel boots: the
+     * repository must not load the metadata of the entity then (DoctrineMetadataCacheWarmer fails in prod).
+     */
+    public function testTheProcessExecutionRepositoryIsLazy(): void
+    {
+        $container = $this->createContainer('prod');
+        (new CleverAgeUiProcessExtension())->load([], $container);
+        self::assertTrue($container->getDefinition('cleverage_ui_process.repository.process_execution')->isLazy());
+
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager->expects(self::never())->method('getClassMetadata');
+        $container->set('doctrine.orm.entity_manager', $entityManager);
+        $container->set('doctrine', $this->createStub(ManagerRegistry::class));
+
+        self::assertInstanceOf(ProcessExecutionManager::class, $container->get('cleverage_ui_process.manager.process_execution'));
     }
 
     public function testLoadWithDefaultConfiguration(): void

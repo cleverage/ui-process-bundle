@@ -49,6 +49,19 @@ context, is taken into account at its next run, without restarting the worker. U
 Supervisor, you can simply stop it (`bin/console messenger:stop-workers`), it will be restarted automatically. The schedule is not stateful: runs missed
 while the worker was stopped are not caught up.
 
+Run **a single `scheduler_cron` worker**: each worker sends the messages of the schedules, so with two workers every
+due schedule is executed twice. When [symfony/lock](https://symfony.com/doc/current/lock.html) is installed, the
+schedule is locked (`cleverage_ui_process.scheduler.cron` resource of the `lock.factory` service): only the worker
+holding the lock sends the messages, the other ones take over when it stops. The default lock store of the
+FrameworkBundle (`semaphore` or `flock`) only works between workers of the same host; for workers on several hosts or
+containers, use a shared store:
+
+```yaml
+# config/packages/lock.yaml
+framework:
+    lock: '%env(DATABASE_URL)%'
+```
+
 See the [scheduled process](../cookbooks/scheduled_process.md) cookbook for a complete example.
 
 Application schedules

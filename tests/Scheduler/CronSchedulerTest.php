@@ -22,7 +22,11 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Clock\MockClock;
+use Symfony\Component\Lock\LockFactory;
+use Symfony\Component\Lock\Store\InMemoryStore;
 use Symfony\Component\Scheduler\Generator\MessageContext;
+use Symfony\Component\Scheduler\Generator\MessageGenerator;
 use Symfony\Component\Scheduler\RecurringMessage;
 use Symfony\Component\Scheduler\Trigger\CronExpressionTrigger;
 use Symfony\Component\Scheduler\Trigger\PeriodicalTrigger;
@@ -66,6 +70,15 @@ class CronSchedulerTest extends TestCase
         self::assertInstanceOf(PeriodicalTrigger::class, $messages[1]->getTrigger());
         self::assertStringContainsString('10 seconds', (string) $messages[1]->getTrigger());
         self::assertSame($every, $this->getScheduledMessage($messages[1])->processSchedule);
+    }
+
+    /**
+     * Each scheduler_cron worker generates the messages of its schedule: with a lock, only the worker holding it.
+     */
+    public function testOnlyTheWorkerHoldingTheLockSendsTheMessages(): void
+    {
+        self::assertSame([3, 3], $this->countMessagesOfTwoWorkers(null), 'Without lock, each worker sends the messages');
+        self::assertSame([3, 0], $this->countMessagesOfTwoWorkers(new LockFactory(new InMemoryStore())));
     }
 
     public function testInvalidSchedulesAreSkipped(): void
@@ -204,5 +217,30 @@ class CronSchedulerTest extends TestCase
         self::assertInstanceOf(CronProcessMessage::class, $messages[0]);
 
         return $messages[0];
+    }
+
+    /**
+     * Two workers consuming the schedule for 40 seconds, the process being scheduled every 10 seconds.
+     *
+     * @return array{int, int} the number of messages sent by each worker
+     */
+    private function countMessagesOfTwoWorkers(?LockFactory $lockFactory): array
+    {
+        $clock = new MockClock('2026-11-04 12:00:00');
+        $schedule = $this->createSchedule(ProcessScheduleType::EVERY, '10 seconds');
+        $workers = [];
+        foreach ([0, 1] as $worker) {
+            $scheduler = new CronScheduler($this->createRepository([$schedule]), $this->createValidator(), $this->createStub(LoggerInterface::class), $lockFactory);
+            $workers[$worker] = new MessageGenerator($scheduler, 'cron', $clock);
+        }
+        $counts = [0, 0];
+        for ($second = 0; $second <= 35; $second += 5) {
+            foreach ($workers as $worker => $generator) {
+                $counts[$worker] += iterator_count($generator->getMessages());
+            }
+            $clock->sleep(5);
+        }
+
+        return $counts;
     }
 }
