@@ -171,9 +171,10 @@ jobs:
         if: matrix.dbal != '3' || matrix.database != 'postgresql'
         run: tests/App/bin/console doctrine:schema:validate
       # The queries of the logs list on this database, e.g. the filter on the JSON context (failed on PostgreSQL); the
-      # functional test creates its own schema
+      # functional test creates its own schema. The deprecations of the dependencies are checked by the test job
+      # (with DBAL 3, the lazy ghost proxies of Doctrine ORM 2 are deprecated by symfony/var-exporter 7.3)
       - name: Run the functional test of the logs list
-        run: vendor/bin/phpunit tests/Functional/LogRecordCrudTest.php
+        run: vendor/bin/phpunit tests/Functional/LogRecordCrudTest.php --do-not-fail-on-deprecation
 
   # Single check to require in the branch protection of main: its name does not depend on the matrix
   tests-passed:

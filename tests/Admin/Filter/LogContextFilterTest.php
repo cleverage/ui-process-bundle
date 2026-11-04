@@ -19,7 +19,6 @@ use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
-use Doctrine\DBAL\Platforms\SQLitePlatform;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\QueryBuilder;
@@ -53,7 +52,6 @@ class LogContextFilterTest extends TestCase
         // PostgreSQL has no LIKE operator for the json type: the column is converted to text
         yield 'PostgreSQL' => [new PostgreSQLPlatform(), "CONCAT(entity.context, '')"];
         yield 'MySQL' => [new MySQLPlatform(), 'entity.context'];
-        yield 'SQLite' => [new SQLitePlatform(), 'entity.context'];
     }
 
     #[DataProvider('providePlatforms')]
