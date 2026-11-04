@@ -1,6 +1,9 @@
 Latest
 ------
 
+## Changes
+* [#270](https://github.com/cleverage/ui-process-bundle/issues/270) Documentation: the PHP CLI (workers, commands) and the web server must use the same `date.timezone`: the dates of the executions are stored without timezone, a running execution was displayed as "Not responding" when the web server is ahead of the worker.
+
 v3.5
 ------
 
