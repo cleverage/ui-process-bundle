@@ -102,6 +102,12 @@ blocked in a long task call, it stops when the call returns; if it has been kill
 Only mark as failed an execution whose process is no longer running (if it is still running, it goes on until its
 end, and its real status is recorded then).
 
+The dates of the executions and of their logs are stored without timezone, in the default timezone of the PHP process
+writing them (`date.timezone`), and compared with the current date of the PHP process reading them. **Use the same
+`date.timezone` for the PHP CLI (workers, commands) and the web server (PHP-FPM)**, e.g. in separate containers:
+otherwise, a running execution is displayed as "Not responding" as soon as it starts (worker behind the web server, e.g.
+`UTC` and `Europe/Paris`), or a killed one only after the time difference.
+
 ### Report
 
 When a log record has a level greater than or equal to `report_increment_level` (default `Warning`, see
