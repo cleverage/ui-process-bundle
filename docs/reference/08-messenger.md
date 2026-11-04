@@ -124,6 +124,13 @@ bin/console messenger:consume scheduler_cron
 ```
 
 One `execute_process` worker executes one process at a time: run several workers to execute processes in parallel.
+
+Several workers may execute the same process at the same time: launched twice from the UI or the HTTP API, or due
+again from a schedule while its previous execution is not over. With a single worker, the next execution waits for the
+end of the previous one, but the process can still be executed from the command line at the same time. A process that
+must not run twice at the same time must protect its outputs, see
+[the good practices of cleverage/process-bundle](https://github.com/cleverage/process-bundle/blob/main/docs/05-good_practices.md#do-not-execute-a-process-twice-at-the-same-time).
+
 Useful options of `messenger:consume`:
 
 ```
