@@ -349,4 +349,5 @@ The command does not run them: they would block the running processes, which wri
 
 The "Process > Logs" menu lists the database logs (250 per page), with their level, message, date and a "Has context
 info ?" column. The detail page displays the log context. They can be filtered by process (or execution), level,
-message, context and date.
+message, context and date. The context filter searches the JSON representation of the context, as stored by the
+database (e.g. with escaped non-ASCII characters on PostgreSQL).
