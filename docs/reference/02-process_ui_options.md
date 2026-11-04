@@ -49,8 +49,9 @@ the deprecated options) is not resolved by the process list.
 An optional cache warmer checks these options on `cache:clear` and `cache:warmup`, with a message naming the process:
 the `ui` (except `form`), `notification` and `logs` options of every process (the other keys of `options` are free, for
 other bundles or the application, and ignored); the
-structure of the `form` option: types, keys, file fields, default values of the enum fields, constraints, conflicts
-with the deprecated options. The warmer does not run on the automatic rebuild of the container in debug mode, and
+structure of the launch form (`form` option, or the deprecated options of a process launched with the `form` mode):
+types, keys (e.g. a reserved `execution_user` context key), file fields, default values of the enum fields,
+constraints, conflicts with the deprecated options. The warmer does not run on the automatic rebuild of the container in debug mode, and
 `cache:warmup --no-optional-warmers` skips it (e.g. when the environment variables used by the process options are not
 available at build time).
 
