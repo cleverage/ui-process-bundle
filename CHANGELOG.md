@@ -1,6 +1,9 @@
 Latest
 ------
 
+## Fixes
+* [#271](https://github.com/cleverage/ui-process-bundle/issues/271) Database logs: the arrays of the context of a log record are limited as in the log file (Monolog `NormalizerFormatter`): 1000 items, 9 levels deep. An unbounded context (e.g. the output of an aggregator) was stored whole, and over the maximum packet size of the database, it made the insertion of the log records written with it fail. Update documentation, add tests.
+
 v3.5
 ------
 

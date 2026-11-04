@@ -127,6 +127,41 @@ class LogRecordTest extends TestCase
     }
 
     /**
+     * The limits of the log file (Monolog NormalizerFormatter): at most 1000 items per array.
+     */
+    public function testContextArraysAreLimitedTo1000Items(): void
+    {
+        $rows = array_fill(0, 100_000, ['sku' => 'A', 'qty' => 1]);
+
+        $context = $this->createLogRecord(['input' => $rows, 'small' => [1, 2]])->context;
+
+        self::assertIsArray($context['input']);
+        self::assertCount(1001, $context['input']);
+        self::assertSame(['sku' => 'A', 'qty' => 1], $context['input'][999]);
+        self::assertSame('Over 1000 items (100000 total), aborting normalization', $context['input']['...']);
+        self::assertSame([1, 2], $context['small']);
+
+        $context = $this->createLogRecord(range(1, 1000))->context;
+        self::assertSame(range(1, 1000), $context, 'Not limited up to 1000 items');
+    }
+
+    /**
+     * The limits of the log file (Monolog NormalizerFormatter): 9 levels deep, the context being the first one.
+     */
+    public function testContextIsLimitedTo9LevelsDeep(): void
+    {
+        $context = $this->createLogRecord(['a' => ['b' => ['c' => ['d' => ['e' => ['f' => ['g' => ['h' => ['i' => 'too deep', 'j' => []]], 'h2' => 'kept']]]]]]])->context;
+
+        self::assertSame(
+            ['a' => ['b' => ['c' => ['d' => ['e' => ['f' => ['g' => ['h' => [
+                'i' => 'Over 9 levels deep, aborting normalization',
+                'j' => 'Over 9 levels deep, aborting normalization',
+            ]], 'h2' => 'kept']]]]]]],
+            $context
+        );
+    }
+
+    /**
      * @return iterable<string, array{string}>
      */
     public static function provideGraphemes(): iterable
