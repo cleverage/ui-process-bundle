@@ -1,6 +1,9 @@
 Latest
 ------
 
+## Changes
+* [#264](https://github.com/cleverage/ui-process-bundle/issues/264) Documentation: with the Doctrine transport, a process running longer than the `redeliver_timeout` of the `execute_process` transport (3600 seconds by default) is executed again, in parallel, by another worker, as the process of a killed worker; set a longer `redeliver_timeout`, or consume with `--keepalive` (Symfony 7.3+).
+
 ## Fixes
 * [#260](https://github.com/cleverage/ui-process-bundle/issues/260) `LaunchFormsCacheWarmer`: the keys of the options of a process other than `ui`, `notification` and `logs` are ignored (internal `ProcessConfigurationsManager::checkOptions()`), as by the getters: the options of a process are free, other bundles or the application may read their own, and such a key made `cache:clear` / `cache:warmup` of the whole application fail since 3.5. Update documentation and tests.
 * [#262](https://github.com/cleverage/ui-process-bundle/issues/262) `cache:clear` no longer fails in prod with `DoctrineMetadataCacheWarmer must load metadata first`: the `ProcessExecutionRepository` service is lazy, its constructor loaded the metadata of `ProcessExecution` when the kernel booted (the Monolog handlers of the bundle depend on it). Add tests.

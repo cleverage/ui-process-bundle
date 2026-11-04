@@ -80,6 +80,36 @@ framework:
 The `scheduler_cron` transport is created by Symfony Scheduler from the bundle `cron` schedule provider, it needs no
 configuration.
 
+### Long processes
+
+The Doctrine transport delivers again a message still being handled after its `redeliver_timeout` (3600 seconds by
+default), to consider that its worker has died:
+
+* a process running longer than that is executed a second time, in parallel, by another worker;
+* the process of a killed worker (out of memory, `SIGKILL`) is executed again after this delay, although failed
+  processes are not retried.
+
+Either set a `redeliver_timeout` longer than your longest process:
+
+```yaml
+# config/packages/messenger.yaml
+framework:
+    messenger:
+        transports:
+            execute_process:
+                dsn: 'doctrine://default?redeliver_timeout=86400'
+```
+
+Or, with Symfony 7.3 or later and the `pcntl` extension, consume with `--keepalive`: the worker refreshes the delivery
+of the message being handled every 5 seconds (or the given interval, lower than the `redeliver_timeout`), and the
+message of a killed worker is delivered again after the `redeliver_timeout`:
+
+```bash
+bin/console messenger:consume execute_process --keepalive
+```
+
+Other transports have their own redelivery settings, see the documentation of the transport.
+
 Workers
 -------
 
