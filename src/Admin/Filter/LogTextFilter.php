@@ -23,12 +23,14 @@ use EasyCorp\Bundle\EasyAdminBundle\Filter\FilterTrait;
 use EasyCorp\Bundle\EasyAdminBundle\Form\Filter\Type\TextFilterType;
 
 /**
- * Text filter on a JSON column, the TextFilter of EasyAdmin: PostgreSQL has no LIKE operator for the json type
- * ("operator does not exist: json ~~ unknown"), the column is converted to text there (json || text is text).
+ * The TextFilter of EasyAdmin, for the message and the JSON context of the log records. On PostgreSQL, the column is
+ * converted to text (no LIKE operator for the json type: "operator does not exist: json ~~ unknown", json || text is
+ * text) and the comparison is case-insensitive, as with the default collations of MySQL and MariaDB (LIKE is
+ * case-sensitive on PostgreSQL).
  *
  * @internal
  */
-class LogContextFilter implements FilterInterface
+class LogTextFilter implements FilterInterface
 {
     use FilterTrait;
 
@@ -45,12 +47,14 @@ class LogContextFilter implements FilterInterface
     public function apply(QueryBuilder $queryBuilder, FilterDataDto $filterDataDto, ?FieldDto $fieldDto, EntityDto $entityDto): void
     {
         $column = \sprintf('%s.%s', $filterDataDto->getEntityAlias(), $filterDataDto->getProperty());
+        $parameter = ':'.$filterDataDto->getParameterName();
         if ($queryBuilder->getEntityManager()->getConnection()->getDatabasePlatform() instanceof PostgreSQLPlatform) {
-            $column = \sprintf("CONCAT(%s, '')", $column);
+            $column = \sprintf("LOWER(CONCAT(%s, ''))", $column);
+            $parameter = \sprintf('LOWER(%s)', $parameter);
         }
 
         $queryBuilder
-            ->andWhere(\sprintf('%s %s :%s', $column, $filterDataDto->getComparison(), $filterDataDto->getParameterName()))
+            ->andWhere(\sprintf('%s %s %s', $column, $filterDataDto->getComparison(), $parameter))
             ->setParameter($filterDataDto->getParameterName(), $filterDataDto->getValue());
     }
 }

@@ -349,5 +349,11 @@ The command does not run them: they would block the running processes, which wri
 
 The "Process > Logs" menu lists the database logs (250 per page), with their level, message, date and a "Has context
 info ?" column. The detail page displays the log context. They can be filtered by process (or execution), level,
-message, context and date. The context filter searches the JSON representation of the context, as stored by the
-database (e.g. with escaped non-ASCII characters on PostgreSQL).
+message, context and date. The message and context filters are case-insensitive, on PostgreSQL too. The context
+filter searches the JSON representation of the context, as stored by the database (e.g. with escaped non-ASCII
+characters on PostgreSQL).
+
+The list counts the log records of the current filters, and the message and context filters read every log record
+(`LIKE '%...%'`, which no index can serve): on large tables they take seconds per page (with 3 million log records,
+about 2.3 s for the count of a page and 3.6 s with a message filter). Purge the logs regularly in production (see
+[log retention](#log-retention)), and filter by process or execution first.
