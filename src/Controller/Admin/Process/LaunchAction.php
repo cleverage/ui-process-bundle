@@ -15,6 +15,7 @@ namespace CleverAge\UiProcessBundle\Controller\Admin\Process;
 
 use CleverAge\ProcessBundle\Exception\MissingProcessException;
 use CleverAge\UiProcessBundle\Entity\User;
+use CleverAge\UiProcessBundle\Form\ContextValueException;
 use CleverAge\UiProcessBundle\Form\ContextValueNormalizer;
 use CleverAge\UiProcessBundle\Form\Type\LaunchType;
 use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
@@ -36,6 +37,7 @@ use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Uid\Uuid;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * @internal
@@ -61,6 +63,7 @@ class LaunchAction extends AbstractController
         private readonly RequestStack $requestStack,
         private readonly ProcessConfigurationsManager $processConfigurationsManager,
         private readonly AdminContextProvider $adminContextProvider,
+        private readonly ?TranslatorInterface $translator = null,
     ) {
     }
 
@@ -176,8 +179,10 @@ class LaunchAction extends AbstractController
                 $field = $contextForm->has($key) ? $contextForm->get($key) : $contextForm;
                 $context[$key] = $normalizer->normalize($value, $key);
             }
-        } catch (\LogicException $e) {
-            $field->addError(new FormError($e->getMessage()));
+        } catch (ContextValueException $e) {
+            // Translated as the messages of the validation (the message of a FormError is displayed as is)
+            $message = $this->translator?->trans($e->messageTemplate, $e->parameters, 'validators') ?? $e->getMessage();
+            $field->addError(new FormError($message, $e->messageTemplate, $e->parameters));
 
             return null;
         }

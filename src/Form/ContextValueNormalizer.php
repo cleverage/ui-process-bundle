@@ -56,12 +56,12 @@ final class ContextValueNormalizer
         }
         // A file is also stringable
         if ($value instanceof \SplFileInfo) {
-            throw new \LogicException(\sprintf('The value of "%s" is a file ("%s"): file fields are only supported for the input.', $name, $value::class));
+            throw new ContextValueException('The value of "{{ name }}" is a file ("{{ class }}"): file fields are only supported for the input.', ['{{ name }}' => $name, '{{ class }}' => $value::class]);
         }
         if ($value instanceof \Stringable) {
             return (string) $value;
         }
 
-        throw new \LogicException(\sprintf('The value of "%s" ("%s") cannot be used as a process context value: use a form type returning a scalar (e.g. a ChoiceType with scalar choices), or make the class implement \Stringable.', $name, get_debug_type($value)));
+        throw new ContextValueException('The value of "{{ name }}" ("{{ type }}") cannot be used as a process context value: use a form type returning a scalar (e.g. a ChoiceType with scalar choices), or make the class implement \Stringable.', ['{{ name }}' => $name, '{{ type }}' => get_debug_type($value)]);
     }
 }
