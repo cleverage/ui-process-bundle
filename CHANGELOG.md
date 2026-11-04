@@ -3,6 +3,7 @@ Latest
 
 ## Changes
 * [#264](https://github.com/cleverage/ui-process-bundle/issues/264) Documentation: with the Doctrine transport, a process running longer than the `redeliver_timeout` of the `execute_process` transport (3600 seconds by default) is executed again, in parallel, by another worker, as the process of a killed worker; set a longer `redeliver_timeout`, or consume with `--keepalive` (Symfony 7.3+).
+* [#266](https://github.com/cleverage/ui-process-bundle/issues/266) Scheduler: when symfony/lock is installed (new `suggest`), the schedule of the UI schedules is locked (`cleverage_ui_process.scheduler.cron` resource of the `lock.factory` service): with several `scheduler_cron` workers, only the one holding the lock sends the messages, each due schedule was executed once per worker. `CronScheduler` (internal) takes an optional `LockFactory`. Document that a single worker must run without symfony/lock, and that the lock store must be shared between hosts. Update documentation, add tests.
 
 ## Fixes
 * [#260](https://github.com/cleverage/ui-process-bundle/issues/260) `LaunchFormsCacheWarmer`: the keys of the options of a process other than `ui`, `notification` and `logs` are ignored (internal `ProcessConfigurationsManager::checkOptions()`), as by the getters: the options of a process are free, other bundles or the application may read their own, and such a key made `cache:clear` / `cache:warmup` of the whole application fail since 3.5. Update documentation and tests.
