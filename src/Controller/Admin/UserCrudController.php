@@ -122,7 +122,9 @@ class UserCrudController extends AbstractCrudController
         if (!$user instanceof User) {
             throw $this->createNotFoundException('User not found.');
         }
-        $token = md5(uniqid(date('YmdHis')));
+        // 32 hexadecimal characters, as before, from a cryptographically secure source: md5(uniqid(date('YmdHis'))) was
+        // predictable from the date of the generation
+        $token = bin2hex(random_bytes(16));
         $user->setToken((new Pbkdf2PasswordHasher())->hash($token));
         /** @var ManagerRegistry $doctrine */
         $doctrine = $this->container->get('doctrine');
