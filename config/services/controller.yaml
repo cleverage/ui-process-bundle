@@ -21,6 +21,7 @@ services:
             $requestStack: '@request_stack'
             $processConfigurationsManager: '@cleverage_ui_process.manager.process_configuration'
             $adminContextProvider: '@EasyCorp\Bundle\EasyAdminBundle\Provider\AdminContextProvider'
+            $translator: '@?translator'
         bind:
             # Argument of the action
             $uploadDirectory: '%cleverage_ui_process.upload_directory%'

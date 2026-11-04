@@ -22,6 +22,8 @@ use Symfony\Component\String\UnicodeString;
 #[ORM\Table(name: 'process_execution')]
 #[ORM\Index(name: 'idx_process_execution_code', columns: ['code'])]
 #[ORM\Index(name: 'idx_process_execution_start_date', columns: ['start_date'])]
+// The last execution of each process of the process list
+#[ORM\Index(name: 'idx_process_execution_code_start_date', columns: ['code', 'start_date'])]
 class ProcessExecution implements \Stringable
 {
     use EncodableContextTrait;
