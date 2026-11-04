@@ -8,13 +8,11 @@ Latest
 * [#268](https://github.com/cleverage/ui-process-bundle/issues/268) Documentation: several `execute_process` workers may execute the same process at the same time (launched twice, schedule due again while its previous execution is not over), as the command line; a process that must not run twice at the same time must protect its outputs.
 
 ## Fixes
+* [#276](https://github.com/cleverage/ui-process-bundle/issues/276) `LaunchFormsCacheWarmer`: the launch form of a process launched with the `form` mode is checked without the `form` option too (deprecated options): e.g. a reserved `execution_user` key in `default.context` passed the warmup, and the launch page failed. Update documentation, add tests.
 * [#260](https://github.com/cleverage/ui-process-bundle/issues/260) `LaunchFormsCacheWarmer`: the keys of the options of a process other than `ui`, `notification` and `logs` are ignored (internal `ProcessConfigurationsManager::checkOptions()`), as by the getters: the options of a process are free, other bundles or the application may read their own, and such a key made `cache:clear` / `cache:warmup` of the whole application fail since 3.5. Update documentation and tests.
 * [#262](https://github.com/cleverage/ui-process-bundle/issues/262) `cache:clear` no longer fails in prod with `DoctrineMetadataCacheWarmer must load metadata first`: the `ProcessExecutionRepository` service is lazy, its constructor loaded the metadata of `ProcessExecution` when the kernel booted (the Monolog handlers of the bundle depend on it). Add tests.
 * [#271](https://github.com/cleverage/ui-process-bundle/issues/271) Database logs: the arrays of the context of a log record are limited as in the log file (Monolog `NormalizerFormatter`): 1000 items, 9 levels deep. An unbounded context (e.g. the output of an aggregator) was stored whole, and over the maximum packet size of the database, it made the insertion of the log records written with it fail. Update documentation, add tests.
 * [#274](https://github.com/cleverage/ui-process-bundle/issues/274) PostgreSQL: the context filter of the logs list no longer returns a 500 error (`operator does not exist: json ~~ unknown`): the new internal `LogContextFilter` converts the JSON column to text on PostgreSQL. The CI runs the functional test of the logs list on MySQL, MariaDB and PostgreSQL. Update documentation, add tests.
-
-### Fixes
-* [#276](https://github.com/cleverage/ui-process-bundle/issues/276) `LaunchFormsCacheWarmer`: the launch form of a process launched with the `form` mode is checked without the `form` option too (deprecated options): e.g. a reserved `execution_user` key in `default.context` passed the warmup, and the launch page failed. Update documentation, add tests.
 
 v3.5
 ------
