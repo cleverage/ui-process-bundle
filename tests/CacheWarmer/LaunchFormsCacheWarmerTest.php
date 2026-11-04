@@ -76,8 +76,9 @@ class LaunchFormsCacheWarmerTest extends TestCase
             ],
         ]];
         yield 'form with deprecated options' => [['form' => ['context' => ['delimiter' => null]], 'default' => ['input' => 'data.csv', 'context' => [['key' => 'foo', 'value' => 'bar']]]]];
-        // Not checked: the process has no "form" option
+        // Not checked: the process has no "form" option and is launched without form
         yield 'invalid deprecated option without form' => [['entrypoint_type' => 'text', 'default' => ['input' => ['not a string']]]];
+        yield 'deprecated options in the form launch mode' => [['ui_launch_mode' => 'form', 'default' => ['input' => 'data.csv', 'context' => [['key' => 'foo', 'value' => 'bar']]]]];
     }
 
     /**
@@ -93,7 +94,7 @@ class LaunchFormsCacheWarmerTest extends TestCase
             $warmer->warmUp(sys_get_temp_dir());
             self::fail('An invalid launch form is expected to fail the warmup.');
         } catch (\LogicException $e) {
-            self::assertStringStartsWith('The launch form ("form" UI option) of the process "test.process" is invalid: ', $e->getMessage());
+            self::assertStringStartsWith('The launch form ("form" UI option, or the deprecated "entrypoint_type", "default" and "constraints" ones) of the process "test.process" is invalid: ', $e->getMessage());
             self::assertStringContainsString($message, $e->getMessage());
             self::assertInstanceOf($previous, $e->getPrevious());
         }
@@ -119,6 +120,22 @@ class LaunchFormsCacheWarmerTest extends TestCase
             InvalidOptionsException::class,
             'is not a valid form field name',
         ];
+    }
+
+    /**
+     * The launch form of the "form" launch mode is checked without the "form" option too: a reserved "execution_user"
+     * key in the deprecated "default.context" passed the warmup, and the launch page failed (500).
+     */
+    public function testLaunchFormOfTheFormModeWithDeprecatedOptionsIsChecked(): void
+    {
+        $warmer = $this->createWarmer(['test.process' => $this->rawProcess([
+            'ui_launch_mode' => 'form',
+            'default' => ['context' => [['key' => 'execution_user', 'value' => 'someone@example.com']]],
+        ])]);
+
+        $this->expectException(\LogicException::class);
+        $this->expectExceptionMessage('The context key "execution_user" of "default.context" of the process "test.process" is reserved');
+        $this->collectDeprecations(static fn () => $warmer->warmUp(sys_get_temp_dir()));
     }
 
     /**

@@ -1,2 +1,6 @@
 The value "{{ value }}" is not a valid "every" expression.: La valeur "{{ value }}" n'est pas une expression valide pour le type "Chaque date".
 The value "{{ value }}" is not a valid cron expression.: La valeur "{{ value }}" n'est pas une expression valide pour le type "Tâche planifiée".
+'The context key {{ value }} is a field of the launch form, use this field instead.': 'La clé de contexte {{ value }} est un champ du formulaire de lancement : utilisez ce champ.'
+'The context key {{ value }} is reserved: it is set to the email of the connected user.': "La clé de contexte {{ value }} est réservée : elle reçoit l'email de l'utilisateur connecté."
+'The value of "{{ name }}" is a file ("{{ class }}"): file fields are only supported for the input.': 'La valeur de "{{ name }}" est un fichier ("{{ class }}") : les champs de type fichier ne sont pris en charge que pour l''entrée.'
+'The value of "{{ name }}" ("{{ type }}") cannot be used as a process context value: use a form type returning a scalar (e.g. a ChoiceType with scalar choices), or make the class implement \Stringable.': 'La valeur de "{{ name }}" ("{{ type }}") ne peut pas être utilisée comme valeur du contexte du processus : utilisez un type de formulaire renvoyant un scalaire (par exemple un ChoiceType aux choix scalaires), ou faites implémenter \Stringable à la classe.'
