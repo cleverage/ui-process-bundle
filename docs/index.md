@@ -194,7 +194,9 @@ clever_age_process:
                     source: ERP
                     target: Database
                     ui_launch_mode: form
-                    entrypoint_type: file
+                    form:
+                        input:
+                            type: Symfony\Component\Form\Extension\Core\Type\FileType
             tasks:
                 read:
                     # ...

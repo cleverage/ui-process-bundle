@@ -16,10 +16,10 @@ clever_age_process:
                     source: Database
                     target: Database
                     ui_launch_mode: form # Manual launches from the process list can set the lastname too
-                    default:
+                    form:
                         context:
-                            - key: lastname
-                              value: King
+                            lastname:
+                                default: King
             tasks:
                 read:
                     task: doctrine_reader
