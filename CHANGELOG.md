@@ -1,6 +1,9 @@
 Latest
 ------
 
+## Fixes
+* [#260](https://github.com/cleverage/ui-process-bundle/issues/260) `LaunchFormsCacheWarmer`: the keys of the options of a process other than `ui`, `notification` and `logs` are ignored (internal `ProcessConfigurationsManager::checkOptions()`), as by the getters: the options of a process are free, other bundles or the application may read their own, and such a key made `cache:clear` / `cache:warmup` of the whole application fail since 3.5. Update documentation and tests.
+
 v3.5
 ------
 
