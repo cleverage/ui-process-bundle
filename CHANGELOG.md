@@ -9,6 +9,7 @@ Latest
 * [#268](https://github.com/cleverage/ui-process-bundle/issues/268) Documentation: several `execute_process` workers may execute the same process at the same time (launched twice, schedule due again while its previous execution is not over), as the command line; a process that must not run twice at the same time must protect its outputs.
 
 ## Fixes
+* [#284](https://github.com/cleverage/ui-process-bundle/issues/284) `ProcessExecutionRepository::hasLogs()` reads the first log record only instead of counting all of them, for each row of the executions list (0.83 s for an execution with 2 million log records).
 * [#280](https://github.com/cleverage/ui-process-bundle/issues/280) Launch form: French translations of the messages of the free context keys and of the values that cannot be converted, which are translated in the `validators` domain (they were never translated). Add tests.
 * [#278](https://github.com/cleverage/ui-process-bundle/issues/278) The API token of the users is generated with `random_bytes()` (32 hexadecimal characters, as before) instead of `md5(uniqid(date('YmdHis')))`. Add tests.
 * [#276](https://github.com/cleverage/ui-process-bundle/issues/276) `LaunchFormsCacheWarmer`: the launch form of a process launched with the `form` mode is checked without the `form` option too (deprecated options): e.g. a reserved `execution_user` key in `default.context` passed the warmup, and the launch page failed. Update documentation, add tests.
