@@ -3,6 +3,8 @@ Upgrade Guide
 
 ## Latest
 
+## v3.5
+
 ### Deprecated UI options of the launch form
 
 The `entrypoint_type`, `default` and `constraints` UI options are deprecated in favor of the new `form` option (see
