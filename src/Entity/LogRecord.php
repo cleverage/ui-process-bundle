@@ -24,6 +24,10 @@ class LogRecord
 {
     use EncodableContextTrait;
 
+    /** Limits of the context, as in the log file (Monolog NormalizerFormatter) */
+    private const MAX_ITEMS = 1000;
+    private const MAX_DEPTH = 9;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(name: 'id')]
@@ -59,8 +63,36 @@ class LogRecord
         $this->channel = $this->truncate($record->channel, 64);
         $this->level = $record->level->value;
         $this->message = $this->truncate($record->message, 512);
-        $this->context = $this->encodableContext($record->context);
+        $this->context = $this->limit($this->encodableContext($record->context), 1);
         $this->createdAt = $record->datetime;
+    }
+
+    /**
+     * The limits of the log file (Monolog NormalizerFormatter): at most 1000 items per array, 9 levels deep. An unbounded
+     * context (e.g. the output of an aggregator) was stored whole, and over the maximum packet size of the database, it
+     * made the insertion of the log records written with it fail.
+     *
+     * @param array<mixed> $data
+     *
+     * @return array<mixed>
+     */
+    private function limit(array $data, int $depth): array
+    {
+        $limited = [];
+        $count = 0;
+        foreach ($data as $key => $value) {
+            if (++$count > self::MAX_ITEMS) {
+                $limited['...'] = \sprintf('Over %d items (%d total), aborting normalization', self::MAX_ITEMS, \count($data));
+                break;
+            }
+            if ($depth + 1 > self::MAX_DEPTH) {
+                $limited[$key] = \sprintf('Over %d levels deep, aborting normalization', self::MAX_DEPTH);
+            } else {
+                $limited[$key] = \is_array($value) ? $this->limit($value, $depth + 1) : $value;
+            }
+        }
+
+        return $limited;
     }
 
     /**

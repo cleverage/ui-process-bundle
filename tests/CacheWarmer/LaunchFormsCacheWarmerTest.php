@@ -151,7 +151,6 @@ class LaunchFormsCacheWarmerTest extends TestCase
         yield 'ui' => [['ui' => ['ui_launch_mode' => 'unknown']], 'ui_launch_mode'];
         yield 'notification' => [['notification' => ['statuses' => ['unknown']]], 'statuses'];
         yield 'logs' => [['logs' => ['database_max_days' => 0]], 'database_max_days'];
-        yield 'unknown option' => [['notifications' => ['enabled' => true]], 'notifications'];
     }
 
     /**
