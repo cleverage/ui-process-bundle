@@ -2,6 +2,7 @@ Latest
 ------
 
 ## Changes
+* [#288](https://github.com/cleverage/ui-process-bundle/issues/288) Documentation: the examples use the `form` option instead of the deprecated `entrypoint_type` and `default` UI options.
 * [#286](https://github.com/cleverage/ui-process-bundle/issues/286) Documentation: troubleshooting entry for the database error of every process execution until the migrations of the bundle are executed.
 * [#282](https://github.com/cleverage/ui-process-bundle/issues/282) New migration: `idx_process_execution_code_start_date` index on `process_execution (code, start_date)`, used by the "last execution" query of each process of the process list (0.45 s per process with 500 000 executions, 0.002 s with the index).
 * [#270](https://github.com/cleverage/ui-process-bundle/issues/270) Documentation: the PHP CLI (workers, commands) and the web server must use the same `date.timezone`: the dates of the executions are stored without timezone, a running execution was displayed as "Not responding" when the web server is ahead of the worker.
