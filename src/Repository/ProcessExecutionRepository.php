@@ -108,13 +108,16 @@ class ProcessExecutionRepository extends EntityRepository
 
     public function hasLogs(ProcessExecution $processExecution): bool
     {
+        // The first log record only: counting all of them took seconds for an execution with millions of log records,
+        // for each row of the executions list
         $qb = $this->getEntityManager()->createQueryBuilder()
-            ->select('count(lr.id)')
+            ->select('lr.id')
             ->from(LogRecord::class, 'lr')
             ->where('lr.processExecution = :processExecution')
-            ->setParameter('processExecution', $processExecution->getId());
+            ->setParameter('processExecution', $processExecution->getId())
+            ->setMaxResults(1);
 
-        return (int) $qb->getQuery()->getSingleScalarResult() > 0;
+        return [] !== $qb->getQuery()->getScalarResult();
     }
 
     /**

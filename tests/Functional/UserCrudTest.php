@@ -157,6 +157,8 @@ class UserCrudTest extends FunctionalTestCase
         self::assertStringContainsString('/process/user/'.$admin->getId().'/edit', (string) $this->client->getResponse()->headers->get('Location'));
         $crawler = $this->client->followRedirect();
         $token = $this->getGeneratedToken($crawler->filter('.alert-success')->text());
+        // 32 hexadecimal characters, as before
+        self::assertMatchesRegularExpression('/^[0-9a-f]{32}$/', $token);
         $this->getEntityManager()->clear();
         // Only the hash of the token is stored
         self::assertSame((new Pbkdf2PasswordHasher())->hash($token), $this->getEntityManager()->find(User::class, $admin->getId())?->getToken());

@@ -49,8 +49,11 @@ final readonly class LaunchFormsCacheWarmer implements CacheWarmerInterface
         $configurations = [...$this->processConfigurationsManager->getPublicProcesses(), ...$this->processConfigurationsManager->getPrivateProcesses()];
         foreach ($configurations as $configuration) {
             $this->checkOptions($configuration->getCode());
+            // The launch form is displayed in the "form" launch mode, with the "form" option or the deprecated ones
+            // (e.g. a reserved "execution_user" key in "default.context"): it was only checked with the "form" option
             $ui = $configuration->getOptions()['ui'] ?? null;
-            if (\is_array($ui) && \array_key_exists('form', $ui)) {
+            $formMode = 'form' === ($this->processConfigurationsManager->getUiOptions($configuration->getCode())['ui_launch_mode'] ?? null);
+            if ($formMode || (\is_array($ui) && \array_key_exists('form', $ui))) {
                 $this->checkLaunchForm($configuration->getCode());
             }
         }
@@ -74,7 +77,7 @@ final readonly class LaunchFormsCacheWarmer implements CacheWarmerInterface
         try {
             $this->processConfigurationsManager->getLaunchFormOptions($processCode);
         } catch (\Throwable $e) {
-            throw new \LogicException(\sprintf('The launch form ("form" UI option) of the process "%s" is invalid: %s', $processCode, $e->getMessage()), 0, $e);
+            throw new \LogicException(\sprintf('The launch form ("form" UI option, or the deprecated "entrypoint_type", "default" and "constraints" ones) of the process "%s" is invalid: %s', $processCode, $e->getMessage()), 0, $e);
         } finally {
             restore_error_handler();
         }

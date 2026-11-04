@@ -1,6 +1,20 @@
 Troubleshooting
 ===============
 
+## Every process fails: Table 'process_execution' doesn't exist
+
+Once the bundle is installed, every execution of a process is recorded, from the console too: until the migrations of
+the bundle are executed, any process fails before its first task with a database error, e.g.
+`SQLSTATE[42S02]: Base table or view not found: 1146 Table 'app.process_execution' doesn't exist` (MySQL, MariaDB) or
+`SQLSTATE[42P01]: Undefined table: 7 ERROR:  relation "process_execution" does not exist` (PostgreSQL). Execute them:
+
+```bash
+bin/console doctrine:migrations:migrate
+```
+
+The migrations of the bundle are in `vendor/cleverage/ui-process-bundle/src/Migrations/` (see
+[installation](index.md)), and new ones come with the new versions of the bundle: execute them after each update.
+
 ## A process launched from the UI never starts
 
 Processes launched from the UI, the HTTP API (queued) or the scheduler are executed by a Messenger worker. Make sure
