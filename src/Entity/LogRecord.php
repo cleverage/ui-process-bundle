@@ -114,7 +114,7 @@ class LogRecord
     }
 
     /**
-     * @deprecated misnamed, returns true when the context is NOT empty: use hasContextInfo() instead
+     * @deprecated since 3.1, misnamed, returns true when the context is NOT empty: use hasContextInfo() instead
      */
     public function contextIsEmpty(): bool
     {
