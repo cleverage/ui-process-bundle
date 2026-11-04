@@ -341,7 +341,7 @@ class ProcessConfigurationsManagerTest extends TestCase
         self::assertSame(['database_max_days' => null, 'file_max_days' => 7], $manager->getLogsOptions('invalid.notification'));
         self::assertSame('Foo', $manager->getUiOptions('invalid.logs')['source'] ?? null);
         self::assertSame(['enabled' => false, 'statuses' => null, 'channels' => null, 'recipients' => null], $manager->getNotificationOptions('invalid.logs'));
-        // An unknown option is ignored by the getters, it is reported by checkOptions()
+        // An unknown option is ignored by the getters
         self::assertSame(['database_max_days' => 30, 'file_max_days' => null], $manager->getLogsOptions('unknown.option'));
         self::assertSame('modal', $manager->getUiOptions('unknown.option')['ui_launch_mode'] ?? null);
 
@@ -355,10 +355,13 @@ class ProcessConfigurationsManagerTest extends TestCase
         $manager = $this->createManager([
             'test.process' => $this->rawProcess(['ui' => ['source' => 'Foo', 'form' => ['unknown' => true]], 'notification' => ['enabled' => true], 'logs' => ['database_max_days' => 30]]),
             'no.options' => $this->rawProcess(),
+            'other.options' => $this->rawProcess(['app' => ['unknown' => true], 'notifications' => 'typo']),
         ]);
 
         // The "form" UI option is not checked (see getLaunchFormOptions())
         $manager->checkOptions('test.process');
+        // The options of the process are free, other bundles or the application may read their own
+        $manager->checkOptions('other.options');
         $manager->checkOptions('no.options');
         $manager->checkOptions('unknown.process');
     }
@@ -385,7 +388,6 @@ class ProcessConfigurationsManagerTest extends TestCase
         yield 'ui' => [['ui' => ['ui_launch_mode' => 'unknown']], InvalidOptionsException::class, 'ui_launch_mode'];
         yield 'notification' => [['notification' => ['statuses' => ['unknown']]], InvalidOptionsException::class, 'statuses'];
         yield 'logs' => [['logs' => ['database_max_days' => 0]], InvalidOptionsException::class, 'database_max_days'];
-        yield 'unknown option' => [['notifications' => []], UndefinedOptionsException::class, 'notifications'];
     }
 
     /**
