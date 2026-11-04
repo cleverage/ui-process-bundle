@@ -13,6 +13,9 @@ Latest
 * [#271](https://github.com/cleverage/ui-process-bundle/issues/271) Database logs: the arrays of the context of a log record are limited as in the log file (Monolog `NormalizerFormatter`): 1000 items, 9 levels deep. An unbounded context (e.g. the output of an aggregator) was stored whole, and over the maximum packet size of the database, it made the insertion of the log records written with it fail. Update documentation, add tests.
 * [#274](https://github.com/cleverage/ui-process-bundle/issues/274) PostgreSQL: the context filter of the logs list no longer returns a 500 error (`operator does not exist: json ~~ unknown`): the new internal `LogContextFilter` converts the JSON column to text on PostgreSQL. The CI runs the functional test of the logs list on MySQL, MariaDB and PostgreSQL. Update documentation, add tests.
 
+### Changes
+* [#286](https://github.com/cleverage/ui-process-bundle/issues/286) Documentation: troubleshooting entry for the database error of every process execution until the migrations of the bundle are executed.
+
 v3.5
 ------
 
