@@ -1,6 +1,9 @@
 Latest
 ------
 
+## Fixes
+* [#274](https://github.com/cleverage/ui-process-bundle/issues/274) PostgreSQL: the context filter of the logs list no longer returns a 500 error (`operator does not exist: json ~~ unknown`): the new internal `LogContextFilter` converts the JSON column to text on PostgreSQL. The CI runs the functional test of the logs list on MySQL, MariaDB and PostgreSQL. Update documentation, add tests.
+
 v3.5
 ------
 

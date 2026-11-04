@@ -15,6 +15,7 @@ namespace CleverAge\UiProcessBundle\Tests\Functional;
 
 use CleverAge\UiProcessBundle\Admin\Field\ContextField;
 use CleverAge\UiProcessBundle\Admin\Field\LogLevelField;
+use CleverAge\UiProcessBundle\Admin\Filter\LogContextFilter;
 use CleverAge\UiProcessBundle\Admin\Filter\LogProcessFilter;
 use CleverAge\UiProcessBundle\CacheWarmer\LaunchFormsCacheWarmer;
 use CleverAge\UiProcessBundle\CleverAgeUiProcessBundle;
@@ -58,6 +59,7 @@ use PHPUnit\Framework\Attributes\UsesClass;
 #[UsesClass(ContextField::class)]
 #[UsesClass(LogLevelField::class)]
 #[UsesClass(LogProcessFilter::class)]
+#[UsesClass(LogContextFilter::class)]
 #[UsesClass(ProcessDashboardController::class)]
 #[UsesClass(LogRecord::class)]
 #[UsesClass(ProcessExecution::class)]
@@ -116,6 +118,28 @@ class LogRecordCrudTest extends FunctionalTestCase
 
         $this->client->request('GET', '/process/log-record/render-filters?filters[process][comparison]==&filters[process][value]='.$first->getId());
         self::assertResponseIsSuccessful();
+    }
+
+    /**
+     * The context is a JSON column: run on PostgreSQL by the CI (migrations job), where the TextFilter of EasyAdmin
+     * failed (500, "operator does not exist: json ~~ unknown").
+     */
+    public function testContextFilter(): void
+    {
+        $this->login();
+        $execution = $this->createExecution('test.process');
+        $this->createLogRecord($execution, 'First process message', ['file' => 'a.csv']);
+        $this->createLogRecord($execution, 'Other message', ['file' => 'b.csv']);
+        $this->createLogRecord($execution, 'Message without context', []);
+
+        $crawler = $this->client->request('GET', '/process/log-record?filters[context][comparison]=like&filters[context][value]=a.csv');
+        self::assertResponseIsSuccessful();
+        self::assertCount(1, $crawler->filter('table tbody tr'));
+        self::assertStringContainsString('First process message', $crawler->filter('table')->text());
+
+        $crawler = $this->client->request('GET', '/process/log-record?filters[context][comparison]=not%20like&filters[context][value]=a.csv');
+        self::assertResponseIsSuccessful();
+        self::assertCount(2, $crawler->filter('table tbody tr'));
     }
 
     public function testProcessFilterWithSearchAndComparison(): void
