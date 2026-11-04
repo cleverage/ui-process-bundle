@@ -6,6 +6,7 @@ services:
             - '@cleverage_ui_process.repository.process_schedule'
             - '@validator'
             - '@logger'
+            - '@?lock.factory'
         tags:
             - scheduler.schedule_provider: { name: 'cron' }
             - { name: 'monolog.logger', channel: 'scheduler' }

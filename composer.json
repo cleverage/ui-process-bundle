@@ -118,6 +118,7 @@
         "symfony/browser-kit": "^6.4|^7.4|^8",
         "symfony/css-selector": "^6.4|^7.4|^8",
         "symfony/debug-bundle": "^6.4|^7.4|^8",
+        "symfony/lock": "^6.4|^7.4|^8",
         "symfony/maker-bundle": "^1.31",
         "symfony/notifier": "^6.4|^7.4|^8",
         "symfony/property-access": "^6.4|^7.4|^8",
@@ -126,6 +127,7 @@
         "vincentlanglet/twig-cs-fixer": "^3.11"
     },
     "suggest": {
+        "symfony/lock": "To run several scheduler_cron workers, only one of them sending the messages of the schedules",
         "symfony/notifier": "To notify the end of the process executions"
     },
     "conflict": {
