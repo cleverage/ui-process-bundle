@@ -25,6 +25,7 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 #[CoversClass(ContextValueNormalizer::class)]
+#[\PHPUnit\Framework\Attributes\UsesClass(\CleverAge\UiProcessBundle\Form\ContextValueException::class)]
 class ContextValueNormalizerTest extends TestCase
 {
     #[DataProvider('provideNormalizedValues')]

@@ -94,6 +94,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 #[UsesClass(DoctrineProcessHandler::class)]
 #[UsesClass(ProcessHandler::class)]
 #[UsesClass(ProcessExecutionManager::class)]
+#[UsesClass(\CleverAge\UiProcessBundle\Form\ContextValueException::class)]
 class LaunchActionTest extends FunctionalTestCase
 {
     public function testLaunchWithoutForm(): void
@@ -711,6 +712,40 @@ class LaunchActionTest extends FunctionalTestCase
         self::assertResponseIsSuccessful();
         self::assertSame(
             \sprintf('The value of "entity" ("%s") cannot be used as a process context value: use a form type returning a scalar (e.g. a ChoiceType with scalar choices), or make the class implement \Stringable.', Entity::class),
+            $this->getFieldError($crawler, 'launch_context_entity')
+        );
+        self::assertSame([], $this->getDispatchedMessages());
+    }
+
+    /**
+     * The messages of the launch form were not translated: a reserved context key, a value that cannot be converted.
+     */
+    public function testErrorsAreTranslated(): void
+    {
+        $user = $this->createUser('fr@example.com');
+        $user->setLocale('fr');
+        $this->getEntityManager()->flush();
+        $this->client->loginUser($user, 'main');
+
+        $crawler = $this->client->request('GET', '/process?routeName=cleverage_ui_process_launch&process=test.form_fields');
+        $form = $crawler->selectButton('Exécuter')->form();
+        /** @var array<string, array<string, mixed>> $values */
+        $values = $form->getPhpValues();
+        $values['launch']['context'] = ['delimiter' => ';', 'extra' => [['key' => 'execution_user', 'value' => 'someone@example.com']]];
+        $crawler = $this->client->request($form->getMethod(), $form->getUri(), $values);
+        self::assertSame(
+            "La clé de contexte \"execution_user\" est réservée : elle reçoit l'email de l'utilisateur connecté.",
+            $this->getFieldError($crawler, 'launch_context_extra_0_key')
+        );
+
+        $crawler = $this->client->request('GET', '/process?routeName=cleverage_ui_process_launch&process=test.form_object');
+        $form = $crawler->selectButton('Exécuter')->form();
+        /** @var array<string, array<string, mixed>> $values */
+        $values = $form->getPhpValues();
+        $values['launch']['context'] = ['entity' => '42'];
+        $crawler = $this->client->request($form->getMethod(), $form->getUri(), $values);
+        self::assertSame(
+            \sprintf('La valeur de "entity" ("%s") ne peut pas être utilisée comme valeur du contexte du processus : utilisez un type de formulaire renvoyant un scalaire (par exemple un ChoiceType aux choix scalaires), ou faites implémenter \Stringable à la classe.', Entity::class),
             $this->getFieldError($crawler, 'launch_context_entity')
         );
         self::assertSame([], $this->getDispatchedMessages());
