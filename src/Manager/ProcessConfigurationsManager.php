@@ -148,8 +148,9 @@ final readonly class ProcessConfigurationsManager
 
     /**
      * Checks the options of the process as a whole: the "ui" (except "form", see getLaunchFormOptions()),
-     * "notification" and "logs" options, and no other option. The getters resolve their own option only, so that an
-     * invalid option does not break the others: this check reports any invalid option before it is used.
+     * "notification" and "logs" options. The other keys are ignored: the options of a process are free, other bundles or
+     * the application may read their own. The getters resolve their own option only, so that an invalid option does not
+     * break the others: this check reports any invalid option before it is used.
      *
      * @internal
      *
@@ -161,7 +162,9 @@ final readonly class ProcessConfigurationsManager
             return;
         }
 
-        $this->createResolver(['ui', 'notification', 'logs'])->resolve($this->registry->getProcessConfiguration($processCode)->getOptions());
+        $names = ['ui', 'notification', 'logs'];
+        $options = array_intersect_key($this->registry->getProcessConfiguration($processCode)->getOptions(), array_flip($names));
+        $this->createResolver($names)->resolve($options);
     }
 
     /**

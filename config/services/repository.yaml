@@ -2,6 +2,9 @@ services:
     cleverage_ui_process.repository.process_execution:
         class: CleverAge\UiProcessBundle\Repository\ProcessExecutionRepository
         public: false
+        # Lazy: the Monolog handlers of the bundle depend on it, and its constructor loads the metadata of the entity,
+        # which must not happen when the kernel boots (DoctrineMetadataCacheWarmer fails on cache:clear in prod)
+        lazy: true
         arguments:
             - '@doctrine.orm.entity_manager'
             - '@doctrine'

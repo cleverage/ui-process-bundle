@@ -18,6 +18,7 @@ use CleverAge\UiProcessBundle\Entity\ProcessSchedule;
 use CleverAge\UiProcessBundle\Message\CronProcessMessage;
 use CleverAge\UiProcessBundle\Repository\ProcessScheduleRepository;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Lock\LockFactory;
 use Symfony\Component\Scheduler\RecurringMessage;
 use Symfony\Component\Scheduler\Schedule;
 use Symfony\Component\Scheduler\ScheduleProviderInterface;
@@ -28,16 +29,23 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  */
 readonly class CronScheduler implements ScheduleProviderInterface
 {
+    public const LOCK = 'cleverage_ui_process.scheduler.cron';
+
     public function __construct(
         private ProcessScheduleRepository $repository,
         private ValidatorInterface $validator,
         private LoggerInterface $logger,
+        private ?LockFactory $lockFactory = null,
     ) {
     }
 
     public function getSchedule(): Schedule
     {
         $schedule = new Schedule();
+        // With several scheduler_cron workers, only the one holding the lock sends the messages: each worker sent them
+        if ($this->lockFactory instanceof LockFactory) {
+            $schedule->lock($this->lockFactory->createLock(self::LOCK));
+        }
         try {
             $processSchedules = $this->repository->findEnabled();
         } catch (\Exception $e) {

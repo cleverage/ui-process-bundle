@@ -182,13 +182,18 @@ When `store_in_database` is `true` (default), log records are also stored in the
 | `channel`   | Monolog channel (truncated to 64 characters). |
 | `level`     | Monolog level value.                          |
 | `message`   | Message (truncated to 512 characters).        |
-| `context`   | Log record context.                           |
+| `context`   | Log record context (limited, see below).      |
 | `createdAt` | Date of the log record.                       |
 
 The lengths are counted in characters (Unicode code points, as MySQL and PostgreSQL do): an emoji or a letter with
 combining marks may count several characters. The invalid UTF-8 sequences of the message and the channel are replaced
 by `?` and their NUL characters removed; a context which cannot be encoded in JSON is stored with its invalid UTF-8 sequences replaced by `U+FFFD` (`�`)
-and its values which cannot be encoded (e.g. a resource) replaced by `null`.
+and its values which cannot be encoded (e.g. a resource) replaced by `null`. As in the log file (Monolog
+`NormalizerFormatter`), the arrays of the context are limited to 1000 items (the next ones are replaced by a `...` key,
+`Over 1000 items (<count> total), aborting normalization`) and to 9 levels deep, the context being the first one (the
+deeper values are replaced by `Over 9 levels deep, aborting normalization`): an unbounded context (e.g. the output of an
+aggregator) was stored whole, and over the maximum packet size of the database, it made the insertion of the log records
+written with it fail. The objects of the context are stored with their public properties, without limit.
 
 Records are buffered and inserted every 500 records, and at the end (or failure) of the process. A record counted in
 the report of the execution (from `report_increment_level`, warnings by default) is inserted right away with the

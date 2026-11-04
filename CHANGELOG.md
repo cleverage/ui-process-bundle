@@ -3,6 +3,14 @@ Latest
 
 ## Changes
 * [#270](https://github.com/cleverage/ui-process-bundle/issues/270) Documentation: the PHP CLI (workers, commands) and the web server must use the same `date.timezone`: the dates of the executions are stored without timezone, a running execution was displayed as "Not responding" when the web server is ahead of the worker.
+* [#264](https://github.com/cleverage/ui-process-bundle/issues/264) Documentation: with the Doctrine transport, a process running longer than the `redeliver_timeout` of the `execute_process` transport (3600 seconds by default) is executed again, in parallel, by another worker, as the process of a killed worker; set a longer `redeliver_timeout`, or consume with `--keepalive` (Symfony 7.3+).
+* [#266](https://github.com/cleverage/ui-process-bundle/issues/266) Scheduler: when symfony/lock is installed (new `suggest`), the schedule of the UI schedules is locked (`cleverage_ui_process.scheduler.cron` resource of the `lock.factory` service): with several `scheduler_cron` workers, only the one holding the lock sends the messages, each due schedule was executed once per worker. `CronScheduler` (internal) takes an optional `LockFactory`. Document that a single worker must run without symfony/lock, and that the lock store must be shared between hosts. Update documentation, add tests.
+* [#268](https://github.com/cleverage/ui-process-bundle/issues/268) Documentation: several `execute_process` workers may execute the same process at the same time (launched twice, schedule due again while its previous execution is not over), as the command line; a process that must not run twice at the same time must protect its outputs.
+
+## Fixes
+* [#260](https://github.com/cleverage/ui-process-bundle/issues/260) `LaunchFormsCacheWarmer`: the keys of the options of a process other than `ui`, `notification` and `logs` are ignored (internal `ProcessConfigurationsManager::checkOptions()`), as by the getters: the options of a process are free, other bundles or the application may read their own, and such a key made `cache:clear` / `cache:warmup` of the whole application fail since 3.5. Update documentation and tests.
+* [#262](https://github.com/cleverage/ui-process-bundle/issues/262) `cache:clear` no longer fails in prod with `DoctrineMetadataCacheWarmer must load metadata first`: the `ProcessExecutionRepository` service is lazy, its constructor loaded the metadata of `ProcessExecution` when the kernel booted (the Monolog handlers of the bundle depend on it). Add tests.
+* [#271](https://github.com/cleverage/ui-process-bundle/issues/271) Database logs: the arrays of the context of a log record are limited as in the log file (Monolog `NormalizerFormatter`): 1000 items, 9 levels deep. An unbounded context (e.g. the output of an aggregator) was stored whole, and over the maximum packet size of the database, it made the insertion of the log records written with it fail. Update documentation, add tests.
 
 v3.5
 ------
