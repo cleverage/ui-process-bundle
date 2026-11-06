@@ -1,6 +1,9 @@
 Latest
 ------
 
+## Changes
+* [#311](https://github.com/cleverage/ui-process-bundle/issues/311) Documentation: the installation (workers) mentions that a single `scheduler_cron` worker must run unless symfony/lock is installed (with a lock store shared between the hosts of the workers).
+ 
 ## Fixes
 * [#307](https://github.com/cleverage/ui-process-bundle/issues/307) The buffered log records are written to the database at the end (or failure) of the process of the execution only, no longer at the end of each of its sub-processes (e.g. a `ProcessExecutorTask` in a loop: one transaction per iteration, 1000 iterations took 10.5 s instead of 2.9 s). Update documentation, add tests.
 * [#305](https://github.com/cleverage/ui-process-bundle/issues/305) Database logs: the strings of the context of a log record are limited to 65536 characters (followed by ` [...] (over 65536 characters, <count> total, truncated)`), as its arrays (#271): a larger string (e.g. the content of a file) over the maximum packet size of the database made the insertion of the log records written with it fail, and closed the connection shared with the process tasks. Update documentation, add tests.
