@@ -49,9 +49,10 @@ class LogTextFilterTest extends TestCase
      */
     public static function providePlatforms(): iterable
     {
-        // PostgreSQL has no LIKE operator for the json type, and LIKE is case-sensitive there
-        yield 'PostgreSQL' => [new PostgreSQLPlatform(), "LOWER(CONCAT(entity.context, '')) like LOWER(:context_0)"];
-        yield 'MySQL' => [new MySQLPlatform(), 'entity.context like :context_0'];
+        // Converted to text (PostgreSQL has no LIKE operator for the json type) and case-insensitive on every database
+        $condition = "LOWER(CONCAT(entity.context, '')) like LOWER(:context_0)";
+        yield 'PostgreSQL' => [new PostgreSQLPlatform(), $condition];
+        yield 'MySQL' => [new MySQLPlatform(), $condition];
     }
 
     #[DataProvider('providePlatforms')]

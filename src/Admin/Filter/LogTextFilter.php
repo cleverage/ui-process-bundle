@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace CleverAge\UiProcessBundle\Admin\Filter;
 
-use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\ORM\QueryBuilder;
 use EasyCorp\Bundle\EasyAdminBundle\Contracts\Filter\FilterInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto;
@@ -23,10 +22,10 @@ use EasyCorp\Bundle\EasyAdminBundle\Filter\FilterTrait;
 use EasyCorp\Bundle\EasyAdminBundle\Form\Filter\Type\TextFilterType;
 
 /**
- * The TextFilter of EasyAdmin, for the message and the JSON context of the log records. On PostgreSQL, the column is
- * converted to text (no LIKE operator for the json type: "operator does not exist: json ~~ unknown", json || text is
- * text) and the comparison is case-insensitive, as with the default collations of MySQL and MariaDB (LIKE is
- * case-sensitive on PostgreSQL).
+ * The TextFilter of EasyAdmin, for the message and the JSON context of the log records, case-insensitive on every
+ * database: the column is converted to text (PostgreSQL has no LIKE operator for the json type: "operator does not
+ * exist: json ~~ unknown", json || text is text) and lowercased, as the value. LIKE is case-sensitive on PostgreSQL, and
+ * on the JSON columns of MySQL and MariaDB (binary collation).
  *
  * @internal
  */
@@ -46,15 +45,14 @@ class LogTextFilter implements FilterInterface
 
     public function apply(QueryBuilder $queryBuilder, FilterDataDto $filterDataDto, ?FieldDto $fieldDto, EntityDto $entityDto): void
     {
-        $column = \sprintf('%s.%s', $filterDataDto->getEntityAlias(), $filterDataDto->getProperty());
-        $parameter = ':'.$filterDataDto->getParameterName();
-        if ($queryBuilder->getEntityManager()->getConnection()->getDatabasePlatform() instanceof PostgreSQLPlatform) {
-            $column = \sprintf("LOWER(CONCAT(%s, ''))", $column);
-            $parameter = \sprintf('LOWER(%s)', $parameter);
-        }
-
         $queryBuilder
-            ->andWhere(\sprintf('%s %s %s', $column, $filterDataDto->getComparison(), $parameter))
+            ->andWhere(\sprintf(
+                "LOWER(CONCAT(%s.%s, '')) %s LOWER(:%s)",
+                $filterDataDto->getEntityAlias(),
+                $filterDataDto->getProperty(),
+                $filterDataDto->getComparison(),
+                $filterDataDto->getParameterName()
+            ))
             ->setParameter($filterDataDto->getParameterName(), $filterDataDto->getValue());
     }
 }
