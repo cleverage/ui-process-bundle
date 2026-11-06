@@ -1,6 +1,9 @@
 Latest
 ------
 
+## Fixes
+* [#303](https://github.com/cleverage/ui-process-bundle/issues/303) Logs list: the context filter also searches the value as encoded in JSON by Doctrine (internal `LogTextFilter`): PostgreSQL, MariaDB and SQLite keep the JSON as written (`/` written `\/`, `"` written `\"`, non-ASCII characters written `\uXXXX`), a search containing such characters (e.g. a path) found nothing there. Update documentation, add tests.
+
 v3.6
 ------
 
