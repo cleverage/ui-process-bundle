@@ -1,6 +1,9 @@
 Latest
 ------
 
+## Fixes
+* [#301](https://github.com/cleverage/ui-process-bundle/issues/301) The `pb_ui_file_filter` and `pb_ui_orm_filter` Monolog handlers accept the level of the handler they wrap (`file_level`, `database_level`, set by the new internal `MonologFilterLevelPass`) instead of every level: the Monolog processors no longer run for the records written by none of them, e.g. the debug record of each task execution. Update documentation, add tests.
+
 v3.6
 ------
 

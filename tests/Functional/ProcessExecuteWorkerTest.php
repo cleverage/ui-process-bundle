@@ -23,6 +23,7 @@ use CleverAge\UiProcessBundle\Controller\Admin\UserCrudController;
 use CleverAge\UiProcessBundle\DependencyInjection\CleverAgeUiProcessExtension;
 use CleverAge\UiProcessBundle\DependencyInjection\Compiler\CheckDoctrineLazyGhostObjectsPass;
 use CleverAge\UiProcessBundle\DependencyInjection\Compiler\LoginThrottlingPass;
+use CleverAge\UiProcessBundle\DependencyInjection\Compiler\MonologFilterLevelPass;
 use CleverAge\UiProcessBundle\DependencyInjection\Compiler\UploadDirectoryParameterPass;
 use CleverAge\UiProcessBundle\DependencyInjection\Compiler\UploadedFileSubscriberPass;
 use CleverAge\UiProcessBundle\DependencyInjection\Configuration;
@@ -75,6 +76,7 @@ use Symfony\Component\Messenger\Worker;
 #[UsesClass(UploadedFileManager::class)]
 #[CoversClass(UploadedFileSubscriber::class)]
 #[UsesClass(UploadedFileSubscriberPass::class)]
+#[UsesClass(MonologFilterLevelPass::class)]
 #[UsesClass(CleverAgeUiProcessBundle::class)]
 #[UsesClass(CheckDoctrineLazyGhostObjectsPass::class)]
 #[UsesClass(UploadDirectoryParameterPass::class)]
