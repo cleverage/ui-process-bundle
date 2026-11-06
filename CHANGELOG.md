@@ -1,6 +1,9 @@
 Latest
 ------
 
+v3.6
+------
+
 ## Changes
 * [#297](https://github.com/cleverage/ui-process-bundle/issues/297) Documentation: while a task keeps a transaction open, the heartbeat locks the row of the execution (the "Stop" and "Mark as failed" actions wait for it); a log record with a large context exhausts the memory in the dev environment.
 * [#288](https://github.com/cleverage/ui-process-bundle/issues/288) Documentation: the examples use the `form` option instead of the deprecated `entrypoint_type` and `default` UI options.
