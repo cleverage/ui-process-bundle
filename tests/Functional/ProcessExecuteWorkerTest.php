@@ -62,6 +62,8 @@ use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Event\WorkerMessageFailedEvent;
 use Symfony\Component\Messenger\Event\WorkerMessageHandledEvent;
 use Symfony\Component\Messenger\Event\WorkerMessageReceivedEvent;
+use Symfony\Component\Messenger\Event\WorkerMessageRetriedEvent;
+use Symfony\Component\Messenger\Event\WorkerRunningEvent;
 use Symfony\Component\Messenger\EventListener\StopWorkerOnMessageLimitListener;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\Stamp\SentToFailureTransportStamp;
@@ -128,7 +130,7 @@ class ProcessExecuteWorkerTest extends FunctionalTestCase
         $eventDispatcher->addListener(WorkerMessageReceivedEvent::class, $subscriber->onMessageReceived(...));
         $eventDispatcher->addListener(WorkerMessageHandledEvent::class, $subscriber->onMessageHandled(...));
         $eventDispatcher->addListener(WorkerMessageFailedEvent::class, $subscriber->onMessageFailed(...));
-        $eventDispatcher->addSubscriber(new StopWorkerOnMessageLimitListener(1));
+        $eventDispatcher->addListener(WorkerRunningEvent::class, (new StopWorkerOnMessageLimitListener(1))->onWorkerRunning(...));
         if ($retry) {
             // As the retry strategy of a transport with retries
             $eventDispatcher->addListener(WorkerMessageFailedEvent::class, static function (WorkerMessageFailedEvent $event): void {
@@ -228,20 +230,32 @@ class ProcessExecuteWorkerTest extends FunctionalTestCase
     }
 
     /**
-     * Consumes one message with the event dispatcher of the application, as messenger:consume.
+     * Consumes one message with the listeners of the application, as messenger:consume.
+     *
+     * The listeners are copied into a new dispatcher: adding or removing a listener on the compiled dispatcher of the
+     * container is deprecated since Symfony 8.2.
      */
     private function consume(string $transportName): void
     {
-        /** @var EventDispatcherInterface $eventDispatcher */
-        $eventDispatcher = static::getContainer()->get('event_dispatcher');
-        $stopListener = new StopWorkerOnMessageLimitListener(1);
-        $eventDispatcher->addSubscriber($stopListener);
+        /** @var EventDispatcherInterface $applicationDispatcher */
+        $applicationDispatcher = static::getContainer()->get('event_dispatcher');
+        $eventDispatcher = new EventDispatcher();
+        foreach ([
+            WorkerMessageReceivedEvent::class,
+            WorkerMessageHandledEvent::class,
+            WorkerMessageFailedEvent::class,
+            WorkerMessageRetriedEvent::class,
+        ] as $eventName) {
+            $listeners = $applicationDispatcher->getListeners($eventName);
+            // Priorities are replaced by the position, to keep the order of the listeners
+            $priority = \count($listeners);
+            foreach ($listeners as $listener) {
+                $eventDispatcher->addListener($eventName, $listener, $priority--);
+            }
+        }
+        $eventDispatcher->addListener(WorkerRunningEvent::class, (new StopWorkerOnMessageLimitListener(1))->onWorkerRunning(...));
         /** @var MessageBusInterface $bus */
         $bus = static::getContainer()->get('messenger.default_bus');
-        try {
-            (new Worker([$transportName => $this->getTransport($transportName)], $bus, $eventDispatcher))->run(['sleep' => 0]);
-        } finally {
-            $eventDispatcher->removeSubscriber($stopListener);
-        }
+        (new Worker([$transportName => $this->getTransport($transportName)], $bus, $eventDispatcher))->run(['sleep' => 0]);
     }
 }
