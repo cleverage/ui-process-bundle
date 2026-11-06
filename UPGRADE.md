@@ -1,8 +1,6 @@
 Upgrade Guide
 =============
 
-## Latest
-
 ## v3.5
 
 ### Deprecated UI options of the launch form

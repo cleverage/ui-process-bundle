@@ -1,6 +1,9 @@
 Latest
 ------
 
+v3.7
+------
+
 ## Changes
 * [#311](https://github.com/cleverage/ui-process-bundle/issues/311) Documentation: the installation (workers) mentions that a single `scheduler_cron` worker must run unless symfony/lock is installed (with a lock store shared between the hosts of the workers).
  
