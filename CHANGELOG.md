@@ -2,6 +2,7 @@ Latest
 ------
 
 ## Changes
+* [#297](https://github.com/cleverage/ui-process-bundle/issues/297) Documentation: while a task keeps a transaction open, the heartbeat locks the row of the execution (the "Stop" and "Mark as failed" actions wait for it); a log record with a large context exhausts the memory in the dev environment.
 * [#288](https://github.com/cleverage/ui-process-bundle/issues/288) Documentation: the examples use the `form` option instead of the deprecated `entrypoint_type` and `default` UI options.
 * [#286](https://github.com/cleverage/ui-process-bundle/issues/286) Documentation: troubleshooting entry for the database error of every process execution until the migrations of the bundle are executed.
 * [#282](https://github.com/cleverage/ui-process-bundle/issues/282) New migration: `idx_process_execution_code_start_date` index on `process_execution (code, start_date)`, used by the "last execution" query of each process of the process list (0.45 s per process with 500 000 executions, 0.002 s with the index).

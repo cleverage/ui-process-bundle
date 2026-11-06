@@ -236,6 +236,9 @@ By default, the process executions, their logs and their heartbeat are written w
   export) fails as soon as the log records are inserted during its read ("Cannot execute queries while other
   unbuffered queries are active"), while the same process works without the UI;
 - a transaction rolled back by a task also rolls back the log records and the state of the execution written meanwhile;
+- while a task keeps a transaction open, the heartbeat locks the row of the execution until the transaction ends: the
+  "Stop" and "Mark as failed" actions of the UI wait for the lock and fail after the lock wait timeout of the database
+  (`innodb_lock_wait_timeout`, 50 seconds by default on MySQL);
 - the pending changes of the entities of the tasks are written with the log records (see above).
 
 To isolate them, give the name of an entity manager on a connection of its own, mapping the entities of the bundle, in
