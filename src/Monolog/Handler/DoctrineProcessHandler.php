@@ -81,7 +81,24 @@ class DoctrineProcessHandler extends AbstractProcessingHandler
     #[\Override]
     public function __destruct()
     {
-        $this->flush();
+        try {
+            $this->flush();
+        } catch (\Throwable $exception) {
+            // An exception thrown by a destructor at the end of the script is a fatal error (e.g. the database driver
+            // is missing, the pending changes of the process tasks cannot be written): reported, as a failure of the
+            // writing of the log records
+            $this->reportingFailure = true;
+            try {
+                $this->logger?->error(
+                    \sprintf('The pending log records and changes could not be written when the handler was destroyed: %s', $exception->getMessage()),
+                    ['exception' => $exception]
+                );
+            } catch (\Throwable) {
+                // Nothing left to report it
+            } finally {
+                $this->reportingFailure = false;
+            }
+        }
         parent::__destruct();
     }
 
