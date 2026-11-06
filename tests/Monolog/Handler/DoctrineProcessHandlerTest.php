@@ -296,6 +296,26 @@ class DoctrineProcessHandlerTest extends TestCase
         $handler->disable();
     }
 
+    /**
+     * An exception thrown by a destructor at the end of the script is a fatal error (e.g. the database driver is
+     * missing): reported instead.
+     */
+    public function testFlushFailureOnDestructionIsReported(): void
+    {
+        $entityManager = $this->createEntityManagerMock();
+        $entityManager->method('isOpen')->willReturn(true);
+        $failure = new \Error('Call to undefined function sqlsrv_configure()');
+        $entityManager->expects(self::once())->method('flush')->willThrowException($failure);
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::once())
+            ->method('error')
+            ->with('The pending log records and changes could not be written when the handler was destroyed: Call to undefined function sqlsrv_configure()', ['exception' => $failure]);
+
+        $handler = $this->createHandler($entityManager, new ProcessExecution('test.process', 'test.log'));
+        $handler->setLogger($logger);
+        unset($handler);
+    }
+
     public function testFlushFailureWithoutRecordsIsNotCaught(): void
     {
         $entityManager = $this->createEntityManagerMock();
