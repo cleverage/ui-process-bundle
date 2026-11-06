@@ -36,6 +36,8 @@ class DoctrineProcessHandler extends AbstractProcessingHandler
     private bool $reportingFailure = false;
     private ?Level $reportIncrementLevel = null;
     private bool $shutdownFunctionRegistered = false;
+    private int $writeRightAwayInterval = 5;
+    private ?float $lastWriteTime = null;
 
     public function __construct(int|string|Level $level = Level::Debug, bool $bubble = true)
     {
@@ -64,13 +66,25 @@ class DoctrineProcessHandler extends AbstractProcessingHandler
     /**
      * A log record from this level (counted in the report of the process execution) is written right away, with the
      * buffered ones: they are not lost if the process ends with a fatal error which the shutdown function cannot handle
-     * (e.g. no memory left, process killed).
+     * (e.g. no memory left, process killed). Below the Error level, at most every $writeRightAwayInterval seconds (see
+     * setWriteRightAwayInterval()).
      *
      * @param 'ALERT'|'Alert'|'alert'|'CRITICAL'|'Critical'|'critical'|'DEBUG'|'Debug'|'debug'|'EMERGENCY'|'Emergency'|'emergency'|'ERROR'|'Error'|'error'|'INFO'|'Info'|'info'|'NOTICE'|'Notice'|'notice'|'WARNING'|'Warning'|'warning' $level
      */
     public function setReportIncrementLevel(string $level): void
     {
         $this->reportIncrementLevel = Level::fromName($level);
+    }
+
+    /**
+     * Minimum number of seconds between the last writing of the log records and the writing right away of a log record
+     * counted in the report, below the Error level (0: each one): writing each record of a process logging many
+     * warnings, with the report of the process execution, made it several times slower. The records from the Error
+     * level are always written right away.
+     */
+    public function setWriteRightAwayInterval(int $seconds): void
+    {
+        $this->writeRightAwayInterval = max(0, $seconds);
     }
 
     public function disable(): void
@@ -150,6 +164,7 @@ class DoctrineProcessHandler extends AbstractProcessingHandler
 
             return;
         }
+        $this->lastWriteTime = microtime(true);
         // Written log records are no longer needed: detached so that the identity map does not grow during long
         // processes (detach is not cascaded to the process execution, see LogRecord::$processExecution)
         foreach ($entities as $entity) {
@@ -166,6 +181,7 @@ class DoctrineProcessHandler extends AbstractProcessingHandler
     {
         parent::reset();
         $this->records = new ArrayCollection();
+        $this->lastWriteTime = null;
     }
 
     protected function write(LogRecord $record): void
@@ -187,11 +203,18 @@ class DoctrineProcessHandler extends AbstractProcessingHandler
     /**
      * A log record counted in the report, during a process execution, when no change of the process tasks is pending
      * (they would be written with it): checked without computing the changes of their managed entities, it is
-     * otherwise written with the next ones.
+     * otherwise written with the next ones. Below the Error level, only when the last writing is at least
+     * $writeRightAwayInterval seconds old: it is otherwise written with the next ones.
      */
     private function isToWriteRightAway(LogRecord $record): bool
     {
         if (!$this->reportIncrementLevel instanceof Level || $record->level->value < $this->reportIncrementLevel->value) {
+            return false;
+        }
+        if ($record->level->isLowerThan(Level::Error)
+            && null !== $this->lastWriteTime
+            && microtime(true) - $this->lastWriteTime < $this->writeRightAwayInterval
+        ) {
             return false;
         }
         $currentProcessExecution = $this->processExecutionManager?->getCurrentProcessExecution();

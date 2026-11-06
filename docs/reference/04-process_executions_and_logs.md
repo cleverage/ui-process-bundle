@@ -155,7 +155,9 @@ channels (the channels of the process bundle, used by the `LoggerTask` and every
 | `pb_ui_orm`     | `cleverage_ui_process.monolog_handler.doctrine_process` | [Database](#database-logs)     | `database_level`   |
 
 Both levels default to `Debug` on the `dev` environment and to `Info` otherwise. Your own Monolog handlers are not
-modified.
+modified. The channels are filtered by the `pb_ui_file_filter` and `pb_ui_orm_filter` handlers, whose minimum level is
+the level of the handler they wrap: the Monolog processors do not run for a record none of them writes (e.g. the debug
+record of each task execution, with the `Info` level), unless another handler of the channel accepts it.
 
 ### Log file
 
@@ -193,17 +195,25 @@ and its values which cannot be encoded (e.g. a resource) replaced by `null`. As 
 `Over 1000 items (<count> total), aborting normalization`) and to 9 levels deep, the context being the first one (the
 deeper values are replaced by `Over 9 levels deep, aborting normalization`): an unbounded context (e.g. the output of an
 aggregator) was stored whole, and over the maximum packet size of the database, it made the insertion of the log records
-written with it fail. The objects of the context are stored with their public properties, without limit.
+written with it fail. The strings of the context are limited to 65536 characters (Unicode code points), at any depth:
+a longer one (e.g. the content of a file) is truncated and followed by ` [...] (over 65536 characters, <count> total,
+truncated)` (the log file has it whole); over the maximum packet size of the database (e.g. `max_allowed_packet` of
+MySQL), its log record and the ones written with it were lost, and the connection, shared with the process tasks, was
+closed. The objects of the context are stored with their public properties, without limit.
 
-Records are buffered and inserted every 500 records, and at the end (or failure) of the process. A record counted in
+Records are buffered and inserted every 500 records, and at the end (or failure) of the process (of the process of
+the execution, not of each of its sub-processes run in the same PHP process). A record counted in
 the report of the execution (from `report_increment_level`, warnings by default) is inserted right away with the
 buffered ones, unless changes of the process tasks are pending in the entity manager (they would be written with it, see
-below): it is then inserted with the next ones. After a fatal error (e.g. maximum execution time exceeded), neither the
+below): it is then inserted with the next ones. Below the `Error` level, it is inserted right away only when the last
+insertion of log records is at least `process_execution.heartbeat_interval` seconds old (default `5`), otherwise with
+the next ones: inserting each warning with the report of the execution, in a transaction of its own, made a process
+logging many warnings several times slower. The records from the `Error` level are always inserted right away. After a fatal error (e.g. maximum execution time exceeded), neither the
 end of the process nor the destruction of the handler happen: a shutdown function inserts the buffered records and saves
 the report of the execution, unless changes of the process tasks are pending (the status of the execution stays
 `started`, see [not responding executions](#not-responding-executions)). After the memory limit is exceeded, the limit is raised by 32 MiB
 to do it, but the shutdown function of the Symfony `ErrorHandler`, called first, usually fails too (no memory left), and
-the next ones are not called: only the records counted in the report, inserted right away, are kept in database (the log
+the next ones are not called: only the records inserted right away (counted in the report) are kept in database (the log
 file has all of them). When the insertion of
 the log records fails (e.g. a database error), they are dropped and the failure is logged as an error on the
 `cleverage_process` channel (in the [log file](#log-file), not in database): the process goes on, and the status of its
@@ -353,8 +363,10 @@ The command does not run them: they would block the running processes, which wri
 The "Process > Logs" menu lists the database logs (250 per page), with their level, message, date and a "Has context
 info ?" column. The detail page displays the log context. They can be filtered by process (or execution), level,
 message, context and date. The message and context filters are case-insensitive, on every database. The context
-filter searches the JSON representation of the context, as stored by the database (e.g. with escaped non-ASCII
-characters on PostgreSQL).
+filter searches the JSON representation of the context (e.g. `"file":` finds the `file` keys), also with the
+characters escaped by the JSON encoding of Doctrine, kept as they are by PostgreSQL, MariaDB and SQLite (`/` written
+`\/`, `"` written `\"`, non-ASCII characters written `\uXXXX`): `/var/data` or `Élodie` are found on every database.
+On these databases, the search of a non-ASCII character is case-sensitive (`élodie` does not find `Élodie`).
 
 The list counts the log records of the current filters, and the message and context filters read every log record
 (`LIKE '%...%'`, which no index can serve): on large tables they take seconds per page (with 3 million log records,

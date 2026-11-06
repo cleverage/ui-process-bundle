@@ -19,6 +19,7 @@ use CleverAge\UiProcessBundle\CleverAgeUiProcessBundle;
 use CleverAge\UiProcessBundle\DependencyInjection\CleverAgeUiProcessExtension;
 use CleverAge\UiProcessBundle\DependencyInjection\Compiler\CheckDoctrineLazyGhostObjectsPass;
 use CleverAge\UiProcessBundle\DependencyInjection\Compiler\LoginThrottlingPass;
+use CleverAge\UiProcessBundle\DependencyInjection\Compiler\MonologFilterLevelPass;
 use CleverAge\UiProcessBundle\DependencyInjection\Compiler\UploadDirectoryParameterPass;
 use CleverAge\UiProcessBundle\DependencyInjection\Compiler\UploadedFileSubscriberPass;
 use CleverAge\UiProcessBundle\DependencyInjection\Configuration;
@@ -65,6 +66,7 @@ use Symfony\Component\Process\Process;
 #[UsesClass(UploadDirectoryParameterPass::class)]
 #[UsesClass(LoginThrottlingPass::class)]
 #[UsesClass(UploadedFileSubscriberPass::class)]
+#[UsesClass(MonologFilterLevelPass::class)]
 #[UsesClass(CleverAgeUiProcessExtension::class)]
 #[UsesClass(DeprecatedEasyAdminRouteAliasLoader::class)]
 #[UsesClass(Configuration::class)]
@@ -184,7 +186,7 @@ class DoctrineProcessHandlerEntityManagerTest extends KernelTestCase
         $connection->executeStatement('ALTER TABLE log_record RENAME TO log_record_renamed');
         try {
             // ProcessEvent::EVENT_PROCESS_ENDED listeners
-            $subscriber->flushDoctrineLogs();
+            $subscriber->flushDoctrineLogs($event);
             // Reset right away for the process tasks
             self::assertTrue($this->entityManager->isOpen());
             $subscriber->success($event);
@@ -356,6 +358,40 @@ class DoctrineProcessHandlerEntityManagerTest extends KernelTestCase
         $this->entityManager->detach($user);
         $handler->handle($this->createRecord(Level::Error, 'other error'));
         self::assertSame(['info', 'warning', 'error', 'other error'], $this->getStoredMessages());
+        $handler->disable();
+    }
+
+    /**
+     * Below the Error level, a log record counted in the report is written right away at most every interval: a process
+     * logging many warnings is not slowed down by a writing (and a commit) per warning. The errors are always written
+     * right away, and the interval starts again after a reset (e.g. between two messages of a worker).
+     */
+    public function testRecordCountedInTheReportIsWrittenRightAwayAtMostEveryInterval(): void
+    {
+        $handler = $this->createHandlerWithLogger(new TestHandler());
+        $handler->setReportIncrementLevel('Warning');
+        $handler->setWriteRightAwayInterval(3600);
+        $handler->handle($this->createRecord(Level::Warning, 'first warning'));
+        self::assertSame(['first warning'], $this->getStoredMessages());
+
+        $handler->handle($this->createRecord(Level::Warning, 'second warning'));
+        $handler->handle($this->createRecord(Level::Notice, 'notice'));
+        self::assertSame(['first warning'], $this->getStoredMessages(), 'Written with the next ones');
+
+        $handler->handle($this->createRecord(Level::Error, 'error'));
+        self::assertSame(['first warning', 'second warning', 'notice', 'error'], $this->getStoredMessages());
+
+        $handler->handle($this->createRecord(Level::Warning, 'third warning'));
+        self::assertCount(4, $this->getStoredMessages());
+
+        $handler->reset();
+        $handler->handle($this->createRecord(Level::Warning, 'fourth warning'));
+        self::assertSame(['first warning', 'second warning', 'notice', 'error', 'fourth warning'], $this->getStoredMessages());
+
+        // Each one
+        $handler->setWriteRightAwayInterval(0);
+        $handler->handle($this->createRecord(Level::Warning, 'fifth warning'));
+        self::assertCount(6, $this->getStoredMessages());
         $handler->disable();
     }
 
