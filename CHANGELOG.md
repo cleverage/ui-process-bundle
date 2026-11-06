@@ -1,6 +1,9 @@
 Latest
 ------
 
+## Fixes
+* [#299](https://github.com/cleverage/ui-process-bundle/issues/299) `DoctrineProcessHandler`: below the `Error` level, a log record counted in the report is inserted right away at most every `process_execution.heartbeat_interval` seconds (new `setWriteRightAwayInterval()`), otherwise with the next ones: since 3.5, each warning was inserted with the report of the execution in a transaction of its own (5000 warnings: 60 s instead of 8 s). The records from the `Error` level are still inserted right away. Update documentation, add tests.
+
 v3.6
 ------
 
