@@ -1,6 +1,9 @@
 Latest
 ------
 
+## Fixes
+* [#307](https://github.com/cleverage/ui-process-bundle/issues/307) The buffered log records are written to the database at the end (or failure) of the process of the execution only, no longer at the end of each of its sub-processes (e.g. a `ProcessExecutorTask` in a loop: one transaction per iteration, 1000 iterations took 10.5 s instead of 2.9 s). Update documentation, add tests.
+
 v3.6
 ------
 

@@ -195,7 +195,8 @@ deeper values are replaced by `Over 9 levels deep, aborting normalization`): an 
 aggregator) was stored whole, and over the maximum packet size of the database, it made the insertion of the log records
 written with it fail. The objects of the context are stored with their public properties, without limit.
 
-Records are buffered and inserted every 500 records, and at the end (or failure) of the process. A record counted in
+Records are buffered and inserted every 500 records, and at the end (or failure) of the process (of the process of
+the execution, not of each of its sub-processes run in the same PHP process). A record counted in
 the report of the execution (from `report_increment_level`, warnings by default) is inserted right away with the
 buffered ones, unless changes of the process tasks are pending in the entity manager (they would be written with it, see
 below): it is then inserted with the next ones. After a fatal error (e.g. maximum execution time exceeded), neither the
