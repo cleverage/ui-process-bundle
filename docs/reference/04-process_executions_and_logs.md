@@ -155,7 +155,9 @@ channels (the channels of the process bundle, used by the `LoggerTask` and every
 | `pb_ui_orm`     | `cleverage_ui_process.monolog_handler.doctrine_process` | [Database](#database-logs)     | `database_level`   |
 
 Both levels default to `Debug` on the `dev` environment and to `Info` otherwise. Your own Monolog handlers are not
-modified.
+modified. The channels are filtered by the `pb_ui_file_filter` and `pb_ui_orm_filter` handlers, whose minimum level is
+the level of the handler they wrap: the Monolog processors do not run for a record none of them writes (e.g. the debug
+record of each task execution, with the `Info` level), unless another handler of the channel accepts it.
 
 ### Log file
 

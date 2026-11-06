@@ -17,6 +17,7 @@ use CleverAge\UiProcessBundle\CleverAgeUiProcessBundle;
 use CleverAge\UiProcessBundle\DependencyInjection\CleverAgeUiProcessExtension;
 use CleverAge\UiProcessBundle\DependencyInjection\Compiler\CheckDoctrineLazyGhostObjectsPass;
 use CleverAge\UiProcessBundle\DependencyInjection\Compiler\LoginThrottlingPass;
+use CleverAge\UiProcessBundle\DependencyInjection\Compiler\MonologFilterLevelPass;
 use CleverAge\UiProcessBundle\DependencyInjection\Compiler\UploadDirectoryParameterPass;
 use CleverAge\UiProcessBundle\DependencyInjection\Compiler\UploadedFileSubscriberPass;
 use CleverAge\UiProcessBundle\Routing\DeprecatedEasyAdminRouteAliasLoader;
@@ -32,6 +33,7 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 #[UsesClass(UploadDirectoryParameterPass::class)]
 #[UsesClass(LoginThrottlingPass::class)]
 #[UsesClass(UploadedFileSubscriberPass::class)]
+#[UsesClass(MonologFilterLevelPass::class)]
 class CleverAgeUiProcessBundleTest extends TestCase
 {
     public function testPathIsTheBundleRootDirectory(): void
@@ -95,6 +97,18 @@ class CleverAgeUiProcessBundleTest extends TestCase
         $passes = array_filter(
             $container->getCompilerPassConfig()->getPasses(),
             static fn (object $pass): bool => $pass instanceof UploadedFileSubscriberPass,
+        );
+        self::assertCount(1, $passes);
+    }
+
+    public function testMonologFilterLevelPassIsRegistered(): void
+    {
+        $container = new ContainerBuilder();
+        (new CleverAgeUiProcessBundle())->build($container);
+
+        $passes = array_filter(
+            $container->getCompilerPassConfig()->getPasses(),
+            static fn (object $pass): bool => $pass instanceof MonologFilterLevelPass,
         );
         self::assertCount(1, $passes);
     }
