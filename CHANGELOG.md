@@ -1,6 +1,9 @@
 Latest
 ------
 
+## Fixes
+* [#305](https://github.com/cleverage/ui-process-bundle/issues/305) Database logs: the strings of the context of a log record are limited to 65536 characters (followed by ` [...] (over 65536 characters, <count> total, truncated)`), as its arrays (#271): a larger string (e.g. the content of a file) over the maximum packet size of the database made the insertion of the log records written with it fail, and closed the connection shared with the process tasks. Update documentation, add tests.
+
 v3.6
 ------
 
