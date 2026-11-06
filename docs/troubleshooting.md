@@ -58,7 +58,9 @@ is compiled, this error is replaced by an explicit message.
 ## PHP Fatal error: Allowed memory size of xxx bytes exhausted
 
 When the `store_in_database` option is enabled with a low `database_level`, the process may generate many
-`LogRecord`. On debug environment, profiling too many queries causes memory exhaustion. So, you can:
+`LogRecord`. On debug environment, profiling too many queries causes memory exhaustion, as a single log record with a
+large context (e.g. the output of an aggregator: with 100 000 lines, more than 1 GB in the dev environment, while the
+prod environment does not exceed the limit). So, you can:
 - Set `doctrine.dbal.profiling_collect_backtrace: false`
 - Increase `memory_limit` in php.ini
 - Set `clever_age_ui_process.logs.store_in_database: false` or raise `clever_age_ui_process.logs.database_level`
