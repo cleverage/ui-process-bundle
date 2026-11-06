@@ -201,7 +201,8 @@ truncated)` (the log file has it whole); over the maximum packet size of the dat
 MySQL), its log record and the ones written with it were lost, and the connection, shared with the process tasks, was
 closed. The objects of the context are stored with their public properties, without limit.
 
-Records are buffered and inserted every 500 records, and at the end (or failure) of the process. A record counted in
+Records are buffered and inserted every 500 records, and at the end (or failure) of the process (of the process of
+the execution, not of each of its sub-processes run in the same PHP process). A record counted in
 the report of the execution (from `report_increment_level`, warnings by default) is inserted right away with the
 buffered ones, unless changes of the process tasks are pending in the entity manager (they would be written with it, see
 below): it is then inserted with the next ones. Below the `Error` level, it is inserted right away only when the last

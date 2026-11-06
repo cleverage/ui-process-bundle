@@ -277,7 +277,10 @@ class ProcessEventSubscriberTest extends TestCase
         $entityManager = $this->createMock(EntityManagerInterface::class);
         $entityManager->method('getUnitOfWork')->willReturn($unitOfWork);
         $entityManager->expects(self::once())->method('persist')->with(self::isInstanceOf(LogRecord::class));
-        $entityManager->expects(self::atLeastOnce())->method('flush');
+        $flushes = 0;
+        $entityManager->method('flush')->willReturnCallback(static function () use (&$flushes): void {
+            ++$flushes;
+        });
 
         $doctrineProcessHandler = new DoctrineProcessHandler();
         $doctrineProcessHandler->setEntityManager($entityManager);
@@ -291,8 +294,33 @@ class ProcessEventSubscriberTest extends TestCase
             $doctrineProcessHandler,
             $processExecutionManager
         );
-        $subscriber->flushDoctrineLogs();
+        // End of a sub-process (e.g. ProcessExecutorTask): written at the end of the process of the execution
+        $subscriber->flushDoctrineLogs(new ProcessEvent('sub.process'));
+        self::assertSame(0, $flushes);
+
+        $subscriber->flushDoctrineLogs(new ProcessEvent('test.process'));
+        self::assertSame(1, $flushes);
         $doctrineProcessHandler->disable(); // no flush on destruction, during another test
+    }
+
+    /**
+     * Without current process execution (none started), the pending log records and changes are still written.
+     */
+    public function testFlushDoctrineLogsWithoutProcessExecution(): void
+    {
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager->method('isOpen')->willReturn(true);
+        $entityManager->expects(self::once())->method('flush');
+        $doctrineProcessHandler = new DoctrineProcessHandler();
+        $doctrineProcessHandler->setEntityManager($entityManager);
+        $processExecutionManager = new ProcessExecutionManager($this->createRepositoryStub());
+
+        (new ProcessEventSubscriber(
+            new ProcessHandler('/var/log/process', $processExecutionManager),
+            $doctrineProcessHandler,
+            $processExecutionManager
+        ))->flushDoctrineLogs(new ProcessEvent('test.process'));
+        $doctrineProcessHandler->disable();
     }
 
     private function createSubscriber(

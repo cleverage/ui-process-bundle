@@ -119,8 +119,16 @@ final readonly class ProcessEventSubscriber
         }
     }
 
-    public function flushDoctrineLogs(): void
+    /**
+     * Only at the end of the process of the current execution: the end of each of its sub-processes (e.g. a
+     * ProcessExecutorTask in a loop) wrote the buffered log records, in a transaction of its own.
+     */
+    public function flushDoctrineLogs(ProcessEvent $event): void
     {
+        $currentProcessExecution = $this->processExecutionManager->getCurrentProcessExecution();
+        if ($currentProcessExecution instanceof ProcessExecution && $event->getProcessCode() !== $currentProcessExecution->getCode()) {
+            return;
+        }
         $this->doctrineProcessHandler->flush();
     }
 }
