@@ -2,6 +2,7 @@ Latest
 ------
 
 ## Fixes
+* [#299](https://github.com/cleverage/ui-process-bundle/issues/299) `DoctrineProcessHandler`: below the `Error` level, a log record counted in the report is inserted right away at most every `process_execution.heartbeat_interval` seconds (new `setWriteRightAwayInterval()`), otherwise with the next ones: since 3.5, each warning was inserted with the report of the execution in a transaction of its own (5000 warnings: 60 s instead of 8 s). The records from the `Error` level are still inserted right away. Update documentation, add tests.
 * [#301](https://github.com/cleverage/ui-process-bundle/issues/301) The `pb_ui_file_filter` and `pb_ui_orm_filter` Monolog handlers accept the level of the handler they wrap (`file_level`, `database_level`, set by the new internal `MonologFilterLevelPass`) instead of every level: the Monolog processors no longer run for the records written by none of them, e.g. the debug record of each task execution. Update documentation, add tests.
 
 v3.6

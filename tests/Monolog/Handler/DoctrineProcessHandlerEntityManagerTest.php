@@ -362,6 +362,40 @@ class DoctrineProcessHandlerEntityManagerTest extends KernelTestCase
     }
 
     /**
+     * Below the Error level, a log record counted in the report is written right away at most every interval: a process
+     * logging many warnings is not slowed down by a writing (and a commit) per warning. The errors are always written
+     * right away, and the interval starts again after a reset (e.g. between two messages of a worker).
+     */
+    public function testRecordCountedInTheReportIsWrittenRightAwayAtMostEveryInterval(): void
+    {
+        $handler = $this->createHandlerWithLogger(new TestHandler());
+        $handler->setReportIncrementLevel('Warning');
+        $handler->setWriteRightAwayInterval(3600);
+        $handler->handle($this->createRecord(Level::Warning, 'first warning'));
+        self::assertSame(['first warning'], $this->getStoredMessages());
+
+        $handler->handle($this->createRecord(Level::Warning, 'second warning'));
+        $handler->handle($this->createRecord(Level::Notice, 'notice'));
+        self::assertSame(['first warning'], $this->getStoredMessages(), 'Written with the next ones');
+
+        $handler->handle($this->createRecord(Level::Error, 'error'));
+        self::assertSame(['first warning', 'second warning', 'notice', 'error'], $this->getStoredMessages());
+
+        $handler->handle($this->createRecord(Level::Warning, 'third warning'));
+        self::assertCount(4, $this->getStoredMessages());
+
+        $handler->reset();
+        $handler->handle($this->createRecord(Level::Warning, 'fourth warning'));
+        self::assertSame(['first warning', 'second warning', 'notice', 'error', 'fourth warning'], $this->getStoredMessages());
+
+        // Each one
+        $handler->setWriteRightAwayInterval(0);
+        $handler->handle($this->createRecord(Level::Warning, 'fifth warning'));
+        self::assertCount(6, $this->getStoredMessages());
+        $handler->disable();
+    }
+
+    /**
      * Without process execution (e.g. a log record of the process bundle outside of a process), nothing is written.
      */
     public function testRecordCountedInTheReportWithoutProcessExecution(): void
