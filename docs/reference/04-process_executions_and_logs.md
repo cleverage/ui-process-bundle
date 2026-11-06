@@ -195,7 +195,11 @@ and its values which cannot be encoded (e.g. a resource) replaced by `null`. As 
 `Over 1000 items (<count> total), aborting normalization`) and to 9 levels deep, the context being the first one (the
 deeper values are replaced by `Over 9 levels deep, aborting normalization`): an unbounded context (e.g. the output of an
 aggregator) was stored whole, and over the maximum packet size of the database, it made the insertion of the log records
-written with it fail. The objects of the context are stored with their public properties, without limit.
+written with it fail. The strings of the context are limited to 65536 characters (Unicode code points), at any depth:
+a longer one (e.g. the content of a file) is truncated and followed by ` [...] (over 65536 characters, <count> total,
+truncated)` (the log file has it whole); over the maximum packet size of the database (e.g. `max_allowed_packet` of
+MySQL), its log record and the ones written with it were lost, and the connection, shared with the process tasks, was
+closed. The objects of the context are stored with their public properties, without limit.
 
 Records are buffered and inserted every 500 records, and at the end (or failure) of the process. A record counted in
 the report of the execution (from `report_increment_level`, warnings by default) is inserted right away with the

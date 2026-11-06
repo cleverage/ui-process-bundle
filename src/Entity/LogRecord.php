@@ -27,6 +27,8 @@ class LogRecord
     /** Limits of the context, as in the log file (Monolog NormalizerFormatter) */
     private const MAX_ITEMS = 1000;
     private const MAX_DEPTH = 9;
+    /** Characters (code points) of a string of the context */
+    private const MAX_STRING_LENGTH = 65536;
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -70,7 +72,8 @@ class LogRecord
     /**
      * The limits of the log file (Monolog NormalizerFormatter): at most 1000 items per array, 9 levels deep. An unbounded
      * context (e.g. the output of an aggregator) was stored whole, and over the maximum packet size of the database, it
-     * made the insertion of the log records written with it fail.
+     * made the insertion of the log records written with it fail. The strings are limited to 65536 characters too (e.g.
+     * the content of a file): not by the log file.
      *
      * @param array<mixed> $data
      *
@@ -88,11 +91,29 @@ class LogRecord
             if ($depth + 1 > self::MAX_DEPTH) {
                 $limited[$key] = \sprintf('Over %d levels deep, aborting normalization', self::MAX_DEPTH);
             } else {
-                $limited[$key] = \is_array($value) ? $this->limit($value, $depth + 1) : $value;
+                $limited[$key] = match (true) {
+                    \is_array($value) => $this->limit($value, $depth + 1),
+                    \is_string($value) => $this->limitString($value),
+                    default => $value,
+                };
             }
         }
 
         return $limited;
+    }
+
+    /**
+     * Truncated to MAX_STRING_LENGTH characters, followed by the number of characters of the whole string. Cut on a
+     * character: a valid UTF-8 string stays valid.
+     */
+    private function limitString(string $value): string
+    {
+        // A string of at most MAX_STRING_LENGTH bytes has at most as many characters: not counted
+        if (\strlen($value) <= self::MAX_STRING_LENGTH || ($length = mb_strlen($value, 'UTF-8')) <= self::MAX_STRING_LENGTH) {
+            return $value;
+        }
+
+        return mb_substr($value, 0, self::MAX_STRING_LENGTH, 'UTF-8').\sprintf(' [...] (over %d characters, %d total, truncated)', self::MAX_STRING_LENGTH, $length);
     }
 
     /**
