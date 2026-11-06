@@ -127,6 +127,27 @@ class LogRecordTest extends TestCase
     }
 
     /**
+     * The strings of the context are limited to 65536 characters (not bytes), at any depth: a larger one (e.g. the
+     * content of a file) could exceed the maximum packet size of the database, the log records were then lost.
+     */
+    public function testContextStringsAreLimitedTo65536Characters(): void
+    {
+        $limit = str_repeat('é', 65536);
+        $context = $this->createLogRecord([
+            'content' => str_repeat('a', 1_000_000),
+            'nested' => ['multibyte' => $limit.'éé', 'limit' => $limit, 'bytes' => str_repeat('a', 65536)],
+            'number' => 1,
+        ])->context;
+
+        self::assertSame(str_repeat('a', 65536).' [...] (over 65536 characters, 1000000 total, truncated)', $context['content']);
+        self::assertSame(
+            ['multibyte' => $limit.' [...] (over 65536 characters, 65538 total, truncated)', 'limit' => $limit, 'bytes' => str_repeat('a', 65536)],
+            $context['nested']
+        );
+        self::assertSame(1, $context['number']);
+    }
+
+    /**
      * The limits of the log file (Monolog NormalizerFormatter): at most 1000 items per array.
      */
     public function testContextArraysAreLimitedTo1000Items(): void

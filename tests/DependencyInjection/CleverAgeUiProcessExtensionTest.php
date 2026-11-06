@@ -197,6 +197,8 @@ class CleverAgeUiProcessExtensionTest extends TestCase
         self::assertFalse($databaseHandler->hasMethodCall('disable'));
         // The log records counted in the report are written right away
         self::assertContains(['setReportIncrementLevel', ['Warning']], $databaseHandler->getMethodCalls());
+        // Below the Error level, at most every heartbeat interval
+        self::assertContains(['setWriteRightAwayInterval', [5]], $databaseHandler->getMethodCalls());
         // The default entity manager, shared with the process tasks
         self::assertEquals(
             [new Reference('doctrine.orm.entity_manager'), new Reference('doctrine')],
@@ -396,6 +398,7 @@ class CleverAgeUiProcessExtensionTest extends TestCase
         self::assertTrue($databaseHandler->hasMethodCall('disable'));
         $calls = $databaseHandler->getMethodCalls();
         self::assertContains(['setReportIncrementLevel', ['Critical']], $calls);
+        self::assertContains(['setWriteRightAwayInterval', [10]], $calls);
         self::assertSame(['disable', []], array_last($calls));
 
         $purgeLogsCommand = $container->getDefinition('cleverage_ui_process.command.purge_logs');
