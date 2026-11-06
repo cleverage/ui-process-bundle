@@ -15,8 +15,8 @@ namespace CleverAge\UiProcessBundle\Tests\Functional;
 
 use CleverAge\UiProcessBundle\Admin\Field\ContextField;
 use CleverAge\UiProcessBundle\Admin\Field\EnumField;
-use CleverAge\UiProcessBundle\Admin\Filter\LogContextFilter;
 use CleverAge\UiProcessBundle\Admin\Filter\LogProcessFilter;
+use CleverAge\UiProcessBundle\Admin\Filter\LogTextFilter;
 use CleverAge\UiProcessBundle\Admin\Filter\ProcessExecutionDurationFilter;
 use CleverAge\UiProcessBundle\CacheWarmer\LaunchFormsCacheWarmer;
 use CleverAge\UiProcessBundle\CleverAgeUiProcessBundle;
@@ -64,7 +64,7 @@ use PHPUnit\Framework\Attributes\UsesClass;
 #[CoversClass(LogoutController::class)]
 #[UsesClass(ContextField::class)]
 #[UsesClass(EnumField::class)]
-#[UsesClass(LogContextFilter::class)]
+#[UsesClass(LogTextFilter::class)]
 #[UsesClass(LogProcessFilter::class)]
 #[UsesClass(ProcessExecutionDurationFilter::class)]
 #[UsesClass(LogRecordCrudController::class)]

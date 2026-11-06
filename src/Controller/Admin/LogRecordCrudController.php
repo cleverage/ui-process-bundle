@@ -16,8 +16,8 @@ namespace CleverAge\UiProcessBundle\Controller\Admin;
 use CleverAge\ProcessBundle\Configuration\ProcessConfiguration;
 use CleverAge\UiProcessBundle\Admin\Field\ContextField;
 use CleverAge\UiProcessBundle\Admin\Field\LogLevelField;
-use CleverAge\UiProcessBundle\Admin\Filter\LogContextFilter;
 use CleverAge\UiProcessBundle\Admin\Filter\LogProcessFilter;
+use CleverAge\UiProcessBundle\Admin\Filter\LogTextFilter;
 use CleverAge\UiProcessBundle\Entity\LogRecord;
 use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
@@ -110,9 +110,11 @@ class LogRecordCrudController extends AbstractCrudController
                     array_map(static fn ($value) => 'enum.log_level.'.strtolower((string) $value), Level::NAMES)
                 ))
                 ->setFormTypeOption('translation_domain', 'enums'),
-        )->add('message')->add(
-            // The context is a JSON column: the TextFilter of EasyAdmin fails on PostgreSQL
-            LogContextFilter::new('context')
+        )->add(
+            // Case-insensitive on PostgreSQL too; the context is a JSON column, the TextFilter of EasyAdmin failed there
+            LogTextFilter::new('message')
+        )->add(
+            LogTextFilter::new('context')
         )->add(
             // The value_type_options set by EasyAdmin replace the widget of its date filter type, whose default is
             // deprecated with Symfony 6.4 (single_text since Symfony 7.0)

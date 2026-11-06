@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace CleverAge\UiProcessBundle\Tests\Admin\Filter;
 
-use CleverAge\UiProcessBundle\Admin\Filter\LogContextFilter;
+use CleverAge\UiProcessBundle\Admin\Filter\LogTextFilter;
 use CleverAge\UiProcessBundle\Entity\LogRecord;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
@@ -30,14 +30,14 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
-#[CoversClass(LogContextFilter::class)]
-class LogContextFilterTest extends TestCase
+#[CoversClass(LogTextFilter::class)]
+class LogTextFilterTest extends TestCase
 {
     public function testNew(): void
     {
-        $dto = LogContextFilter::new('context', 'Context')->getAsDto();
+        $dto = LogTextFilter::new('context', 'Context')->getAsDto();
 
-        self::assertSame(LogContextFilter::class, $dto->getFqcn());
+        self::assertSame(LogTextFilter::class, $dto->getFqcn());
         self::assertSame('context', $dto->getProperty());
         self::assertSame('Context', $dto->getLabel());
         self::assertSame(TextFilterType::class, $dto->getFormType());
@@ -49,9 +49,10 @@ class LogContextFilterTest extends TestCase
      */
     public static function providePlatforms(): iterable
     {
-        // PostgreSQL has no LIKE operator for the json type: the column is converted to text
-        yield 'PostgreSQL' => [new PostgreSQLPlatform(), "CONCAT(entity.context, '')"];
-        yield 'MySQL' => [new MySQLPlatform(), 'entity.context'];
+        // Converted to text (PostgreSQL has no LIKE operator for the json type) and case-insensitive on every database
+        $condition = "LOWER(CONCAT(entity.context, '')) like LOWER(:context_0)";
+        yield 'PostgreSQL' => [new PostgreSQLPlatform(), $condition];
+        yield 'MySQL' => [new MySQLPlatform(), $condition];
     }
 
     #[DataProvider('providePlatforms')]
@@ -62,7 +63,7 @@ class LogContextFilterTest extends TestCase
         $entityManager = $this->createStub(EntityManagerInterface::class);
         $entityManager->method('getConnection')->willReturn($connection);
         $queryBuilder = (new QueryBuilder($entityManager))->select('entity')->from(LogRecord::class, 'entity');
-        $filter = LogContextFilter::new('context');
+        $filter = LogTextFilter::new('context');
         // The value as transformed by the TextFilterType
         $filterDataDto = FilterDataDto::new(0, $filter->getAsDto(), 'entity', ['comparison' => ComparisonType::CONTAINS, 'value' => '%a.csv%']);
         /** @var EntityDto<object> $entityDto */
@@ -70,7 +71,7 @@ class LogContextFilterTest extends TestCase
 
         $filter->apply($queryBuilder, $filterDataDto, null, $entityDto);
 
-        self::assertSame('SELECT entity FROM '.LogRecord::class.' entity WHERE '.$column.' like :context_0', $queryBuilder->getDQL());
+        self::assertSame('SELECT entity FROM '.LogRecord::class.' entity WHERE '.$column, $queryBuilder->getDQL());
         self::assertSame('%a.csv%', $queryBuilder->getParameter('context_0')?->getValue());
     }
 }

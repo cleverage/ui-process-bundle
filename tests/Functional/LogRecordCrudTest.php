@@ -15,8 +15,8 @@ namespace CleverAge\UiProcessBundle\Tests\Functional;
 
 use CleverAge\UiProcessBundle\Admin\Field\ContextField;
 use CleverAge\UiProcessBundle\Admin\Field\LogLevelField;
-use CleverAge\UiProcessBundle\Admin\Filter\LogContextFilter;
 use CleverAge\UiProcessBundle\Admin\Filter\LogProcessFilter;
+use CleverAge\UiProcessBundle\Admin\Filter\LogTextFilter;
 use CleverAge\UiProcessBundle\CacheWarmer\LaunchFormsCacheWarmer;
 use CleverAge\UiProcessBundle\CleverAgeUiProcessBundle;
 use CleverAge\UiProcessBundle\Controller\Admin\LogRecordCrudController;
@@ -59,7 +59,7 @@ use PHPUnit\Framework\Attributes\UsesClass;
 #[UsesClass(ContextField::class)]
 #[UsesClass(LogLevelField::class)]
 #[UsesClass(LogProcessFilter::class)]
-#[UsesClass(LogContextFilter::class)]
+#[UsesClass(LogTextFilter::class)]
 #[UsesClass(ProcessDashboardController::class)]
 #[UsesClass(LogRecord::class)]
 #[UsesClass(ProcessExecution::class)]
@@ -140,6 +140,26 @@ class LogRecordCrudTest extends FunctionalTestCase
         $crawler = $this->client->request('GET', '/process/log-record?filters[context][comparison]=not%20like&filters[context][value]=a.csv');
         self::assertResponseIsSuccessful();
         self::assertCount(2, $crawler->filter('table tbody tr'));
+    }
+
+    /**
+     * Case-insensitive on every database: LIKE is case-sensitive on PostgreSQL (run there by the CI, migrations job).
+     */
+    public function testMessageAndContextFiltersAreCaseInsensitive(): void
+    {
+        $this->login();
+        $execution = $this->createExecution('test.process');
+        $this->createLogRecord($execution, 'First process message', ['file' => 'A.csv']);
+        $this->createLogRecord($execution, 'Other message', []);
+
+        $crawler = $this->client->request('GET', '/process/log-record?filters[message][comparison]=like&filters[message][value]=FIRST');
+        self::assertResponseIsSuccessful();
+        self::assertCount(1, $crawler->filter('table tbody tr'));
+        self::assertStringContainsString('First process message', $crawler->filter('table')->text());
+
+        $crawler = $this->client->request('GET', '/process/log-record?filters[context][comparison]=like&filters[context][value]=a.CSV');
+        self::assertResponseIsSuccessful();
+        self::assertCount(1, $crawler->filter('table tbody tr'));
     }
 
     public function testProcessFilterWithSearchAndComparison(): void
