@@ -158,6 +158,10 @@ bin/console messenger:consume execute_process
 bin/console messenger:consume scheduler_cron
 ```
 
+Run a single `scheduler_cron` worker: with several ones, each due schedule is executed once per worker, unless
+[symfony/lock](https://symfony.com/doc/current/lock.html) is installed (`composer require symfony/lock`, with a lock
+store shared between the hosts of the workers), see [scheduler](reference/05-scheduler.md).
+
 Now you can access the UI via http://your-domain.com/process.
 
 ### Configuration
