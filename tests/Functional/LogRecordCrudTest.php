@@ -145,6 +145,36 @@ class LogRecordCrudTest extends FunctionalTestCase
     }
 
     /**
+     * The context is stored as encoded by Doctrine ("/" written "\/", non-ASCII characters "\uXXXX"...), kept as it
+     * is by PostgreSQL, MariaDB and SQLite (not by MySQL, binary format): a search with such characters is found too.
+     */
+    public function testContextFilterWithCharactersEscapedInJson(): void
+    {
+        $this->login();
+        $execution = $this->createExecution('test.process');
+        $this->createLogRecord($execution, 'File message', ['file' => '/var/data/a.csv']);
+        $this->createLogRecord($execution, 'Name message', ['name' => 'Élodie "Lo" 100%']);
+        $this->createLogRecord($execution, 'Other message', ['file' => 'b.csv']);
+
+        $crawler = $this->client->request('GET', '/process/log-record?filters[context][comparison]=like&filters[context][value]='.urlencode('data/a.csv'));
+        self::assertResponseIsSuccessful();
+        self::assertCount(1, $crawler->filter('table tbody tr'));
+        self::assertStringContainsString('File message', $crawler->filter('table')->text());
+
+        $crawler = $this->client->request('GET', '/process/log-record?filters[context][comparison]=not%20like&filters[context][value]='.urlencode('data/a.csv'));
+        self::assertResponseIsSuccessful();
+        self::assertCount(2, $crawler->filter('table tbody tr'));
+        self::assertStringNotContainsString('File message', $crawler->filter('table')->text());
+
+        foreach (['Élodie', '"Lo"'] as $value) {
+            $crawler = $this->client->request('GET', '/process/log-record?filters[context][comparison]=like&filters[context][value]='.urlencode($value));
+            self::assertResponseIsSuccessful();
+            self::assertCount(1, $crawler->filter('table tbody tr'), $value);
+            self::assertStringContainsString('Name message', $crawler->filter('table')->text());
+        }
+    }
+
+    /**
      * Case-insensitive on every database: LIKE is case-sensitive on PostgreSQL (run there by the CI, migrations job).
      */
     public function testMessageAndContextFiltersAreCaseInsensitive(): void

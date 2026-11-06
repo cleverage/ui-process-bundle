@@ -358,8 +358,10 @@ The command does not run them: they would block the running processes, which wri
 The "Process > Logs" menu lists the database logs (250 per page), with their level, message, date and a "Has context
 info ?" column. The detail page displays the log context. They can be filtered by process (or execution), level,
 message, context and date. The message and context filters are case-insensitive, on every database. The context
-filter searches the JSON representation of the context, as stored by the database (e.g. with escaped non-ASCII
-characters on PostgreSQL).
+filter searches the JSON representation of the context (e.g. `"file":` finds the `file` keys), also with the
+characters escaped by the JSON encoding of Doctrine, kept as they are by PostgreSQL, MariaDB and SQLite (`/` written
+`\/`, `"` written `\"`, non-ASCII characters written `\uXXXX`): `/var/data` or `Élodie` are found on every database.
+On these databases, the search of a non-ASCII character is case-sensitive (`élodie` does not find `Élodie`).
 
 The list counts the log records of the current filters, and the message and context filters read every log record
 (`LIKE '%...%'`, which no index can serve): on large tables they take seconds per page (with 3 million log records,
