@@ -47,7 +47,7 @@ $logger->info('after the warning');
 if ('time' === ($argv[1] ?? null)) {
     set_time_limit(1);
     $count = 0;
-    while (hrtime(true) > 0) {
+    while (true) { // @phpstan-ignore while.alwaysTrue (loops until set_time_limit() raises the fatal error)
         ++$count;
     }
 }
