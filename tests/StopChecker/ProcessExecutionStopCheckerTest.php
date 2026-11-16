@@ -35,9 +35,9 @@ use CleverAge\UiProcessBundle\Manager\ProcessExecutionManager;
 use CleverAge\UiProcessBundle\Repository\ProcessExecutionRepository;
 use CleverAge\UiProcessBundle\Routing\DeprecatedEasyAdminRouteAliasLoader;
 use CleverAge\UiProcessBundle\StopChecker\ProcessExecutionStopChecker;
+use CleverAge\UiProcessBundle\Tests\App\DatabaseSchema;
 use CleverAge\UiProcessBundle\Tests\App\TestKernel;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Tools\SchemaTool;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\UsesClass;
 use Psr\Log\LoggerInterface;
@@ -77,10 +77,7 @@ class ProcessExecutionStopCheckerTest extends KernelTestCase
         /** @var EntityManagerInterface $entityManager */
         $entityManager = static::getContainer()->get('doctrine.orm.entity_manager');
         $this->entityManager = $entityManager;
-        $schemaTool = new SchemaTool($entityManager);
-        $metadata = $entityManager->getMetadataFactory()->getAllMetadata();
-        $schemaTool->dropSchema($metadata);
-        $schemaTool->createSchema($metadata);
+        DatabaseSchema::recreate($entityManager);
 
         $this->processExecutionManager = new ProcessExecutionManager(new ProcessExecutionRepository($entityManager));
         $processConfiguration = new ProcessConfiguration('test.process', []);

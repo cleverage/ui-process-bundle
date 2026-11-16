@@ -15,9 +15,9 @@ namespace CleverAge\UiProcessBundle\Tests\Functional;
 
 use CleverAge\UiProcessBundle\Entity\User;
 use CleverAge\UiProcessBundle\Message\ProcessExecuteMessage;
+use CleverAge\UiProcessBundle\Tests\App\DatabaseSchema;
 use CleverAge\UiProcessBundle\Tests\App\TestKernel;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Tools\SchemaTool;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpKernel\KernelInterface;
@@ -47,10 +47,7 @@ abstract class FunctionalTestCase extends WebTestCase
         $this->client->disableReboot();
 
         $entityManager = $this->getEntityManager();
-        $schemaTool = new SchemaTool($entityManager);
-        $metadata = $entityManager->getMetadataFactory()->getAllMetadata();
-        $schemaTool->dropSchema($metadata);
-        $schemaTool->createSchema($metadata);
+        DatabaseSchema::recreate($entityManager);
     }
 
     protected static function getKernelClass(): string

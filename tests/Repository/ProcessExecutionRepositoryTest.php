@@ -31,10 +31,10 @@ use CleverAge\UiProcessBundle\Form\Type\ProcessContextType;
 use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
 use CleverAge\UiProcessBundle\Repository\ProcessExecutionRepository;
 use CleverAge\UiProcessBundle\Routing\DeprecatedEasyAdminRouteAliasLoader;
+use CleverAge\UiProcessBundle\Tests\App\DatabaseSchema;
 use CleverAge\UiProcessBundle\Tests\App\TestKernel;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Tools\SchemaTool;
 use Doctrine\Persistence\ManagerRegistry;
 use Monolog\Level;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -72,10 +72,7 @@ class ProcessExecutionRepositoryTest extends KernelTestCase
         /** @var EntityManagerInterface $entityManager */
         $entityManager = static::getContainer()->get('doctrine.orm.entity_manager');
         $this->entityManager = $entityManager;
-        $schemaTool = new SchemaTool($entityManager);
-        $metadata = $entityManager->getMetadataFactory()->getAllMetadata();
-        $schemaTool->dropSchema($metadata);
-        $schemaTool->createSchema($metadata);
+        DatabaseSchema::recreate($entityManager);
 
         $this->repository = new ProcessExecutionRepository($entityManager);
     }

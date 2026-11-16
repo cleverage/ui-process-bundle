@@ -37,12 +37,12 @@ use CleverAge\UiProcessBundle\Monolog\Handler\DoctrineProcessHandler;
 use CleverAge\UiProcessBundle\Monolog\Handler\ProcessHandler;
 use CleverAge\UiProcessBundle\Repository\ProcessExecutionRepository;
 use CleverAge\UiProcessBundle\Routing\DeprecatedEasyAdminRouteAliasLoader;
+use CleverAge\UiProcessBundle\Tests\App\DatabaseSchema;
 use CleverAge\UiProcessBundle\Tests\App\TestKernel;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Event\OnFlushEventArgs;
 use Doctrine\ORM\Events;
-use Doctrine\ORM\Tools\SchemaTool;
 use Doctrine\Persistence\ManagerRegistry;
 use Monolog\Handler\TestHandler;
 use Monolog\Level;
@@ -88,10 +88,7 @@ class DoctrineProcessHandlerEntityManagerTest extends KernelTestCase
         /** @var EntityManagerInterface $entityManager */
         $entityManager = static::getContainer()->get('doctrine.orm.entity_manager');
         $this->entityManager = $entityManager;
-        $schemaTool = new SchemaTool($entityManager);
-        $metadata = $entityManager->getMetadataFactory()->getAllMetadata();
-        $schemaTool->dropSchema($metadata);
-        $schemaTool->createSchema($metadata);
+        DatabaseSchema::recreate($entityManager);
     }
 
     protected static function getKernelClass(): string
