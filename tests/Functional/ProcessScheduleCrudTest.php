@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace CleverAge\UiProcessBundle\Tests\Functional;
 
+use CleverAge\UiProcessBundle\Admin\Field\ContextField;
 use CleverAge\UiProcessBundle\Admin\Field\EnumField;
 use CleverAge\UiProcessBundle\CacheWarmer\LaunchFormsCacheWarmer;
 use CleverAge\UiProcessBundle\CleverAgeUiProcessBundle;
@@ -94,6 +95,7 @@ use PHPUnit\Framework\Attributes\UsesClass;
 #[UsesClass(DoctrineProcessHandler::class)]
 #[UsesClass(ProcessHandler::class)]
 #[UsesClass(ProcessExecutionManager::class)]
+#[UsesClass(ContextField::class)]
 class ProcessScheduleCrudTest extends FunctionalTestCase
 {
     public function testIndexWarnsWhenNoWorkerIsRunning(): void

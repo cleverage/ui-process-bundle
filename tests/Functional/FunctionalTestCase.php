@@ -136,7 +136,11 @@ abstract class FunctionalTestCase extends WebTestCase
     {
         $deprecations = [];
         set_error_handler(static function (int $errno, string $errstr) use (&$deprecations): bool {
-            $deprecations[] = $errstr;
+            // Not a deprecation of the bundle: the old versions of symfony/twig-bridge (lowest dependencies) call
+            // TemplateWrapper::unwrap() without argument, deprecated since Twig 3.30
+            if (!str_contains($errstr, 'TemplateWrapper::unwrap()')) {
+                $deprecations[] = $errstr;
+            }
 
             return true;
         }, \E_USER_DEPRECATED);
