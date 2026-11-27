@@ -29,11 +29,31 @@ use Symfony\Component\Messenger\Transport\InMemory\InMemoryTransport;
  */
 abstract class FunctionalTestCase extends WebTestCase
 {
+    /**
+     * Not a deprecation of the bundle: the old versions of symfony/twig-bridge (lowest dependencies) call
+     * TemplateWrapper::unwrap() without argument, deprecated since Twig 3.30.
+     */
+    private const THIRD_PARTY_DEPRECATION = 'TemplateWrapper::unwrap()';
+
     protected KernelBrowser $client;
 
     protected function setUp(): void
     {
+        // The other errors are given to the handler of PHPUnit
+        $previous = set_error_handler(static function (int $errno, string $errstr, string $errfile = '', int $errline = 0) use (&$previous): bool {
+            if (\E_USER_DEPRECATED === $errno && str_contains($errstr, self::THIRD_PARTY_DEPRECATION)) {
+                return true;
+            }
+
+            return null !== $previous && false !== $previous($errno, $errstr, $errfile, $errline);
+        });
         $this->createTestClient();
+    }
+
+    protected function tearDown(): void
+    {
+        restore_error_handler();
+        parent::tearDown();
     }
 
     /**
@@ -136,9 +156,7 @@ abstract class FunctionalTestCase extends WebTestCase
     {
         $deprecations = [];
         set_error_handler(static function (int $errno, string $errstr) use (&$deprecations): bool {
-            // Not a deprecation of the bundle: the old versions of symfony/twig-bridge (lowest dependencies) call
-            // TemplateWrapper::unwrap() without argument, deprecated since Twig 3.30
-            if (!str_contains($errstr, 'TemplateWrapper::unwrap()')) {
+            if (!str_contains($errstr, self::THIRD_PARTY_DEPRECATION)) {
                 $deprecations[] = $errstr;
             }
 
