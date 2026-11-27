@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace CleverAge\UiProcessBundle\Tests\Functional;
 
+use CleverAge\UiProcessBundle\Admin\Field\ContextField;
 use CleverAge\UiProcessBundle\Admin\Field\EnumField;
 use CleverAge\UiProcessBundle\CacheWarmer\LaunchFormsCacheWarmer;
 use CleverAge\UiProcessBundle\CleverAgeUiProcessBundle;
@@ -32,7 +33,9 @@ use CleverAge\UiProcessBundle\Entity\Enum\ProcessScheduleType;
 use CleverAge\UiProcessBundle\Entity\ProcessSchedule;
 use CleverAge\UiProcessBundle\Entity\User;
 use CleverAge\UiProcessBundle\EventSubscriber\ProcessEventSubscriber;
+use CleverAge\UiProcessBundle\Form\ContextValueNormalizer;
 use CleverAge\UiProcessBundle\Form\LaunchFormOptionsResolver;
+use CleverAge\UiProcessBundle\Form\Type\ContextFormType;
 use CleverAge\UiProcessBundle\Form\Type\LaunchType;
 use CleverAge\UiProcessBundle\Form\Type\ProcessContextType;
 use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
@@ -74,6 +77,8 @@ use PHPUnit\Framework\Attributes\UsesClass;
 #[UsesClass(CheckDoctrineLazyGhostObjectsPass::class)]
 #[UsesClass(LaunchFormOptionsResolver::class)]
 #[UsesClass(LaunchType::class)]
+#[UsesClass(ContextFormType::class)]
+#[UsesClass(ContextValueNormalizer::class)]
 #[UsesClass(LaunchFormsCacheWarmer::class)]
 #[UsesClass(UploadDirectoryParameterPass::class)]
 #[UsesClass(LoginThrottlingPass::class)]
@@ -90,6 +95,7 @@ use PHPUnit\Framework\Attributes\UsesClass;
 #[UsesClass(DoctrineProcessHandler::class)]
 #[UsesClass(ProcessHandler::class)]
 #[UsesClass(ProcessExecutionManager::class)]
+#[UsesClass(ContextField::class)]
 class ProcessScheduleCrudTest extends FunctionalTestCase
 {
     public function testIndexWarnsWhenNoWorkerIsRunning(): void
@@ -126,7 +132,7 @@ class ProcessScheduleCrudTest extends FunctionalTestCase
         $values['ProcessSchedule']['type'] = 'cron';
         $values['ProcessSchedule']['expression'] = '*/5 * * * *';
         $values['ProcessSchedule']['input'] = 'my input';
-        $values['ProcessSchedule']['context'] = [['key' => 'key1', 'value' => 'value1']];
+        $values['ProcessSchedule']['context'] = ['extra' => [['key' => 'key1', 'value' => 'value1']]];
         $this->client->request($form->getMethod(), $form->getUri(), $values);
 
         self::assertResponseRedirects();
@@ -196,6 +202,168 @@ class ProcessScheduleCrudTest extends FunctionalTestCase
         $crawler = $this->client->request('GET', '/process/process-schedule');
         self::assertResponseIsSuccessful();
         self::assertDoesNotMatchRegularExpression('/\d{4}-\d{2}-\d{2}T04:00:00/', $crawler->filter('table')->text());
+    }
+
+    public function testProcessSelectReloadsTheContextWithHtmx(): void
+    {
+        $this->login();
+
+        $crawler = $this->client->request('GET', '/process/process-schedule/new');
+
+        $select = $crawler->filter('select[name="ProcessSchedule[process]"]');
+        self::assertSame('change', $select->attr('hx-trigger'));
+        self::assertSame('#context-tab-content', $select->attr('hx-target'));
+        self::assertSame('#context-tab-content', $select->attr('hx-select'));
+        self::assertSame('outerHTML', $select->attr('hx-swap'));
+        self::assertStringStartsWith('/process/process-schedule/new', (string) $select->attr('hx-get'));
+        self::assertCount(1, $crawler->filter('#context-tab-content'));
+        // Served by AssetMapper, with a digest in the file name
+        self::assertCount(1, $crawler->filter('script[src^="/assets/cleverage/ui-process-bundle/js/htmx.min-"]'));
+        self::assertCount(1, $crawler->filter('script[src^="/assets/cleverage/ui-process-bundle/js/context-form-"]'));
+    }
+
+    public function testContextFieldsOfTheRequestedProcess(): void
+    {
+        $this->login();
+
+        $crawler = $this->client->request('GET', '/process/process-schedule/new?ProcessSchedule[process]=test.form_strict', server: ['HTTP_HX_REQUEST' => 'true']);
+
+        self::assertResponseIsSuccessful();
+        // The field declared by the launch form, with its default value, and no free key/value pairs
+        self::assertSame(',', $crawler->filter('#context-tab-content input[name="ProcessSchedule[context][delimiter]"]')->attr('value'));
+        self::assertCount(0, $crawler->filter('#context-tab-content [data-num-items], #context-tab-content .field-collection-add-button'));
+    }
+
+    public function testContextWithoutLaunchFormIsFreeKeyValue(): void
+    {
+        $this->login();
+
+        $crawler = $this->client->request('GET', '/process/process-schedule/new?ProcessSchedule[process]=test.process', server: ['HTTP_HX_REQUEST' => 'true']);
+
+        self::assertResponseIsSuccessful();
+        self::assertCount(0, $crawler->filter('input[name="ProcessSchedule[context][delimiter]"]'));
+        self::assertCount(1, $crawler->filter('#context-tab-content .field-collection-add-button'));
+    }
+
+    public function testCreateWithTheContextOfTheLaunchForm(): void
+    {
+        $this->login();
+
+        $crawler = $this->client->request('GET', '/process/process-schedule/new?ProcessSchedule[process]=test.form_strict', server: ['HTTP_HX_REQUEST' => 'true']);
+        $form = $crawler->selectButton('Create')->form();
+        /** @var array<string, array<string, mixed>> $values */
+        $values = $form->getPhpValues();
+        $values['ProcessSchedule']['process'] = 'test.form_strict';
+        $values['ProcessSchedule']['type'] = 'cron';
+        $values['ProcessSchedule']['expression'] = '*/5 * * * *';
+        $values['ProcessSchedule']['context'] = ['delimiter' => ';'];
+        $this->client->request($form->getMethod(), '/process/process-schedule/new', $values);
+
+        self::assertResponseRedirects();
+        $schedules = $this->getEntityManager()->getRepository(ProcessSchedule::class)->findAll();
+        self::assertCount(1, $schedules);
+        // The stored format is a list of key/value rows
+        self::assertSame([['key' => 'delimiter', 'value' => ';']], $schedules[0]->getContext());
+    }
+
+    public function testContextFieldConstraintsApply(): void
+    {
+        $this->login();
+
+        $crawler = $this->client->request('GET', '/process/process-schedule/new');
+        $form = $crawler->selectButton('Create')->form();
+        /** @var array<string, array<string, mixed>> $values */
+        $values = $form->getPhpValues();
+        $values['ProcessSchedule']['process'] = 'test.form_custom_constraint';
+        $values['ProcessSchedule']['type'] = 'cron';
+        $values['ProcessSchedule']['expression'] = '*/5 * * * *';
+        $values['ProcessSchedule']['context'] = ['count' => '3'];
+        $this->client->request($form->getMethod(), $form->getUri(), $values);
+
+        self::assertResponseStatusCodeSame(422);
+        self::assertSame([], $this->getEntityManager()->getRepository(ProcessSchedule::class)->findAll());
+    }
+
+    public function testEditDisplaysTheStoredContext(): void
+    {
+        $this->login();
+        $schedule = $this->createSchedule(ProcessScheduleType::CRON, '0 4 * * *');
+        $schedule->setProcess('test.form_strict');
+        $schedule->setContext([['key' => 'delimiter', 'value' => '|']]);
+        $this->getEntityManager()->flush();
+
+        $crawler = $this->client->request('GET', '/process/process-schedule/'.$schedule->getId().'/edit');
+
+        self::assertResponseIsSuccessful();
+        self::assertSame('|', $crawler->filter('input[name="ProcessSchedule[context][delimiter]"]')->attr('value'));
+    }
+
+    public function testEditWithAStoredValueUnreadableByItsFieldDoesNotFail(): void
+    {
+        $this->login();
+        $schedule = $this->createSchedule(ProcessScheduleType::CRON, '0 4 * * *');
+        $schedule->setProcess('test.form_date');
+        $schedule->setContext([['key' => 'day', 'value' => '2026-11-27T00:00:00+00:00']]);
+        $this->getEntityManager()->flush();
+
+        $crawler = $this->client->request('GET', '/process/process-schedule/'.$schedule->getId().'/edit');
+
+        self::assertResponseIsSuccessful();
+        self::assertEmpty($crawler->filter('input[name="ProcessSchedule[context][day]"]')->attr('value'));
+    }
+
+    public function testEditWarnsAboutTheStoredContextThatTheLaunchFormDoesNotAccept(): void
+    {
+        $this->login();
+        $schedule = $this->createSchedule(ProcessScheduleType::CRON, '0 4 * * *');
+        $schedule->setProcess('test.form_strict');
+        $schedule->setContext([['key' => 'delimiter', 'value' => ';'], ['key' => 'legacy', 'value' => '1']]);
+        $this->getEntityManager()->flush();
+
+        $this->client->request('GET', '/process/process-schedule/'.$schedule->getId().'/edit');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('.alert-warning', 'The context keys "legacy" of this schedule are not accepted');
+    }
+
+    public function testNewWithAScalarProcessScheduleQueryParameterDoesNotFail(): void
+    {
+        $this->login();
+
+        $this->client->request('GET', '/process/process-schedule/new?ProcessSchedule=1', server: ['HTTP_HX_REQUEST' => 'true']);
+
+        self::assertResponseIsSuccessful();
+    }
+
+    public function testRequestedProcessDefaultsDoNotChangeTheStoredContext(): void
+    {
+        $this->login();
+        $schedule = $this->createSchedule(ProcessScheduleType::CRON, '0 4 * * *');
+        $schedule->setProcess('test.process');
+        $schedule->setContext([['key' => 'key1', 'value' => 'value1']]);
+        $this->getEntityManager()->flush();
+
+        $crawler = $this->client->request('GET', '/process/process-schedule/'.$schedule->getId().'/edit?ProcessSchedule[process]=test.form_strict', server: ['HTTP_HX_REQUEST' => 'true']);
+
+        // The default values of the requested process are displayed, the managed schedule keeps its context
+        self::assertSame(',', $crawler->filter('input[name="ProcessSchedule[context][delimiter]"]')->attr('value'));
+        self::assertSame([['key' => 'key1', 'value' => 'value1']], $this->getEntityManager()->find(ProcessSchedule::class, $schedule->getId())?->getContext());
+    }
+
+    public function testEditKeepsTheFreeKeyValuePairs(): void
+    {
+        $this->login();
+        $schedule = $this->createSchedule(ProcessScheduleType::CRON, '0 4 * * *');
+        $schedule->setContext([['key' => 'key1', 'value' => 'value1']]);
+        $this->getEntityManager()->flush();
+
+        $crawler = $this->client->request('GET', '/process/process-schedule/'.$schedule->getId().'/edit');
+        $form = $crawler->selectButton('Save changes')->form();
+        $this->client->request($form->getMethod(), $form->getUri(), $form->getPhpValues());
+
+        self::assertResponseRedirects();
+        $this->getEntityManager()->clear();
+        self::assertSame([['key' => 'key1', 'value' => 'value1']], $this->getEntityManager()->find(ProcessSchedule::class, $schedule->getId())?->getContext());
     }
 
     public function testEntityFqcn(): void

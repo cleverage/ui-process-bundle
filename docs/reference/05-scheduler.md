@@ -15,8 +15,33 @@ Schedules are stored in the `process_schedule` table (`CleverAge\UiProcessBundle
 | `type`       | `cron` or `every`.                                                                                                                                      |
 | `expression` | `cron`: a cron expression, e.g. `*/5 * * * *` or `@daily` (see [cron expression triggers](https://symfony.com/doc/current/scheduler.html#cron-expression-triggers)). `every`: a relative time, e.g. `5 seconds`, `1 hour`, `1 day` (see [periodical triggers](https://symfony.com/doc/current/scheduler.html#periodical-triggers)); it must be parsable by `strtotime()`. |
 | `input`      | Optional process input (string, 255 characters max), e.g. a file path.                                                                                  |
-| `context`    | Optional list of key/value pairs, passed as process context.                                                                                           |
+| `context`    | Optional process context, as a list of key/value pairs (see [context](#context)).                                                                      |
 | `enabled`    | A disabled schedule is not run (default: enabled). It can be switched directly from the schedules list.                                                 |
+
+Context
+-------
+
+The context form of a schedule depends on its process. When the process is
+[launched with a form](02-process_ui_options.md) (`ui_launch_mode: form`), the schedule form displays the fields
+declared in `ui.form.context` (type, options, default values, field constraints), and the free key/value pairs when
+`allow_extra_context` is not `false`. Otherwise, only the free key/value pairs are available.
+
+When the process is changed in the schedule form, only the context row is reloaded (with [htmx](https://htmx.org),
+served by AssetMapper: the bundle adds its `assets` directory to `framework.asset_mapper.paths`), with the default
+values of the new process (after a confirmation when values have been entered in the context). In production, the scripts
+require the assets to be compiled (`bin/console asset-map:compile`, see the [installation](../index.md#assets)). The
+`ui.form.input` and `ui.form.constraints` options do not apply to a schedule.
+
+The context is stored as before, a list of `{key, value}` rows, so the existing schedules are kept. The values are
+stored as scalars (enums, dates... are converted as when a process is launched), so use form types whose value can be
+displayed again from a scalar (e.g. a `ChoiceType` with scalar choices, a date type with `input: string`): a stored
+value that a field cannot read is displayed empty.
+
+A stored context key that the launch form of the process does not accept (a key that is no longer declared in
+`ui.form.context` while `allow_extra_context` is `false`, or a free pair of a schedule created before the launch form of
+its process was declared) is not displayed, and it is removed when the schedule is saved: a warning names these keys
+when the schedule is edited. When the launch form of the process is invalid, a warning is displayed and the context is
+entered as free key/value pairs.
 
 The schedules list displays the next execution date of the enabled `cron` schedules.
 

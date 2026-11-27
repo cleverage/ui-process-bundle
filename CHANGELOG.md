@@ -1,6 +1,9 @@
 Latest
 ------
 
+## Changes
+* [#314](https://github.com/cleverage/ui-process-bundle/issues/314) Scheduler: the context of a schedule is entered with the fields of the launch form of its process (`ui.form.context`: types, default values, field constraints), instead of free key/value pairs only (still available when the process allows extra context, or declares no launch form). The new internal `ContextFormType` (option `process`) is shared with the launch form, and its fields are loaded with the events of the form (`PRE_SET_DATA`, `PRE_SUBMIT`). When the process is changed in the schedule form, only the context row is reloaded, with [htmx](https://htmx.org) (`asset_mapper` path `cleverage/ui-process-bundle` prepended by the bundle). The context is still stored as a list of `key`/`value` rows. Requires `symfony/asset-mapper` (assets to compile in production, see UPGRADE.md). A stored value that its field cannot read is displayed empty, an invalid launch form does not break the schedule form (warning, free key/value pairs), a warning names the stored context keys that the launch form does not accept, and the values entered in the context are not replaced by the default values of another process without confirmation. Update documentation, add tests.
+
 v3.7
 ------
 

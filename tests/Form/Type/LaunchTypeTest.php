@@ -15,6 +15,7 @@ namespace CleverAge\UiProcessBundle\Tests\Form\Type;
 
 use CleverAge\ProcessBundle\Registry\ProcessConfigurationRegistry;
 use CleverAge\UiProcessBundle\Form\LaunchFormOptionsResolver;
+use CleverAge\UiProcessBundle\Form\Type\ContextFormType;
 use CleverAge\UiProcessBundle\Form\Type\LaunchType;
 use CleverAge\UiProcessBundle\Form\Type\ProcessContextType;
 use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
@@ -25,7 +26,6 @@ use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
-use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Validator\ValidatorExtension;
@@ -43,6 +43,7 @@ use Symfony\Component\Validator\Validation;
 #[UsesClass(ProcessConfigurationsManager::class)]
 #[UsesClass(LaunchFormOptionsResolver::class)]
 #[UsesClass(ProcessContextType::class)]
+#[UsesClass(ContextFormType::class)]
 class LaunchTypeTest extends TypeTestCase
 {
     protected function setUp(): void
@@ -79,7 +80,7 @@ class LaunchTypeTest extends TypeTestCase
         ], 'stop');
 
         return [
-            new PreloadedExtension([new LaunchType($registry, new ProcessConfigurationsManager($registry))], []),
+            new PreloadedExtension([new LaunchType($registry, $manager = new ProcessConfigurationsManager($registry)), new ContextFormType($manager)], []),
             new ValidatorExtension(Validation::createValidator()),
         ];
     }
@@ -92,7 +93,7 @@ class LaunchTypeTest extends TypeTestCase
         self::assertFalse($form->get('input')->getConfig()->getRequired(), 'The process has no entry point');
 
         $context = $form->get('context');
-        self::assertInstanceOf(FormType::class, $this->getInnerType($context));
+        self::assertInstanceOf(ContextFormType::class, $this->getInnerType($context));
         self::assertSame(['extra'], array_keys($context->all()));
         $extra = $context->get('extra')->getConfig();
         self::assertInstanceOf(CollectionType::class, $extra->getType()->getInnerType());

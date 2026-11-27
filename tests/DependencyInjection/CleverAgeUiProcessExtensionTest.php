@@ -467,6 +467,9 @@ class CleverAgeUiProcessExtensionTest extends TestCase
         self::assertSame(
             [
                 [
+                    'asset_mapper' => [
+                        'paths' => [\dirname(__DIR__, 2).'/assets' => 'cleverage/ui-process-bundle'],
+                    ],
                     'messenger' => [
                         'transport' => [
                             [

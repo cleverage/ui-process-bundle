@@ -65,7 +65,8 @@ class ProcessSchedule
 
     public function getProcess(): ?string
     {
-        return $this->process;
+        // Not initialized for a new schedule
+        return $this->process ?? null;
     }
 
     public function setProcess(string $process): static

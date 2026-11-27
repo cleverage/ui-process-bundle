@@ -148,6 +148,13 @@ The default logo is served from the bundle `public/` directory:
 bin/console assets:install
 ```
 
+The scripts of the schedule form (the reload of its context when the process changes, with [htmx](https://htmx.org)) are
+served by [AssetMapper](https://symfony.com/doc/current/frontend/asset_mapper.html): `symfony/asset-mapper` is a
+dependency of the bundle, which adds its `assets` directory to `framework.asset_mapper.paths` (no configuration needed).
+In production, AssetMapper only serves the compiled files: run `bin/console asset-map:compile` when deploying (without
+it, the scripts of the bundle are not found and the context of a schedule is no longer reloaded when its process
+changes). The files are served under the `/assets/` URL prefix: do not route it elsewhere.
+
 ### Workers
 
 Processes launched from the UI, the HTTP API (queued) or the scheduler are executed asynchronously with Symfony

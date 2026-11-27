@@ -162,7 +162,7 @@ final class CleverAgeUiProcessExtension extends Extension implements PrependExte
     }
 
     /**
-     * Configure the other bundles: Monolog handlers, migrations path, Messenger transport and security.
+     * Configure the other bundles: Monolog handlers, migrations path, AssetMapper path, Messenger transport and security.
      *
      * The Messenger configuration is prepended (the application configuration wins). The other ones are appended, so
      * they override the application configuration: in particular the security one replaces the provider, login form and
@@ -184,6 +184,10 @@ final class CleverAgeUiProcessExtension extends Extension implements PrependExte
         $container->prependExtensionConfig(
             'framework',
             [
+                // The JavaScript of the bundle (htmx, reload of the context of the schedules), served by AssetMapper
+                'asset_mapper' => [
+                    'paths' => [\dirname(__DIR__, 2).'/assets' => 'cleverage/ui-process-bundle'],
+                ],
                 'messenger' => [
                     'transport' => [
                         [

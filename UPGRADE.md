@@ -1,6 +1,26 @@
 Upgrade Guide
 =============
 
+## v3.8
+
+### AssetMapper
+
+The schedule form reloads its context when the process changes (see the
+[scheduler](docs/reference/05-scheduler.md)): its scripts are served by AssetMapper. `symfony/asset-mapper` is now
+required by the bundle (installed by `composer update`), and the bundle prepends its `assets` directory to
+`framework.asset_mapper.paths`, which also enables AssetMapper in the applications that did not use it.
+
+* In production, compile the assets when deploying, otherwise the scripts of the bundle return a 404 and the context of
+  a schedule is no longer reloaded when its process changes:
+
+```bash
+bin/console asset-map:compile
+```
+
+* The assets are served under the `/assets/` URL prefix (the default `framework.asset_mapper.public_prefix`).
+* A schedule whose context has keys that the launch form of its process does not accept (`allow_extra_context: false`)
+  displays a warning when it is edited: these keys are removed when it is saved.
+
 ## v3.5
 
 ### Deprecated UI options of the launch form

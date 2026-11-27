@@ -33,6 +33,7 @@ use CleverAge\UiProcessBundle\Entity\User;
 use CleverAge\UiProcessBundle\EventSubscriber\ProcessEventSubscriber;
 use CleverAge\UiProcessBundle\Form\ContextValueNormalizer;
 use CleverAge\UiProcessBundle\Form\LaunchFormOptionsResolver;
+use CleverAge\UiProcessBundle\Form\Type\ContextFormType;
 use CleverAge\UiProcessBundle\Form\Type\LaunchType;
 use CleverAge\UiProcessBundle\Form\Type\ProcessContextType;
 use CleverAge\UiProcessBundle\Manager\ProcessConfigurationsManager;
@@ -97,6 +98,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 #[UsesClass(ProcessHandler::class)]
 #[UsesClass(ProcessExecutionManager::class)]
 #[UsesClass(\CleverAge\UiProcessBundle\Form\ContextValueException::class)]
+#[UsesClass(ContextFormType::class)]
 class LaunchActionTest extends FunctionalTestCase
 {
     public function testLaunchWithoutForm(): void
