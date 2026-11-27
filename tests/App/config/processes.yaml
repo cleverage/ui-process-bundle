@@ -136,6 +136,22 @@ configurations:
         tasks:
             data:
                 task: dummy
+    test.form_date:
+        description: 'Process launched with the UI form, with a date field (a stored ATOM string cannot be read by a "datetime" input)'
+        entry_point: data
+        options:
+            ui:
+                ui_launch_mode: form
+                form:
+                    context:
+                        day:
+                            type: Symfony\Component\Form\Extension\Core\Type\DateType
+                            options:
+                                widget: single_text
+                    allow_extra_context: false
+        tasks:
+            data:
+                task: dummy
     test.form_global_constraints:
         description: 'Process launched with the UI form, with global constraints on a declared context field'
         entry_point: data
